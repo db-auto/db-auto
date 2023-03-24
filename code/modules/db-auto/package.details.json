@@ -1,0 +1,25 @@
+{
+  "template":    "typescript",
+  "name":        "db-auto",
+  "description": "",
+  "packageJson": {
+    "bin":             {
+      "laoban": "dist/index.js"
+    },
+    "dependencies":    {
+      "commander": "^10.0.0"
+    },
+    "keywords":        [
+      "sql",
+      "database",
+      "devops"
+    ],
+    "devDependencies": {}
+  },
+  "links":       ["@db-auto/oracle", "@db-auto/mysql", "@db-auto/utils"],
+  "guards":      {
+    "compile": true,
+    "publish": true,
+    "test":    true
+  }
+}

@@ -61,7 +61,7 @@ describe ( "validators", () => {
     expect ( validate ( 'prefix' ) ( { ...data, c: 2 as any } ) ).toEqual ( [ 'prefix.c is [2] which is a number and not a string' ] )
   } )
 
-  
+
 
 } )
 

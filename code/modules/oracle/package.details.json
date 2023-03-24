@@ -1,0 +1,15 @@
+{
+  "template":    "typescript",
+  "name":        "@db-auto/oracle",
+  "description": "",
+  "packageJson": {
+    "dependencies":    {"oracledb": "^5.5.0"},
+    "devDependencies": {}
+  },
+  "links":       ["@db-auto/utils"],
+  "guards":      {
+    "compile": true,
+    "publish": false,
+    "test":    true
+  }
+}

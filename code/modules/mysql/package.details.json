@@ -1,0 +1,16 @@
+{
+  "template": "typescript",
+  "name": "@db-auto/mysql",
+  "description": "",
+  "packageJson": {
+    "dependencies": {"mysql2":  "3.2.0"},
+    "devDependencies": {}
+  },
+  "links":       ["@db-auto/utils"],
+
+  "guards": {
+    "compile": true,
+    "publish": false,
+    "test": true
+  }
+}
