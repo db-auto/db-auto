@@ -1,38 +1,25 @@
-import { NameAnd } from "@db-auto/utils";
+import { mapObject, NameAnd } from "@db-auto/utils";
+import { cleanTable, cleanTables, Environment, Table } from "@db-auto/tables";
 
 export interface Config {
-  environment: NameAnd<Environment>,
+  environments: NameAnd<Environment>,
   tables: NameAnd<Table>
 }
 
-export interface Table {
-  table: string,
-  primary?: Key,
-  fk?: Key | Key[],
-  views?: View | View[],
-  links?: NameAnd<Link | Link[]>
+function orDefault ( mainName: string, envVars: NameAnd<string>, value: string | undefined, name: string ): string {
+  return value === undefined ? envVars[ `${mainName}.${name}` ] : value;
+}
+function cleanEnvironment ( envVars: NameAnd<string>, env: NameAnd<Environment> ): NameAnd<Environment> {
+  return mapObject ( env, ( env, envName ) => ({
+    ...env,
+    username: orDefault ( envName, envVars, env.username, 'username' ),
+    password: orDefault ( envName, envVars, env.password, 'password' ),
+  }) )
 }
 
-export type LinkType = "one-to-many" | "many-to-one"
-export type Link = HereAndThereLink | HereLinkAndThereLink
-export interface HereAndThereLink {
-  type: LinkType,
-  idHereAndThere: string,
-}
-export interface HereLinkAndThereLink {
-  type: LinkType,
-  idHere: string,
-  idThere: string,
-}
-
-export type View = string
-export interface  Key {
-  name: string,
-  type: "integer" | "string"
-}
-export interface Environment {
-  type: "oracle" | "mysql",
-  url: string,
-  username?: string,
-  password?: string
+export function cleanConfig ( envVars: NameAnd<string>, config: Config ): Config {
+  return {
+    environments: cleanEnvironment ( envVars, config.environments ),
+    tables: cleanTables ( config.tables )
+  }
 }

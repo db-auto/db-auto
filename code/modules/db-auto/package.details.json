@@ -16,7 +16,7 @@
     ],
     "devDependencies": {}
   },
-  "links":       ["@db-auto/oracle", "@db-auto/mysql", "@db-auto/utils"],
+  "links":       ["@db-auto/oracle", "@db-auto/mysql", "@db-auto/tables","@db-auto/utils"],
   "guards":      {
     "compile": true,
     "publish": true,

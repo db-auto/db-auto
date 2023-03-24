@@ -1,12 +1,9 @@
 {
-  "name": "db-auto",
+  "name": "@db-auto/tables",
   "description": "",
   "version": "0.0.0",
   "main": "dist/index",
   "types": "dist/index",
-  "bin": {
-    "laoban": "dist/index.js"
-  },
   "browserslist": {
     "development": [
       "last 1 chrome version",
@@ -20,10 +17,6 @@
     ]
   },
   "dependencies": {
-    "commander": "^10.0.0",
-    "@db-auto/oracle": "0.0.0",
-    "@db-auto/mysql": "0.0.0",
-    "@db-auto/tables": "0.0.0",
     "@db-auto/utils": "0.0.0"
   },
   "devDependencies": {
@@ -39,11 +32,6 @@
     "dist/index.js",
     "dist/index.d.ts",
     "dist/src/"
-  ],
-  "keywords": [
-    "sql",
-    "database",
-    "devops"
   ],
   "license": "MIT",
   "repository": "git@github.com:db-auto/db-auto.git",

@@ -1,5 +1,5 @@
-import { composeNameAndValidators, validateChild, validateChildNumber, validateChildString, validateChildValue, validateNumber, validateString, validateValue } from "./validators";
-import exp from "constants";
+import { composeNameAndValidators, orValidators, validateChild, validateChildNumber, validateChildString, validateChildValue, validateNameAnd, validateNumber, validateString, validateValue } from "./validators";
+import { NameAnd } from "./nameAnd";
 
 const data = {
   a: 1,
@@ -11,12 +11,12 @@ type Data = typeof data
 describe ( "validators", () => {
   describe ( "primitives", () => {
     it ( "validateNumber should validate a number", () => {
-      expect ( validateNumber ( "test" ) ( 1 ) ).toEqual ( [] );
-      expect ( validateNumber ( "test" ) ( "1" as any ) ).toEqual ( [ 'test is ["1"] which is a string and not a number' ] );
+      expect ( validateNumber() ( "test" ) ( 1 ) ).toEqual ( [] );
+      expect ( validateNumber ()( "test" ) ( "1" as any ) ).toEqual ( [ 'test is ["1"] which is a string and not a number' ] );
     } )
     it ( "validateString should validate a string", () => {
-      expect ( validateString ( "test" ) ( "1" ) ).toEqual ( [] );
-      expect ( validateString ( "test" ) ( 1 as any ) ).toEqual ( [ 'test is [1] which is a number and not a string' ] );
+      expect ( validateString ()( "test" ) ( "1" ) ).toEqual ( [] );
+      expect ( validateString ()( "test" ) ( 1 as any ) ).toEqual ( [ 'test is [1] which is a number and not a string' ] );
     } )
     it ( "validate value should validate a value", () => {
       const validate = validateValue ( "a", "b" );
@@ -48,19 +48,43 @@ describe ( "validators", () => {
 
   describe ( 'validateChild', () => {
     it ( 'should validate a child', () => {
-      const validate = validateChild<Data, 'a'> ( 'a', validateNumber )
+      const validate = validateChild<Data, 'a'> ( 'a', validateNumber ())
       expect ( validate ( 'prefix' ) ( data ) ).toEqual ( [] )
       expect ( validate ( 'prefix' ) ( { ...data, a: "2" as any } ) ).toEqual ( [ 'prefix.a is ["2"] which is a string and not a number' ] )
     } )
   } )
 
   describe ( "compose", () => {
-    const validate = composeNameAndValidators ( validateChildNumber<Data, 'a'> ( 'a' ), validateChildString<Data, 'c'> ( 'c' ) )
-    expect ( validate ( 'prefix' ) ( data ) ).toEqual ( [] )
-    expect ( validate ( 'prefix' ) ( { ...data, a: "2" as any } ) ).toEqual ( [ 'prefix.a is ["2"] which is a string and not a number' ] )
-    expect ( validate ( 'prefix' ) ( { ...data, c: 2 as any } ) ).toEqual ( [ 'prefix.c is [2] which is a number and not a string' ] )
+    it ( "composeNameAndValidators should compose validators", () => {
+      const validate = composeNameAndValidators ( validateChildNumber<Data, 'a'> ( 'a' ), validateChildString<Data, 'c'> ( 'c' ) )
+      expect ( validate ( 'prefix' ) ( data ) ).toEqual ( [] )
+      expect ( validate ( 'prefix' ) ( { ...data, a: "2" as any } ) ).toEqual ( [ 'prefix.a is ["2"] which is a string and not a number' ] )
+      expect ( validate ( 'prefix' ) ( { ...data, c: 2 as any } ) ).toEqual ( [ 'prefix.c is [2] which is a number and not a string' ] )
+      expect ( validate ( 'prefix' ) ( {} as any ) ).toEqual ( [
+        "prefix.a is undefined. It should be a number",
+        "prefix.c is undefined. It should be a string"
+      ] )
+    } )
+    it ( "orValidators should compose validators, no errors if any ok", () => {
+      const validate = orValidators ( 'someMsg', validateChildNumber<Data, 'a'> ( 'a' ), validateChildString<Data, 'c'> ( 'c' ) )
+      expect ( validate ( 'prefix' ) ( { a: 1 } as any ) ).toEqual ( [] )
+      expect ( validate ( 'prefix' ) ( { c: "str" } as any ) ).toEqual ( [] )
+      expect ( validate ( 'prefix' ) ( data ) ).toEqual ( [] )
+
+      expect ( validate ( 'prefix' ) ( {} as any ) ).toEqual ( [
+        "prefix someMsg prefix.a is undefined. It should be a number"
+      ] )
+    } )
   } )
 
+  describe ( "nameAd", () => {
+
+    it ( "should add name", () => {
+      const validate = validateNameAnd<number> ( validateNumber ())
+      expect ( validate ( 'prefix' ) ( { a: 1, b: 2, c: 3 } ) ).toEqual ( [] )
+      expect ( validate ( 'prefix' ) ( { a: 1, b: 2, c: "3" as any } ) ).toEqual ( [ 'prefix.c is ["3"] which is a string and not a number' ] )
+    } )
+  } )
 
 
 } )

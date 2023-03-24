@@ -25,7 +25,79 @@
       "fk":    [{"name": "driverId", "type": "integer"}],
       "views": {
         "all":   "*",
-        "short": ["driverId", "action", "date"]
+        "short": {
+          "state":        {"file": ".db-auto"},
+          "environments": {
+            "dev":  {"type": "oracle", "url": "", "username": "", "password": ""},
+            "test": {"type": "mysql", "url": "", "username": "", "password": ""}
+          },
+          "tables":       {
+            "driver":      {
+              "table":   "LONG_NAME_FOR_THE_TABLE_THAT_HAS_THE_DRIVER",
+              "primary": {"name": "id", "type": "integer"},
+              "query":   [
+                {"name": "name", "type": "string", "description": "driver name "},
+                {"name": "employeeNum", "type": "string"}
+              ],
+              "links":   {
+                "mission": {"type": "one-to-many", "idHereAndThere": "driverId"},
+                "audit":   {"table": "driver_aud", "type": "one-to-many", "idHereAndThere": "driverId"}
+              },
+              "views":   {
+                "all":   "*",
+                "short": ["id", "name"]
+              }
+            },
+            "driver_aud":  {
+              "primary": {"name": "driverId", "type": "integer"},
+              "views":   {
+                "all":   "*",
+                "short": ["driverId", "action", "date"]
+              }
+            },
+            "mission":     {
+              "primary": {"name": "id", "type": "integer"},
+              "query":   [{"name": "date", "type": "date"}],
+              "links":   [
+                {"name": "driver", "table": "driver", "type": "many-to-one", "idHereAndThere": "driverId"},
+                {"name": "audit", "table": "mission_aud", "type": "one-to-many", "idHereAndThere": "missionId"}
+              ],
+              "views":   {
+                "all":   "*",
+                "short": ["id", "driverId"]
+              }
+            },
+            "mission_aud": {
+              "primary": {"id": "missionId", "type": "integer"},
+              "views":   {
+                "all":   "*",
+                "short": ["missionId", "action", "date"]
+              }
+            }
+          },
+          "examples":     [
+            "db-auto driver 1231232   // this is the id of the driver",
+            "db-auto driver --employeeNum 3485fhgsdf",
+            "db-auto driver.mission 1231232   // this is the id of the driver",
+            "db-auto driver.mission 1231232,349857 ",
+            "db-auto driver.mission --name fred",
+            "db-auto driver.mission --name fred --date 2015-01-01",
+            "db-auto driver.mission --driver.name fred --mission.date 2015-01-01",
+            "db-auto driver.mission --driver.name fred --mission.date.after 2015-01-01T13:00L --mission.date.before 2015-01-01T14:00L",
+            "db-auto driver.mission --employeeNum 12332434 --date today()",
+            "db-auto driver.mission --employeeNum 12332434 --date yesterday()",
+            "db-auto driver.{driver_aud,mission.mission_aud} --employeeNum 12332434 --date yesterday()",
+            "db-auto driver.auto --name fred",
+            "db-auto driver.mission.auto --name fred --date 2015-01-01",
+            "db-auto driver.mission.auto --name fred --date 2015-01-01 --sql    // --sql says just print the sql, don't run it",
+            "db-auto driver.mission.auto --name fred --date 2015-01-01 --describe    // --describe gives the query plan",
+            "--distinct and if a single field --unique --count",
+            "what do we do with aggregates",
+            "csvs... or tsvs ... or json... and if csv/tsv want to be able to do on separate files"
+          ]
+        }
+
+["driverId", "action", "date"]
       }
     },
     "mission":     {
