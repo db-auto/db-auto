@@ -7,16 +7,16 @@ export interface SelectData {
   table: string,
   alias: string,
   columns: string[],
-  where?: string,
+  where: string[],
 }
 
-export function whereFor ( plan: Plan ) {
+export function whereFor ( plan: Plan ): string[] {
   let planLink = plan.linkToPrevious;
-  if ( planLink === undefined ) return undefined;
+  if ( planLink === undefined ) return plan.where;
   const link = planLink.link
   const previousTable = planLink.linkTo
 
-  return `${previousTable.alias}.${idThere ( link )} = ${plan.alias}.${idHere ( link )}`
+  return [ ...plan.where, `${previousTable.alias}.${idThere ( link )} = ${plan.alias}.${idHere ( link )}` ]
 }
 export function selectDataForOne ( plan: Plan, view: string ): SelectData {
   return {
@@ -36,12 +36,12 @@ export const selectData = ( view: string ) => ( plan: Plan, ): SelectData[] => {
 export interface MergedSelectData {
   tables: { table: string, alias: string }[]
   columns: { alias: string, column: string }[],
-  where?: string[]
+  where: string[]
 }
 export function mergeSelectData ( selectData: SelectData[] ): MergedSelectData {
   const tables = selectData.map ( s => ({ table: s.table, alias: s.alias }) )
   const columns = flatMap ( selectData, s => s.columns.map ( c => ({ alias: s.alias, column: c }) ) )
-  const where = selectData.map ( s => s.where ).filter ( w => w !== undefined )
+  const where = flatMap ( selectData, s => s.where ).filter ( w => w !== undefined )
   return { tables, columns, where }
 
 }

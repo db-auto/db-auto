@@ -28,24 +28,24 @@ describe ( "buildPlan", () => {
 describe ( "selectData", () => {
   it ( "should build selectData with just one step", () => {
     expect ( mapErrors ( buildPlan ( clean, [ "driver" ] ), selectData ( "all" ) ) ).toEqual (
-      [ { "columns": [ "*" ], "table": "DriverTable", alias: "T0" } ] )
+      [ { "columns": [ "*" ], "table": "DriverTable", alias: "T0", where: [] } ] )
   } )
   it ( "should build selectData with two steps", () => {
     expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission" ] ), selectData ( "all" ) ) ).toEqual ( [
-      { "alias": "T0", "columns": [ "*" ], "table": "DriverTable" },
-      { "alias": "T1", "columns": [ "*" ], "table": "mission", "where": "T0.driverId = T1.driverId" }
+      { "alias": "T0", "columns": [ "*" ], "table": "DriverTable", where: [] },
+      { "alias": "T1", "columns": [ "*" ], "table": "mission", "where": [ "T0.driverId = T1.driverId" ] }
     ] )
   } )
   it ( "should build selectData when the link isn't the table name", () => {
     expect ( mapErrors ( buildPlan ( clean, [ "driver", "audit" ] ), selectData ( "all" ) ) ).toEqual ( [
-      { "alias": "T0", "columns": [ "*" ], "table": "DriverTable" },
-      { "alias": "T1", "columns": [ "*" ], "table": "driver_aud", "where": "T0.driverId = T1.driverId" } ] )
+      { "alias": "T0", "columns": [ "*" ], "table": "DriverTable", where: [] },
+      { "alias": "T1", "columns": [ "*" ], "table": "driver_aud", "where": [ "T0.driverId = T1.driverId" ] } ] )
   } )
-  it ( "should build selectData with three steps", () => {
-    expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission", "mission_aud" ] ), selectData ( "all" ) ) ).toEqual ( [
-      { "alias": "T0", "columns": [ "*" ], "table": "DriverTable" },
-      { "alias": "T1", "columns": [ "*" ], "table": "mission", "where": "T0.driverId = T1.driverId" },
-      { "alias": "T2", "columns": [ "*" ], "table": "mission_aud", "where": "T1.missionId = T2.missionId" }
+  it ( "should build selectData with three steps and an id", () => {
+    expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission", "mission_aud" ], "123" ), selectData ( "all" ) ) ).toEqual ( [
+      { "alias": "T0", "columns": [ "*" ], "table": "DriverTable", "where": [ "T0.id=123" ] },
+      { "alias": "T1", "columns": [ "*" ], "table": "mission", "where": [ "T0.driverId = T1.driverId" ] },
+      { "alias": "T2", "columns": [ "*" ], "table": "mission_aud", "where": [ "T1.missionId = T2.missionId" ] }
     ] )
   } )
 } )
@@ -106,6 +106,12 @@ describe ( "sqlFor", () => {
     expect ( mapErrors ( buildPlan ( clean, [ "driver", "audit" ] ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
       "select T0.*, T1.*",
       "   from DriverTable T0, driver_aud T1 where T0.driverId = T1.driverId"
+    ] )
+  } )
+  it ( "should make sql when link name isn't table name and there is an id", () => {
+    expect ( mapErrors ( buildPlan ( clean, [ "driver", "audit" ], "123" ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
+      "select T0.*, T1.*",
+      "   from DriverTable T0, driver_aud T1 where T0.id=123 and T0.driverId = T1.driverId"
     ] )
   } )
 

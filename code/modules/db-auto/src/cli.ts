@@ -19,9 +19,10 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .name ( 'db-auto' )
     .usage ( '<command> [options]' )
     .argument ( '<path>', "the list of table names joined by a . For example driver.mission.mission_aud" )
+    .argument ( '[id]', "the id of the primary key in the first table in the path" )
     .version ( version )
-    .action ( ( path, options ) => {
-      const errorsOrresult = processPathString ( config.tables, path );
+    .action ( ( path, id, options ) => {
+      const errorsOrresult = processPathString ( config.tables, path ,id);
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return

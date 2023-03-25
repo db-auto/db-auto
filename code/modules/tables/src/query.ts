@@ -12,6 +12,7 @@ export interface Plan {
   linkToPrevious?: PlanLink,
   table: CleanTable,
   alias: string
+  where: string[]
 
 }
 export interface PlanLink {
@@ -19,11 +20,16 @@ export interface PlanLink {
   linkTo: Plan,
 }
 
+function quoteIfNeeded ( type: string, s: string ): string {
+  return type === 'string' || type.includes ( 'char' ) ? `'${s}'` : s;
+}
 
-export function buildPlan ( tables: NameAnd<CleanTable>, path: string[] ): ErrorsAnd<Plan | undefined> {
+export function buildPlan ( tables: NameAnd<CleanTable>, path: string[], id?: string ): ErrorsAnd<Plan | undefined> {
   if ( path.length === 0 ) return [ 'Cannot build plan for empty path' ]
   let table = tables[ path[ 0 ] ];
-  const plan = { table, alias: `T${0}` }
+  let alias = `T${0}`;
+  const where: string[] = id ? [ `${alias}.${table.primary}=${quoteIfNeeded ( table.keys[ table.primary ].type, id )}` ] : []
+  const plan = { table, alias: alias, where }
   return buildNextStep ( tables, path, plan, 1 );
 }
 
@@ -32,7 +38,7 @@ function findLink ( table: CleanTable, linkName: string ): ErrorsAnd<Link> {
   if ( link === undefined ) return [ `Cannot find link ${linkName} in table ${table.table}. Available links are: ${Object.keys ( table.links )}` ];
   return link;
 }
-function buildNextStep ( tables: NameAnd<CleanTable>, path: string[], previousPlan: Plan, index: number ): ErrorsAnd<Plan > {
+function buildNextStep ( tables: NameAnd<CleanTable>, path: string[], previousPlan: Plan, index: number ): ErrorsAnd<Plan> {
   if ( index >= path.length ) return previousPlan;
   const p = path[ index ];
 
@@ -42,7 +48,7 @@ function buildNextStep ( tables: NameAnd<CleanTable>, path: string[], previousPl
   const table = tables[ link.table ];
 
   if ( table === undefined ) return [ `Cannot find table ${p} in tables. Path is ${path.slice ( 0, index )}. Available tables are: ${Object.keys ( tables )}` ];
-  const plan: Plan = { table, alias: `T${index}`, linkToPrevious: { link, linkTo: previousPlan } }
+  const plan: Plan = { table, alias: `T${index}`, linkToPrevious: { link, linkTo: previousPlan }, where: [] }
   return buildNextStep ( tables, path, plan, index + 1 );
 
 }

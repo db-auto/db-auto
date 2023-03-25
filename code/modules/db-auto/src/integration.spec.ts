@@ -47,3 +47,11 @@ describe ( "db-auto paths", () => {
     expect ( await executeDbAuto ( mockTestDir, `driver.mission.?` ) ).toEqual ( expected );
   } )
 } )
+
+describe('db-auto path id', () => {
+  it("should db-auto driver did", async () => {
+    const expected = readTestFile ( mockTestDir, 'pathWithId.driver.123.expected.txt' );
+    expect ( await executeDbAuto ( mockTestDir, `driver 123` ) ).toEqual ( expected );
+
+  })
+})
