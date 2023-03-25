@@ -1,5 +1,6 @@
 import { ErrorsAnd, mapErrors, NameAnd } from "@db-auto/utils";
 import { Link, Table } from "./tables";
+import { CleanTable } from "./clean";
 
 export interface DbAutoQuery {
   path: string[],
@@ -8,7 +9,8 @@ export interface DbAutoQuery {
 
 export interface Plan {
 
-  table: Table,
+  table: CleanTable,
+  alias: string,
   planLink?: PlanLink
 
 }
@@ -17,20 +19,20 @@ export interface PlanLink {
   linkTo: Plan,
 }
 
-export function buildPlan ( tables: NameAnd<Table>, path: string[] ): ErrorsAnd<Plan | undefined> {
+export function buildPlan ( tables: NameAnd<CleanTable>, path: string[] ): ErrorsAnd<Plan | undefined> {
   if ( path.length === 0 ) return [ 'Cannot build plan for empty path' ]
   let table = tables[ path[ 0 ] ];
   let planLinkOrErrors = buildNextStep ( tables, path, table, 1 );
-  return mapErrors ( planLinkOrErrors, planLink => ({ table, planLink }) )
+  return mapErrors ( planLinkOrErrors, planLink => ({ table, alias: `T${0}`, planLink }) )
 
 }
-function buildNextStep ( tables: NameAnd<Table>, path: string[], table: Table, index: number ): ErrorsAnd<PlanLink | undefined> {
+function buildNextStep ( tables: NameAnd<CleanTable>, path: string[], table: CleanTable, index: number ): ErrorsAnd<PlanLink | undefined> {
   if ( index >= path.length ) return undefined;
   const p = path[ index ];
   const link: Link = table.links[ p ];
-  if ( link === undefined ) return [ `Cannot find link ${p} in table ${table.table}. Full path is ${path}.  Available links are: ${Object.keys ( table.links )}` ];
+  if ( link === undefined ) return [ `Cannot find link ${p} in table ${table.tableName}. Full path is ${path}.  Available links are: ${Object.keys ( table.links )}` ];
   const nextTable = tables[ p ]
   if ( nextTable === undefined ) return [ `Cannot find table ${p} in tables. Path is ${path.slice ( 0, index )}. Available tables are: ${Object.keys ( tables )}` ];
   let nextPlanLinkOrErrors = buildNextStep ( tables, path, nextTable, index + 1 );
-  return mapErrors ( nextPlanLinkOrErrors, planLink => ({ link, linkTo: { planLink, table: nextTable } }) );
+  return mapErrors ( nextPlanLinkOrErrors, planLink => ({ link, linkTo: { planLink, alias: `T${index}`, table: nextTable } }) );
 }

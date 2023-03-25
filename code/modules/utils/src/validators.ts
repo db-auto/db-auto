@@ -58,11 +58,17 @@ export function validateNameAnd<T> ( validator: NameAndValidator<T> ): NameAndVa
   return name => ( value: NameAnd<T> ) => value === undefined ? [] : flatMapEntries ( value, ( t, n ) => validator ( name + '.' + n ) ( t ) );
 }
 export const validateChildString = <Main, K extends keyof Main> ( key: K, allowUndefined?: true ) => {
-  return validateChild<Main, K> ( key, validateString() as any, allowUndefined );
+  return validateChild<Main, K> ( key, validateString () as any, allowUndefined );
 }
+
+export const validateOrString = <Main> ( validate: NameAndValidator<Main> ): NameAndValidator<Main | string> =>
+  name => value => {
+    if ( typeof value === 'string' ) return validateString () ( name ) ( value );
+    return validate ( name ) ( value );
+  }
 export const validateChildValue = <Main, K extends keyof Main> ( key: K, ...legalValues: Main[K][] ): NameAndValidator<Main> =>
   validateChild<Main, K> ( key, validateValue ( ...legalValues ) as any )
-export const validateChildNumber = <Main, K extends keyof Main> ( key: K , allowUndefined?: true): NameAndValidator<Main> => validateChild<Main, K> ( key, validateNumber(allowUndefined) as any )
+export const validateChildNumber = <Main, K extends keyof Main> ( key: K, allowUndefined?: true ): NameAndValidator<Main> => validateChild<Main, K> ( key, validateNumber ( allowUndefined ) as any )
 
 export const validateChildDefined = <Main, K extends keyof Main> ( key: K ): NameAndValidator<Main> => validateChild ( key, validateDefined as any )
 export const validate = <Main, Res> ( name: string, validator: NameAndValidator<Main>, value: any, ifTrue: ( value: Main ) => Res, ifErrors: ( errors: string[] ) => Res ): Res => {

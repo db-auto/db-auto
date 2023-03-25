@@ -4,7 +4,7 @@
   "description": "",
   "packageJson": {
     "bin":             {
-      "laoban": "dist/index.js"
+      "db-auto": "dist/index.js"
     },
     "dependencies":    {
       "commander": "^10.0.0"

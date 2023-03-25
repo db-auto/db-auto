@@ -1,5 +1,5 @@
 import { mapObject, NameAnd } from "@db-auto/utils";
-import { cleanTable, cleanTables, Environment, Table } from "@db-auto/tables";
+import { createCleanTables, Environment, Table } from "@db-auto/tables";
 
 export interface Config {
   environments: NameAnd<Environment>,
@@ -20,6 +20,6 @@ function cleanEnvironment ( envVars: NameAnd<string>, env: NameAnd<Environment> 
 export function cleanConfig ( envVars: NameAnd<string>, config: Config ): Config {
   return {
     environments: cleanEnvironment ( envVars, config.environments ),
-    tables: cleanTables ( config.tables )
+    tables: createCleanTables ( config.tables )
   }
 }
