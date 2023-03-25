@@ -1,25 +1,27 @@
-import { mapObject, NameAnd } from "@db-auto/utils";
-import { createCleanTables, Environment, Table } from "@db-auto/tables";
+import { composeNameAndValidators, NameAnd, NameAndValidator, validateChild, validateChildDefined, validateNameAnd } from "@db-auto/utils";
+import { CleanTable, createCleanTables, Table, tableValidator } from "@db-auto/tables";
+import { CleanEnvironment, cleanEnvironment, Environment, environmentValidator } from "@db-auto/environments";
 
 export interface Config {
   environments: NameAnd<Environment>,
   tables: NameAnd<Table>
 }
-
-function orDefault ( mainName: string, envVars: NameAnd<string>, value: string | undefined, name: string ): string {
-  return value === undefined ? envVars[ `${mainName}.${name}` ] : value;
-}
-function cleanEnvironment ( envVars: NameAnd<string>, env: NameAnd<Environment> ): NameAnd<Environment> {
-  return mapObject ( env, ( env, envName ) => ({
-    ...env,
-    username: orDefault ( envName, envVars, env.username, 'username' ),
-    password: orDefault ( envName, envVars, env.password, 'password' ),
-  }) )
+export interface CleanConfig {
+  environments: NameAnd<CleanEnvironment>,
+  tables: NameAnd<CleanTable>
 }
 
-export function cleanConfig ( envVars: NameAnd<string>, config: Config ): Config {
+
+export function cleanConfig ( envVars: NameAnd<string>, config: Config ): CleanConfig {
   return {
     environments: cleanEnvironment ( envVars, config.environments ),
     tables: createCleanTables ( config.tables )
   }
 }
+
+export const envValidator: NameAndValidator<Config> = composeNameAndValidators (
+  validateChildDefined ( 'environments' ),
+  validateChild ( 'environments', validateNameAnd ( environmentValidator ) ),
+  validateChildDefined ( 'tables' ),
+  validateChild ( 'tables', validateNameAnd ( tableValidator ) )
+)

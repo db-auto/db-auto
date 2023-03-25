@@ -66,12 +66,6 @@ export  function nameOfKey(k:Key):string{
   if(typeof k === 'string') return k
   return k.name
 }
-export interface Environment {
-  type: "oracle" | "mysql",
-  url: string,
-  username?: string,
-  password?: string
-}
 
 export const keyValidator: NameAndValidator<Key> = composeNameAndValidators<Key> (
   validateOrString ( validateChildString<KeyData, 'name'> ( 'name', true ) ),

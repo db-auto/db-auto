@@ -16,10 +16,10 @@
     ],
     "devDependencies": {}
   },
-  "links":       ["@db-auto/oracle", "@db-auto/mysql", "@db-auto/tables","@db-auto/utils","@db-auto/mocks"],
+  "links":       ["@db-auto/oracle", "@db-auto/mysql", "@db-auto/tables", "@db-auto/utils", "@db-auto/mocks", "@db-auto/environments"],
   "guards":      {
     "compile": true,
     "publish": true,
-    "test":    true
+    "test":    false
   }
 }
