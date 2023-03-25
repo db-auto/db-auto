@@ -39,7 +39,7 @@ describe ( "cleanTable", () => {
         "personalCar": {}
       },
       "links": {
-        "audit": { "idHereAndThere": "driverId", "type": "one-to-many" },
+        "audit": { "idHereAndThere": "driverId", "type": "one-to-many", "table": "driver_aud", },
         "mission": { "idHereAndThere": "driverId", "type": "one-to-many" }
       },
       "primary": { "name": "id", "type": "integer" },
@@ -60,7 +60,7 @@ describe ( "cleanTable", () => {
         "personalCar": {}
       },
       "links": {
-        "audit": { "idHereAndThere": "driverId", "type": "one-to-many" },
+        "audit": { "idHereAndThere": "driverId", "type": "one-to-many", "table": "driver_aud" },
         "mission": { "idHereAndThere": "driverId", "type": "one-to-many" }
       },
       "primary": { "name": "id", "type": "integer" },

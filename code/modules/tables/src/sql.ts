@@ -11,10 +11,12 @@ export interface SelectData {
 }
 
 export function whereFor ( plan: Plan ) {
-  let planLink = plan.planLink;
+  let planLink = plan.linkToPrevious;
   if ( planLink === undefined ) return undefined;
-  const link = planLink.link;
-  return `${plan.alias}.${idHere ( link )} = ${planLink.linkTo.alias}.${idThere ( link )}`
+  const link = planLink.link
+  const previousTable = planLink.linkTo
+
+  return `${previousTable.alias}.${idThere ( link )} = ${plan.alias}.${idHere ( link )}`
 }
 export function selectDataForOne ( plan: Plan, view: string ): SelectData {
   return {
@@ -25,11 +27,10 @@ export function selectDataForOne ( plan: Plan, view: string ): SelectData {
   }
 }
 
-export const lastPlan = ( plan: Plan ): Plan =>
-  plan.planLink ? lastPlan ( plan.planLink.linkTo ) : plan;
+
 export const selectData = ( view: string ) => ( plan: Plan, ): SelectData[] => {
-  const nextData = plan.planLink ? selectData ( view ) ( plan.planLink.linkTo ) : []
-  return [ selectDataForOne ( plan, view ), ...nextData ]
+  const nextData = plan.linkToPrevious ? selectData ( view ) ( plan.linkToPrevious.linkTo ) : []
+  return [ ...nextData, selectDataForOne ( plan, view ) ]
 };
 
 export interface MergedSelectData {

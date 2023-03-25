@@ -3,13 +3,14 @@ import { buildPlan, Plan, PlanLink } from "./query";
 import { mergeSelectData, selectData, sqlFor } from "./sql";
 import { clean } from "./query.fixture";
 
-function planLinkToString ( p: PlanLink ) {
-  return `${p.link.type} ${planToString ( p.linkTo )}`
+function previousToString ( p: PlanLink ): string {
+  return p.link.type ? p.link.type : '';
 }
 function planToString ( p: ErrorsAnd<Plan> ): string {
   if ( hasErrors ( p ) ) return JSON.stringify ( p )
-  const planLinkString = p.planLink ? ` ${planLinkToString ( p.planLink )}` : ''
-  return `${p.table.table}${planLinkString}`
+  const thisString = p.table.table
+  const previousString = p.linkToPrevious ? planToString ( p.linkToPrevious.linkTo ) + ' ' + previousToString ( p.linkToPrevious ) + ' ' : ''
+  return `${previousString}${thisString}`
 }
 describe ( "buildPlan", () => {
   it ( "should build a plan with just one step", () => {
@@ -30,31 +31,22 @@ describe ( "selectData", () => {
       [ { "columns": [ "*" ], "table": "DriverTable", alias: "T0" } ] )
   } )
   it ( "should build selectData with two steps", () => {
-    expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission" ] ), selectData ( "all" ) ) ).toEqual (
-      [
-        { "columns": [ "*" ], "table": "DriverTable", alias: "T0", "where": "T0.driverId = T1.driverId" },
-        { "columns": [ "*" ], "table": "mission", alias: "T1" } ] )
+    expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission" ] ), selectData ( "all" ) ) ).toEqual ( [
+      { "alias": "T0", "columns": [ "*" ], "table": "DriverTable" },
+      { "alias": "T1", "columns": [ "*" ], "table": "mission", "where": "T0.driverId = T1.driverId" }
+    ] )
   } )
   it ( "should build selectData when the link isn't the table name", () => {
     expect ( mapErrors ( buildPlan ( clean, [ "driver", "audit" ] ), selectData ( "all" ) ) ).toEqual ( [
-      {
-        "alias": "T0",
-        "columns": [ "*" ],
-        "table": "DriverTable",
-        "where": "T0.driverId = T1.driverId"
-      },
-      {
-        "alias": "T1",
-        "columns": [ "*" ],
-        "table": "driver_aud"
-      }
-    ] )
+      { "alias": "T0", "columns": [ "*" ], "table": "DriverTable" },
+      { "alias": "T1", "columns": [ "*" ], "table": "driver_aud", "where": "T0.driverId = T1.driverId" } ] )
   } )
   it ( "should build selectData with three steps", () => {
     expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission", "mission_aud" ] ), selectData ( "all" ) ) ).toEqual ( [
-      { "columns": [ "*" ], "table": "DriverTable", alias: "T0", "where": "T0.driverId = T1.driverId" },
-      { "columns": [ "*" ], "table": "mission", alias: "T1", "where": "T1.missionId = T2.missionId" },
-      { "columns": [ "*" ], "table": "mission_aud", alias: "T2" } ] )
+      { "alias": "T0", "columns": [ "*" ], "table": "DriverTable" },
+      { "alias": "T1", "columns": [ "*" ], "table": "mission", "where": "T0.driverId = T1.driverId" },
+      { "alias": "T2", "columns": [ "*" ], "table": "mission_aud", "where": "T1.missionId = T2.missionId" }
+    ] )
   } )
 } )
 
@@ -75,8 +67,16 @@ describe ( "merge", () => {
   } )
   it ( "should mergeSelectData with three steps", () => {
     expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission", "mission_aud" ] ), plan => mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ).toEqual ( {
-      "columns": [ { "alias": "T0", "column": "*" }, { "alias": "T1", "column": "*" }, { "alias": "T2", "column": "*" } ],
-      "tables": [ { "alias": "T0", "table": "DriverTable" }, { "alias": "T1", "table": "mission" }, { "alias": "T2", "table": "mission_aud" } ],
+      "columns": [
+        { "alias": "T0", "column": "*" },
+        { "alias": "T1", "column": "*" },
+        { "alias": "T2", "column": "*" }
+      ],
+      "tables": [
+        { "alias": "T0", "table": "DriverTable" },
+        { "alias": "T1", "table": "mission" },
+        { "alias": "T2", "table": "mission_aud" }
+      ],
       "where": [ "T0.driverId = T1.driverId", "T1.missionId = T2.missionId" ]
     } )
   } )

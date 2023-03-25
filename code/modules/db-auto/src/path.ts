@@ -1,5 +1,5 @@
 import { ErrorsAnd, hasErrors, NameAnd } from "@db-auto/utils";
-import { buildPlan, clean, CleanTable, lastPlan, mergeSelectData, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
+import { buildPlan, clean, CleanTable, mergeSelectData, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -24,9 +24,7 @@ function processQueryPP ( tables: NameAnd<CleanTable>, parts: string[] ): Errors
   if ( withoutQuery.length === 0 ) return { type: "links", links: Object.keys ( tables ) }
   const planOrErrors: string[] | Plan = buildPlan ( clean, withoutQuery )
   if ( hasErrors ( planOrErrors ) ) return planOrErrors
-
-  let lp = lastPlan ( planOrErrors );
-  const links: string[] = Object.keys ( lp.table.links )
+  const links: string[] = Object.keys ( planOrErrors.table.links )
   return { type: 'links', links }
 }
 export function processPathString ( tables: NameAnd<CleanTable>, path: string, showPlan?: boolean ): ErrorsAnd<PP> {
