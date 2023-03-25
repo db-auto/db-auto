@@ -1,5 +1,5 @@
 {
-  "name": "@db-auto/tables",
+  "name": "@db-auto/environments",
   "description": "",
   "version": "0.0.6",
   "main": "dist/index",

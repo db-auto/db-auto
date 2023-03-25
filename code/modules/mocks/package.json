@@ -1,6 +1,6 @@
 {
-  "name": "@db-auto/tables",
-  "description": "",
+  "name": "@db-auto/mocks",
+  "description": "Create table sql and mock data for those for test mocks",
   "version": "0.0.6",
   "main": "dist/index",
   "types": "dist/index",
@@ -17,7 +17,7 @@
     ]
   },
   "dependencies": {
-    "@db-auto/utils": "0.0.6"
+    "@db-auto/tables": "0.0.6"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

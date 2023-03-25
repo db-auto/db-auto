@@ -24,12 +24,14 @@ describe ( "cleanEnv", () => {
   it ( "should clean values given", () => {
     expect ( cleanEnvironment ( { "DB_AUTO_TEST_USERNAME": "testUser", "DB_AUTO_TEST_PASSWORD": "testPass" }, environment ) ).toEqual ( {
       "dev": {
+        "name": "dev",
         "password": "",
         "type": "postgres",
         "url": "postgres://localhost:5432/dev",
         "username": "sa"
       },
       "test": {
+        "name": "test",
         "password": "testPass",
         "type": "postgres",
         "url": "postgres://localhost:5432/test",

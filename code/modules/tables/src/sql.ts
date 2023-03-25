@@ -24,6 +24,9 @@ export function selectDataForOne ( plan: Plan, view: string ): SelectData {
     where: whereFor ( plan )
   }
 }
+
+export const lastPlan = ( plan: Plan ): Plan =>
+  plan.planLink ? lastPlan ( plan.planLink.linkTo ) : plan;
 export const selectData = ( view: string ) => ( plan: Plan, ): SelectData[] => {
   const nextData = plan.planLink ? selectData ( view ) ( plan.planLink.linkTo ) : []
   return [ selectDataForOne ( plan, view ), ...nextData ]
@@ -42,9 +45,9 @@ export function mergeSelectData ( selectData: SelectData[] ): MergedSelectData {
 
 }
 
-export function sqlFor ( m: MergedSelectData ) {
+export function sqlFor ( m: MergedSelectData ): string[] {
   const columns = m.columns.map ( c => `${c.alias}.${c.column}` ).join ( ', ' )
   const tables = m.tables.map ( t => `${t.table} ${t.alias}` ).join ( ', ' )
   const where = m.where.length > 0 ? `where ${m.where.join ( ' and ' )}` : ''
-  return `select ${columns}` + ` from ${tables} ${where}`
+  return [ `select ${columns}`, `   from ${tables} ${where}`.trimRight () ]
 }

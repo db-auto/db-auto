@@ -1,0 +1,5 @@
+Table       Links              Views
+DriverTable mission,audit      all,short
+driver_aud                     all,short
+mission     driver,mission_aud all,short
+mission_aud                    all,short

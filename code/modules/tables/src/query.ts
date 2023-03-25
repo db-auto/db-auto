@@ -1,5 +1,5 @@
 import { ErrorsAnd, mapErrors, NameAnd } from "@db-auto/utils";
-import { Link, Table } from "./tables";
+import { HereLinkAndThereLink, Link, Table } from "./tables";
 import { CleanTable } from "./clean";
 
 export interface DbAutoQuery {
@@ -18,6 +18,7 @@ export interface PlanLink {
   link: Link,
   linkTo: Plan,
 }
+
 
 export function buildPlan ( tables: NameAnd<CleanTable>, path: string[] ): ErrorsAnd<Plan | undefined> {
   if ( path.length === 0 ) return [ 'Cannot build plan for empty path' ]

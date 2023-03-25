@@ -12,12 +12,10 @@ export interface CleanConfig {
 }
 
 
-export function cleanConfig ( envVars: NameAnd<string>, config: Config ): CleanConfig {
-  return {
-    environments: cleanEnvironment ( envVars, config.environments ),
-    tables: createCleanTables ( config.tables )
-  }
-}
+export const cleanConfig = ( envVars: NameAnd<string>) =>( config: Config ): CleanConfig => ({
+  environments: cleanEnvironment ( envVars, config.environments ),
+  tables: createCleanTables ( config.tables )
+});
 
 export const envValidator: NameAndValidator<Config> = composeNameAndValidators (
   validateChildDefined ( 'environments' ),

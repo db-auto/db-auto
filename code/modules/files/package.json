@@ -1,5 +1,5 @@
 {
-  "name": "@db-auto/tables",
+  "name": "@db-auto/files",
   "description": "",
   "version": "0.0.6",
   "main": "dist/index",
@@ -16,9 +16,7 @@
       "not op_mini all"
     ]
   },
-  "dependencies": {
-    "@db-auto/utils": "0.0.6"
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^4.0.5",
     "@types/node": "^14.14.7",

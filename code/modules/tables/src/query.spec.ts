@@ -70,19 +70,22 @@ describe ( "merge", () => {
 
 describe ( "sqlFor", () => {
   it ( "should make sql for a single step", () => {
-    expect ( mapErrors ( buildPlan ( clean, [ "driver" ] ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual (
-      "select T0.* from DriverTable T0 "
-    )
+    expect ( mapErrors ( buildPlan ( clean, [ "driver" ] ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
+      "select T0.*",
+      "   from DriverTable T0"
+    ] )
   } )
   it ( "should make sql for two steps", () => {
-    expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission" ] ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual (
-      "select T0.*, T1.* from DriverTable T0, mission T1 where T0.driverId = T1.driverId"
-    )
+    expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission" ] ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
+      "select T0.*, T1.*",
+      "   from DriverTable T0, mission T1 where T0.driverId = T1.driverId"
+    ] )
   } )
   it ( "should make sql for three steps", () => {
-    expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission", "mission_aud" ] ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual (
-      "select T0.*, T1.*, T2.* from DriverTable T0, mission T1, mission_aud T2 where T0.driverId = T1.driverId and T1.missionId = T2.missionId"
-    )
+    expect ( mapErrors ( buildPlan ( clean, [ "driver", "mission", "mission_aud" ] ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
+      "select T0.*, T1.*, T2.*",
+      "   from DriverTable T0, mission T1, mission_aud T2 where T0.driverId = T1.driverId and T1.missionId = T2.missionId"
+    ] )
   } )
 
 } )
