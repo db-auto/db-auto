@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapObject, NameAnd, parseFile, reportErrors } from "@db-auto/utils";
-import { CleanTable, prettyPrintTables } from "@db-auto/tables";
+import { CleanTable, findQueryParams, prettyPrintTables } from "@db-auto/tables";
 import { makeCreateTableSqlForMock } from "@db-auto/mocks";
 import { cleanConfig, CleanConfig } from "./config";
 import { findFileInParentsOrError } from "@db-auto/files";
@@ -20,15 +20,19 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .usage ( '<command> [options]' )
     .argument ( '<path>', "the list of table names joined by a . For example driver.mission.mission_aud" )
     .argument ( '[id]', "the id of the primary key in the first table in the path" )
+    .option ( '-p, --plan', "show the plan", false )
+    // .allowUnknownOption ( true )
     .version ( version )
     .action ( ( path, id, options ) => {
-      const errorsOrresult = processPathString ( config.tables, path ,id);
+      const errorsOrresult = processPathString ( config.tables, path, id, options, options.plan );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return
       }
       prettyPrintPP ( errorsOrresult ).forEach ( line => console.log ( line ) )
     } )
+  findQueryParams ( config.tables ).forEach ( param => program.option ( '--' + param.name + " <" + param.name + ">", param.description ) )
+
 
   const mock = program
     .command ( 'mocks' )

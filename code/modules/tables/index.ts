@@ -5,4 +5,5 @@ export * from './src/sql'
 export * from './src/clean'
 export * from './src/prettyprint'
 export * from './src/query.fixture'
+export * from './src/queryParams'
 

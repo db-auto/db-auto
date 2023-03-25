@@ -48,10 +48,24 @@ describe ( "db-auto paths", () => {
   } )
 } )
 
-describe('db-auto path id', () => {
-  it("should db-auto driver did", async () => {
+describe ( 'db-auto path id', () => {
+  it ( "should db-auto driver did", async () => {
     const expected = readTestFile ( mockTestDir, 'pathWithId.driver.123.expected.txt' );
     expect ( await executeDbAuto ( mockTestDir, `driver 123` ) ).toEqual ( expected );
 
-  })
-})
+  } )
+} )
+
+describe ( 'db-auto path --help', () => {
+  it ( "should include the queries as options", async () => {
+    const expected = readTestFile ( mockTestDir, 'help.expected.txt' );
+    expect ( await executeDbAuto ( mockTestDir, `--help` ) ).toEqual ( expected );
+
+  } )
+} )
+describe ( 'db-auto path --options that are query params', () => {
+  it ( "should db-auto driver --name fred", async () => {
+    const expected = readTestFile ( mockTestDir, 'pathWithQueryParams.driver.name.fred.expected.txt' );
+    expect ( await executeDbAuto ( mockTestDir, `driver --name fred` ) ).toEqual ( expected );
+  } )
+} )

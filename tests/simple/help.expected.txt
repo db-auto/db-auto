@@ -1,0 +1,20 @@
+Usage: db-auto <command> [options]
+
+Arguments:
+  path                         the list of table names joined by a . For
+                               example driver.mission.mission_aud
+  id                           the id of the primary key in the first table in
+                               the path
+
+Options:
+  -p, --plan                   show the plan (default: false)
+  -V, --version                output the version number
+  --name <name>                driver name
+  --employeeNum <employeeNum>
+  --date <date>
+  -h, --help                   display help for command
+
+Commands:
+  mocks [tables...]
+  envs
+  tables

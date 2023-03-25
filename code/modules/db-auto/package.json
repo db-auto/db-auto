@@ -1,7 +1,7 @@
 {
   "name": "db-auto",
   "description": "",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "main": "dist/index",
   "types": "dist/index",
   "bin": {
@@ -21,13 +21,13 @@
   },
   "dependencies": {
     "commander": "^10.0.0",
-    "@db-auto/oracle": "0.0.11",
-    "@db-auto/mysql": "0.0.11",
-    "@db-auto/tables": "0.0.11",
-    "@db-auto/utils": "0.0.11",
-    "@db-auto/files": "0.0.11",
-    "@db-auto/mocks": "0.0.11",
-    "@db-auto/environments": "0.0.11"
+    "@db-auto/oracle": "0.0.12",
+    "@db-auto/mysql": "0.0.12",
+    "@db-auto/tables": "0.0.12",
+    "@db-auto/utils": "0.0.12",
+    "@db-auto/files": "0.0.12",
+    "@db-auto/mocks": "0.0.12",
+    "@db-auto/environments": "0.0.12"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

@@ -53,26 +53,16 @@ describe ( "cleanTable", () => {
   } )
   it ( "should return a clean table object", () => {
     expect ( cleanTable ( tables.mission, "mission" ) ).toEqual ( {
-      "dataColumns": {
-        "age": { "type": "integer" },
-        "dateOfBirth": { "type": "date" },
-        "livesIn": { "type": "string" },
-        "personalCar": {}
-      },
       "links": {
-        "audit": { "idHereAndThere": "driverId", "type": "one-to-many", "table": "driver_aud" },
-        "mission": { "idHereAndThere": "driverId", "type": "one-to-many" }
+        "driver": { "idHereAndThere": "driverId", "type": "many-to-one" },
+        "mission_aud": { "idHereAndThere": "missionId", "type": "one-to-many" }
       },
-      "primary": { "name": "id", "type": "integer" },
+      "primary": "id",
       "queries": {
-        "employeeNum": { "type": "string" },
-        "name": { "description": "driver name ", "type": "string" }
+        "date": { "type": "date" }
       },
-      "table": "DriverTable",
-      "views": {
-        "all": "*",
-        "short": [ "id", "name" ]
-      }
+      "table": "mission",
+      "views": { "all": "*", "short": [ "id", "driverId" ] }
     } )
   } )
 } )

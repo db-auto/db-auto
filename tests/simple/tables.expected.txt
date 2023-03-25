@@ -1,5 +1,5 @@
-Table       Table       Links              Views
-driver      DriverTable mission,audit      all,short
-driver_aud  driver_aud                     all,short
-mission     mission     driver,mission_aud all,short
-mission_aud mission_aud                    all,short
+Name        Table       Links              Params           Views
+driver      DriverTable mission,audit      name,employeeNum all,short
+driver_aud  driver_aud                                      all,short
+mission     mission     driver,mission_aud date             all,short
+mission_aud mission_aud                                     all,short

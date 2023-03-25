@@ -27,12 +27,12 @@ function processQueryPP ( tables: NameAnd<CleanTable>, parts: string[] ): Errors
   const links: string[] = Object.keys ( planOrErrors.table.links )
   return { type: 'links', links }
 }
-export function processPathString ( tables: NameAnd<CleanTable>, path: string, id: string | undefined, showPlan?: boolean ): ErrorsAnd<PP> {
+export function processPathString ( tables: NameAnd<CleanTable>, path: string, id: string | undefined, queryParams: NameAnd<string>, showPlan?: boolean ): ErrorsAnd<PP> {
   const parts = path.split ( '.' )
   if ( parts.length === 0 ) return [ 'Path must have at least one part' ]
   const lastPart = parts[ parts.length - 1 ]
   if ( lastPart === '?' ) return processQueryPP ( tables, parts )
-  let plan = buildPlan ( clean, parts, id );
+  let plan = buildPlan ( clean, parts, id,queryParams );
   if ( hasErrors ( plan ) ) return plan
   const data = selectData ( "all" ) ( plan )
   if ( showPlan ) return { type: 'selectData', data }
