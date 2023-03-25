@@ -1,7 +1,7 @@
 {
   "name": "@db-auto/environments",
   "description": "",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -17,7 +17,7 @@
     ]
   },
   "dependencies": {
-    "@db-auto/utils": "0.0.6"
+    "@db-auto/utils": "0.0.7"
   },
   "devDependencies": {
     "typescript": "^4.0.5",
