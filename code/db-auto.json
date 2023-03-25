@@ -15,7 +15,7 @@
   "tables":       {
     "driver":      {
       "table":       "DriverTable",
-      "primary":     {"name": "id", "type": "integer"},
+      "primary":     {"name": "id", "type": "string"},
       "queries":     {
         "name":        {"type": "string", "description": "driver name "},
         "employeeNum": {"type": "string"}

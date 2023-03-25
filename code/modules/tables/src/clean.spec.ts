@@ -52,7 +52,7 @@ describe ( "cleanTable", () => {
     } )
   } )
   it ( "should return a clean table object", () => {
-    expect ( cleanTable ( tables.driver, "mission" ) ).toEqual ( {
+    expect ( cleanTable ( tables.mission, "mission" ) ).toEqual ( {
       "dataColumns": {
         "age": { "type": "integer" },
         "dateOfBirth": { "type": "date" },
