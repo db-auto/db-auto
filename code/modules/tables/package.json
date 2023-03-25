@@ -1,7 +1,7 @@
 {
   "name": "@db-auto/tables",
   "description": "",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -17,7 +17,7 @@
     ]
   },
   "dependencies": {
-    "@db-auto/utils": "0.0.7"
+    "@db-auto/utils": "0.0.8"
   },
   "devDependencies": {
     "typescript": "^4.0.5",
