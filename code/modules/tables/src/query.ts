@@ -32,7 +32,8 @@ function buildNextStep ( tables: NameAnd<CleanTable>, path: string[], table: Cle
   const p = path[ index ];
   const link: Link = table.links[ p ];
   if ( link === undefined ) return [ `Cannot find link ${p} in table ${table.table}. Full path is ${path}.  Available links are: ${Object.keys ( table.links )}` ];
-  const nextTable = tables[ p ]
+  const nextTable = tables[ link.table ];
+
   if ( nextTable === undefined ) return [ `Cannot find table ${p} in tables. Path is ${path.slice ( 0, index )}. Available tables are: ${Object.keys ( tables )}` ];
   let nextPlanLinkOrErrors = buildNextStep ( tables, path, nextTable, index + 1 );
   return mapErrors ( nextPlanLinkOrErrors, planLink => ({ link, linkTo: { planLink, alias: `T${index}`, table: nextTable } }) );

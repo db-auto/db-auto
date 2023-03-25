@@ -1,5 +1,5 @@
 import { fromEntries, mapObject, NameAnd, safeObject, toArray } from "@db-auto/utils";
-import { CleanColumnData, ColumnDataObj, HereLinkAndThereLink, Key, Link, nameOfKey, Query, Table, toHereLinkAndThereLink } from "./tables";
+import { CleanColumnData, CleanLink, ColumnDataObj, HereLinkAndThereLink, Key, Link, nameOfKey, Query, Table, toCleanLink } from "./tables";
 import Require = NodeJS.Require;
 
 
@@ -11,7 +11,7 @@ export interface CleanTable {
   columns: NameAnd<CleanColumnData>
   views: NameAnd<string[]>
   queries: NameAnd<Required<Query>>
-  links: NameAnd<HereLinkAndThereLink>
+  links: NameAnd<CleanLink>
 
 }
 
@@ -41,7 +41,7 @@ export function createCleanTable ( table: Table, name: string ): CleanTable {
   const tableName = table.table || name
   let views = mapObject ( table.views, v => toArray ( v ) );
   const queries = mapObject ( safeObject ( table.queries ), q => ({ name: "", description: "", type: "string", ...q }) )
-  const links = mapObject ( safeObject ( table.links ), toHereLinkAndThereLink )
+  const links = mapObject ( safeObject ( table.links ), toCleanLink )
   return ({
     table: tableName,
     columns,

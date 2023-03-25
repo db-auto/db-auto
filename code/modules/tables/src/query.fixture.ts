@@ -14,7 +14,7 @@ export const tables: NameAnd<Table> = {
     },
     "links": {
       "mission": { "type": "one-to-many", "idHereAndThere": "driverId" },
-      "audit": { "type": "one-to-many", "idHereAndThere": "driverId" }
+      "audit":   {"type": "one-to-many", "table": "driver_aud", "idHereAndThere": "driverId"}
     },
     "dataColumns": {
       "livesIn": { "type": "string" },

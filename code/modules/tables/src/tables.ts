@@ -35,13 +35,15 @@ export function idThere ( link: Link ): string {
   if ( isHereAndThereLink ( link ) ) return link.idHereAndThere
   if ( isHereLinkAndThereLink ( link ) ) return link.idThere
 }
-export function toHereLinkAndThereLink(link:Link):HereLinkAndThereLink{
-  if(isHereAndThereLink(link)) return { type: link.type, idHere: link.idHereAndThere, idThere: link.idHereAndThere }
-  return link
+export function toCleanLink ( link: Link, defaultTable: string ): CleanLink {
+  const table = link.table || defaultTable
+  if ( isHereAndThereLink ( link ) ) return { type: link.type, idHere: link.idHereAndThere, idThere: link.idHereAndThere, table }
+  return { table, ...link }
 }
 export interface HereAndThereLink {
   type: LinkType,
   idHereAndThere: string,
+  table?: string
 }
 export function isHereAndThereLink ( link: Link ): link is HereAndThereLink {
   return (link as any).idHereAndThere !== undefined
@@ -52,7 +54,9 @@ export interface HereLinkAndThereLink {
   type: LinkType,
   idHere: string,
   idThere: string,
+  table?: string
 }
+export type CleanLink = Required<HereLinkAndThereLink>
 
 export function isHereLinkAndThereLink ( link: Link ): link is HereLinkAndThereLink {
   return (link as any).idHere !== undefined
@@ -62,8 +66,8 @@ export interface KeyData extends ColumnDataObj {
   name: string
 }
 export type Key = KeyData | string
-export  function nameOfKey(k:Key):string{
-  if(typeof k === 'string') return k
+export function nameOfKey ( k: Key ): string {
+  if ( typeof k === 'string' ) return k
   return k.name
 }
 
