@@ -19,7 +19,7 @@ export function whereFor ( plan: Plan ) {
 export function selectDataForOne ( plan: Plan, view: string ): SelectData {
   return {
     alias: plan.alias,
-    table: plan.table.tableName,
+    table: plan.table.table,
     columns: toArray ( plan.table?.views?.[ view ] ),
     where: whereFor ( plan )
   }

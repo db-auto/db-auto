@@ -5,7 +5,7 @@ import Require = NodeJS.Require;
 
 export interface CleanTable {
 
-  tableName: string,
+  table: string,
   primary: string | undefined, // index into keys
   keys: NameAnd<CleanColumnData>,
   columns: NameAnd<CleanColumnData>
@@ -43,7 +43,7 @@ export function createCleanTable ( table: Table, name: string ): CleanTable {
   const queries = mapObject ( safeObject ( table.queries ), q => ({ name: "", description: "", type: "string", ...q }) )
   const links = mapObject ( safeObject ( table.links ), toHereLinkAndThereLink )
   return ({
-    tableName,
+    table: tableName,
     columns,
     primary,
     keys,

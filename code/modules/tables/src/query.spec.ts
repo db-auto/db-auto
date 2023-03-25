@@ -9,7 +9,7 @@ function planLinkToString ( p: PlanLink ) {
 function planToString ( p: ErrorsAnd<Plan> ): string {
   if ( hasErrors ( p ) ) return JSON.stringify ( p )
   const planLinkString = p.planLink ? ` ${planLinkToString ( p.planLink )}` : ''
-  return `${p.table.tableName}${planLinkString}`
+  return `${p.table.table}${planLinkString}`
 }
 describe ( "buildPlan", () => {
   it ( "should build a plan with just one step", () => {

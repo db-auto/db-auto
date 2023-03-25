@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 import { buildPlan, clean, mergeSelectData, selectData, sqlFor } from "@db-auto/tables";
-import { mapErrors } from "@db-auto/utils";
+import { mapEntries, mapErrors, mapObject } from "@db-auto/utils";
 import { Command } from "commander";
+import { makeCreateTableSqlForMock } from "@db-auto/mocks/dist/src/mocks";
 
 
 // function getConfig ( name: string ): Config {
@@ -34,6 +35,14 @@ var program: Command = require ( 'commander' )
     const res = mapErrors ( buildPlan ( clean, path ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) )
     console.log ( "command", command, " produces:" )
     console.log ( res )
+  } )
+  .command ( 'mock' )
+  .arguments ( '<tables...>' )
+  .action ( ( tables, command, options ) => {
+    const theTables=config
+    console.log ( 'mockx', tables, Object.keys ( config.tables ) )
+    var rest = mapObject(theTables, table => makeCreateTableSqlForMock ( table ) )
+    console.log ( JSON.stringify(rest) )
   } )
 
 

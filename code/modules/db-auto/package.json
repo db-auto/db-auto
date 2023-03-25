@@ -24,7 +24,8 @@
     "@db-auto/oracle": "0.0.3",
     "@db-auto/mysql": "0.0.3",
     "@db-auto/tables": "0.0.3",
-    "@db-auto/utils": "0.0.3"
+    "@db-auto/utils": "0.0.3",
+    "@db-auto/mocks": "0.0.3"
   },
   "devDependencies": {
     "typescript": "^4.0.5",
