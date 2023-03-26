@@ -26,8 +26,8 @@ this has to be populated manually, but I expect to auto generate it from the dat
 
 # Features
 
-## -s or --sql
-Show the sql instead of executing it
+## -s or --sql or --fullSql
+Show the sql instead of executing it. FullSql includes the paging sql (which can be 'noisy')
 
 ## -t or --trace
 Execute the command one step at a time, showing the sql and the results
@@ -42,12 +42,77 @@ db-auto driver.mission.audit  -w 'audit.id = 123'
 db-auto driver -w 'T0.name = "phil"'             # Note the need for the quotes. This is because the shell is parsing the command line
 ```
 
+## -c or --count
+Show the count of the results instead of the results
+```shell
+db-auto driver --count   
+# count
+# 2
+
+db-auto driver --count --notitles
+# 2
+
+```
+
+## --distinct
+Show the distinct values of the results
+
+## --notitles
+Don't show the titles on results. This can help a lot when making scripts that use the output
+
+```shell
+db-auto driver --notitles
+# 1 phil
+# 2 joe
+```
+
+## --json
+Show the results as json. This is useful for piping to jq
+
+```shell
+ db-auto driver --json
+# [
+#   {
+#     "driverid": 1,
+#     "name": "phil"
+#   },
+#   {
+#     "driverid": 2,
+#     "name": "joe"
+#   }
+# ]
+
+```
+
+##--onelinejson
+
+```shell
+ db-auto driver --onelinejson
+
+# {"driverid":1,"name":"phil"}
+# {"driverid":2,"name":"joe"}
+```
+
+
 # Environments
 
 Typicaly, we have multiple environments. The tool can be configured to use different databases for different environments:
 this is in the `db-auto.json` file. The default environment is `dev` (and in current state that's the only one usable)
 
 The environment gives the database type and the connection details
+
+```shell
+db-auto envs
+# Environment Type     Host      Port Database UserName
+# dev         postgres localhost 5432 postgres phil
+# test        postgres localhost 5432 postgres phil
+
+```
+
+
+```shell
+
+```
 
 ## Secrets
 
