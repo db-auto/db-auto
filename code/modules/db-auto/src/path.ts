@@ -1,4 +1,4 @@
-import { ErrorsAnd, hasErrors, NameAnd } from "@db-auto/utils";
+import { ErrorsAnd, hasErrors, mapErrors, NameAnd } from "@db-auto/utils";
 import { buildPlan, clean, CleanTable, mergeSelectData, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
 
 export interface SelectDataPP {
@@ -18,21 +18,29 @@ export interface SqlPP {
 type PP = SelectDataPP | LinksPP | SqlPP
 
 
-function processQueryPP ( tables: NameAnd<CleanTable>, parts: string[] ): ErrorsAnd<LinksPP> {
-
+function findLinks ( tables: NameAnd<CleanTable>, parts: string[] ): ErrorsAnd<LinksPP> {
   let withoutQuery = parts.slice ( 0, -1 );
-  if ( withoutQuery.length === 0 ) return { type: "links", links: Object.keys ( tables ) }
+  if ( withoutQuery.length === 0 ) return { links: Object.keys ( tables ), type: 'links' }
   const planOrErrors: string[] | Plan = buildPlan ( clean, withoutQuery )
   if ( hasErrors ( planOrErrors ) ) return planOrErrors
-  const links: string[] = Object.keys ( planOrErrors.table.links )
-  return { type: 'links', links }
+  return { links: Object.keys ( planOrErrors.table.links ), type: 'links' }
 }
-export function processPathString ( tables: NameAnd<CleanTable>, path: string, id: string | undefined, queryParams: NameAnd<string>, showPlan?: boolean , where?: string[]): ErrorsAnd<PP> {
+
+const filterLinkPP = ( lookfor: string ) => ( l: LinksPP ): LinksPP => {
+  let links = l.links.filter ( l => l.startsWith ( lookfor ) );
+  return ({ type: 'links', links });
+};
+
+function processQueryPP ( tables: NameAnd<CleanTable>, parts: string[] ): ErrorsAnd<LinksPP> {
+  let lastPart = parts[ parts.length - 1 ];
+  return mapErrors ( findLinks ( tables, parts ), filterLinkPP ( lastPart.substring(0,lastPart.length-1) ) )
+}
+export function processPathString ( tables: NameAnd<CleanTable>, path: string, id: string | undefined, queryParams: NameAnd<string>, showPlan?: boolean, where?: string[] ): ErrorsAnd<PP> {
   const parts = path.split ( '.' )
   if ( parts.length === 0 ) return [ 'Path must have at least one part' ]
   const lastPart = parts[ parts.length - 1 ]
-  if ( lastPart === '?' ) return processQueryPP ( tables, parts )
-  let plan = buildPlan ( clean, parts, id,queryParams , where);
+  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( tables, parts )
+  let plan = buildPlan ( clean, parts, id, queryParams, where );
   if ( hasErrors ( plan ) ) return plan
   const data = selectData ( "all" ) ( plan )
   if ( showPlan ) return { type: 'selectData', data }
