@@ -129,6 +129,17 @@ It can be changed to another legal value by
 db-auto env test
 ```
 
+## Checking the environments are accessible
+
+```shell
+db-auto status
+#Environment Type     Host             Port Database UserName Up
+#dev         postgres localhost        5432 postgres phil     true
+#test        postgres test.example.com 5432 postgres phil     true
+
+```
+
+
 
 ## Secrets
 
