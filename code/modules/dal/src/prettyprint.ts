@@ -4,6 +4,7 @@ import { ColumnDefn, fromEntries, NameAnd, safeToString, toColumns } from "@db-a
 export interface DalResultDisplayOptions {
   json?: boolean,
   onelinejson?: boolean
+  notitles?: boolean
 
 }
 
@@ -14,8 +15,8 @@ export function columnDefnFor ( res: DalResult ): NameAnd<ColumnDefn<DalRow>> {
   } ] ) )
 }
 
-export function prettyPrintDalResult ( options: DalResultDisplayOptions, res: DalResult, showTitles?: false ): string[] {
+export function prettyPrintDalResult ( options: DalResultDisplayOptions, res: DalResult ): string[] {
   if ( options.json ) return [ JSON.stringify ( res.rows, null, 2 ) ]
   if ( options.onelinejson ) return res.rows.map ( row => JSON.stringify ( row ) )
-  return toColumns ( columnDefnFor ( res ), showTitles ) ( res.rows )
+  return toColumns ( columnDefnFor ( res ), !options.notitles ) ( res.rows )
 }

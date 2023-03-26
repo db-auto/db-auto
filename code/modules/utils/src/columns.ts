@@ -16,7 +16,7 @@ export interface ColumnData {
   columns: string[][],
   maxLengths: number[]
 }
-export const columnDataFor = <T> ( defn: NameAnd<ColumnDefn<T>>, showTitles?: false ) => ( ts: T[] ): ColumnData => {
+export const columnDataFor = <T> ( defn: NameAnd<ColumnDefn<T>>, showTitles?: boolean ) => ( ts: T[] ): ColumnData => {
   const columnFor = ( d: ColumnDefn<T>, name: string ): string[] => {
     const title = showTitles !== false ? [ d.title || name ] : [];
     const strings = ts.map ( orEmptyStringFn(d.dataFn) );
@@ -37,5 +37,5 @@ export function columnDataToStrings ( cd: ColumnData ): string[] {
   return result
 }
 
-export const toColumns = <T> ( defn: NameAnd<ColumnDefn<T>>, showTitles?: false ) => ( ts: T[] ) =>
+export const toColumns = <T> ( defn: NameAnd<ColumnDefn<T>>, showTitles?: boolean ) => ( ts: T[] ) =>
   columnDataToStrings ( columnDataFor ( defn, showTitles ) ( ts ) );

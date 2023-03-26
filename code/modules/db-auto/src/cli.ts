@@ -33,6 +33,7 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .option ( '-t, --trace', "trace the results", false )
     .option ( '-j, --json', "Sql output as json instead of columns", false )
     .option ( '--onelinejson', "Sql output as 'one json per line for the row' instead of columns", false )
+    .option ( '--notitles', "Sql output as columns doesn't have titles", false )
     .option ( '-w, --where [where...]', "a where clause added to the query. There is no syntax checking", [] )
     // .allowUnknownOption ( true )
     .version ( version )

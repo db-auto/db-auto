@@ -16,6 +16,8 @@ Options:
                                false)
   --onelinejson                Sql output as 'one json per line for the row'
                                instead of columns (default: false)
+  --notitles                   Sql output as columns doesn't have titles
+                               (default: false)
   -w, --where [where...]       a where clause added to the query. There is no
                                syntax checking (default: [])
   -V, --version                output the version number
