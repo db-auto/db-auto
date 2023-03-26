@@ -34,14 +34,16 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .option ( '-w, --where [where...]', "a where clause added to the query. There is no syntax checking", [] )
     // .allowUnknownOption ( true )
     .version ( version )
-    .action ( ( path, id, options ) => {
+    .action ( async ( path, id, options ) => {
       const where = options.where ? options.where : []
       let pathSpec = makePathSpec ( path, id, options, where );
+      const env = config.environments.dev
       if ( options.trace ) {
-        tracePlan ( config.tables, pathSpec, options ).forEach ( line => console.log ( line ) )
+        const pps = await tracePlan ( env, config.tables, pathSpec, options )
+        pps.forEach ( line => console.log ( line ) )
         return
       }
-      const errorsOrresult = processPathString ( config.tables, pathSpec, options );
+      const errorsOrresult = await processPathString ( env, config.tables, pathSpec, options );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return

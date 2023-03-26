@@ -26,32 +26,47 @@ describe ( "db-auto envs", () => {
 } )
 
 describe ( "db-auto paths", () => {
-  it ( "should db-auto ?", async () => {
-    const expected = readTestFile ( mockTestDir, 'path.query.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `?` ) ).toEqual ( expected );
+  describe ( "with ?", () => {
+
+    it ( "should db-auto ?", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.query.expected.txt' );
+      expect ( await executeDbAuto ( mockTestDir, `?` ) ).toEqual ( expected );
+    } )
+    it ( "should db-auto driver.?", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.driver.query.expected.txt' );
+      expect ( await executeDbAuto ( mockTestDir, `driver.?` ) ).toEqual ( expected );
+    } )
+    it ( "should db-auto driver.mission.?", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.driver.mission.query.expected.txt' );
+      expect ( await executeDbAuto ( mockTestDir, `driver.mission.?` ) ).toEqual ( expected );
+    } )
   } )
-  it ( "should db-auto driver", async () => {
-    const expected = readTestFile ( mockTestDir, 'path.driver.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `driver` ) ).toEqual ( expected );
+  describe ( "sql", () => {
+    it ( "should db-auto driver -s", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.driver.sql.expected.txt' );
+      expect ( await executeDbAuto ( mockTestDir, `driver -s` ) ).toEqual ( expected );
+    } )
+    it ( "should db-auto driver.mission --sql", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.driver.mission.sql.expected.txt' );
+      expect ( await executeDbAuto ( mockTestDir, `driver.mission --sql` ) ).toEqual ( expected );
+    } )
   } )
-  it ( "should db-auto driver.?", async () => {
-    const expected = readTestFile ( mockTestDir, 'path.driver.query.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `driver.?` ) ).toEqual ( expected );
-  } )
-  it ( "should db-auto driver.mission", async () => {
-    const expected = readTestFile ( mockTestDir, 'path.driver.mission.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `driver.mission` ) ).toEqual ( expected );
-  } )
-  it ( "should db-auto driver.mission.?", async () => {
-    const expected = readTestFile ( mockTestDir, 'path.driver.mission.query.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `driver.mission.?` ) ).toEqual ( expected );
+  describe ( "execution", () => {
+    it ( "should db-auto driver ", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.driver.expected.txt' );
+      expect ( await executeDbAuto ( mockTestDir, `driver ` ) ).toEqual ( expected );
+    } )
+    it ( "should db-auto driver.mission ", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.driver.mission.expected.txt' );
+      expect ( await executeDbAuto ( mockTestDir, `driver.mission` ) ).toEqual ( expected );
+    } )
   } )
 } )
 
 describe ( 'db-auto path id', () => {
-  it ( "should db-auto driver did", async () => {
+  it ( "should db-auto driver did --s", async () => {
     const expected = readTestFile ( mockTestDir, 'pathWithId.driver.123.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `driver 123` ) ).toEqual ( expected );
+    expect ( await executeDbAuto ( mockTestDir, `driver 123 -s` ) ).toEqual ( expected );
 
   } )
 } )
@@ -64,15 +79,15 @@ describe ( 'db-auto path --help', () => {
   } )
 } )
 describe ( 'db-auto path --options that are query params', () => {
-  it ( "should db-auto driver --name fred", async () => {
+  it ( "should db-auto driver --name fred --sql", async () => {
     const expected = readTestFile ( mockTestDir, 'pathWithQueryParams.driver.name.fred.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `driver --name fred` ) ).toEqual ( expected );
+    expect ( await executeDbAuto ( mockTestDir, `driver --name fred --sql` ) ).toEqual ( expected );
   } )
 } )
 
 describe ( "db-auto trace", () => {
   it ( "should build up the results", async () => {
     const expected = readTestFile ( mockTestDir, 'trace.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `driver.mission.driver.audit -t` ) ).toEqual ( expected );
+    expect ( await executeDbAuto ( mockTestDir, `driver.mission.driver.audit -ts` ) ).toEqual ( expected );
   } )
 } )

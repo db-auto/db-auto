@@ -1,2 +1,17 @@
-select T0.*, T1.*
-   from DriverTable T0, mission T1 where T0.driverId = T1.driverId
+{
+  "meta": {
+    "columns": []
+  },
+  "rows": [
+    {
+      "driverid": 1,
+      "name": "phil",
+      "id": 1
+    },
+    {
+      "driverid": 2,
+      "name": "joe",
+      "id": 2
+    }
+  ]
+}

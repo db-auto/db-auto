@@ -13,13 +13,13 @@ describe ( 'pgDal', () => {
       await dal.update ( "drop table if exists driver_aud" )
       await dal.update ( "drop table if exists mission_aud" )
 
-      await dal.update ( "create table if not exists drivertable (id int, name text)" )
+      await dal.update ( "create table if not exists drivertable (driverId int, name text)" )
       await dal.update ( "create table if not exists mission (id int, driverId int)" )
       await dal.update ( "create table if not exists driver_aud (id int,who text, what text)" )
       await dal.update ( "create table if not exists mission_aud (id int, who text, what text)" )
 
-      await dal.update ( "insert into drivertable (id, name) values ($1, $2)", 1, "phil" )
-      await dal.update ( "insert into drivertable (id, name) values ($1, $2)", 2, "joe" )
+      await dal.update ( "insert into drivertable (driverId, name) values ($1, $2)", 1, "phil" )
+      await dal.update ( "insert into drivertable (driverId, name) values ($1, $2)", 2, "joe" )
       await dal.update ( "insert into mission (id, driverId) values ($1, $2)", 1, 1 )
       await dal.update ( "insert into mission (id, driverId) values ($1, $2)", 2, 2 )
       await dal.update ( "insert into driver_aud (id, who, what) values ($1, $2, $3)", 1, "phil", "insert1" )
@@ -28,8 +28,14 @@ describe ( 'pgDal', () => {
 
       const res = await dal.query ( "select * from drivertable" )
       expect ( res.rows ).toEqual ( [
-        { "id": 1, "name": "phil" },
-        { "id": 2, "name": "joe" }
+        {
+          "driverid": 1,
+          "name": "phil"
+        },
+        {
+          "driverid": 2,
+          "name": "joe"
+        }
       ] );
 
     } finally {

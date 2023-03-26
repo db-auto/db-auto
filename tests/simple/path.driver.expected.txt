@@ -1,2 +1,15 @@
-select T0.*
-   from DriverTable T0
+{
+  "meta": {
+    "columns": []
+  },
+  "rows": [
+    {
+      "driverid": 1,
+      "name": "phil"
+    },
+    {
+      "driverid": 2,
+      "name": "joe"
+    }
+  ]
+}

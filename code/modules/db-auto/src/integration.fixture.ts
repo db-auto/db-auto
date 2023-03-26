@@ -14,7 +14,7 @@ export const codePath = Path.resolve ( codeRootDir, "modules/db-auto/dist/index.
 
 export function executeDbAuto ( cwd: string, cmd: string ): Promise<string> {
   let fullCmd = `node ${codePath} ${cmd}`;
-  console.log ( 'executeDbAuto', cwd, fullCmd )
+  // console.log ( 'executeDbAuto', cwd, fullCmd )
   return execute ( cwd, fullCmd )
 }
 export function execute ( cwd: string, cmd: string ): Promise<string> {

@@ -1,5 +1,8 @@
 import { ErrorsAnd, flatMap, flatMapErrors, foldErrors, hasErrors, mapErrors, NameAnd } from "@db-auto/utils";
 import { buildPlan, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
+import { Environment } from "@db-auto/environments";
+import { postgresDal } from "@db-auto/postgres";
+import { DalResult } from "@db-auto/dal";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -15,7 +18,12 @@ export interface SqlPP {
   type: 'sql',
   sql: string[]
 }
-type PP = SelectDataPP | LinksPP | SqlPP
+
+export interface ResPP {
+  type: 'res',
+  res: DalResult
+}
+type PP = SelectDataPP | LinksPP | SqlPP | ResPP
 
 
 function findLinks ( tables: NameAnd<CleanTable>, path: string[] ): ErrorsAnd<LinksPP> {
@@ -43,7 +51,7 @@ interface ProcessPathOptions {
   sql?: boolean
 
 }
-export function processPathString ( tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): ErrorsAnd<PP> {
+export async function processPathString ( env: Environment, tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<ErrorsAnd<PP>> {
   const path = pathSpec.path
   if ( path.length === 0 ) return [ 'Path must have at least one part' ]
   const lastPart = path[ path.length - 1 ]
@@ -53,14 +61,24 @@ export function processPathString ( tables: NameAnd<CleanTable>, pathSpec: PathS
   const data = selectData ( "all" ) ( plan )
   const { plan: showPlan, sql: showSql } = options
   if ( showPlan ) return { type: 'selectData', data }
-  return ({ type: 'sql', sql: sqlFor ( mergeSelectData ( data ) ) })
+  const sql = sqlFor ( mergeSelectData ( data ) );
+  if ( showSql ) return ({ type: 'sql', sql })
+  const dal = postgresDal ( env )
+  try {
+    const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
+    return result
+  } finally {
+    dal.close ()
+  }
 
 }
 
 export function prettyPrintPP ( pp: PP ): string[] {
   if ( pp.type === 'links' ) return [ "Links:", '  ' + pp.links.join ( ', ' ) ]
   if ( pp.type === 'selectData' ) return [ JSON.stringify ( pp.data, null, 2 ) ]
-  return pp.sql
+  if ( pp.type === 'sql' ) return pp.sql
+  if ( pp.type === 'res' ) return [ JSON.stringify ( pp.res, null, 2 ) ]
+  throw new Error ( `Unknown PP type\n${JSON.stringify ( pp )}` )
 }
 
 export function makeTracePlanSpecs ( pathSpec: PathSpec ): PathSpec[] {
@@ -71,11 +89,11 @@ export function makeTracePlanSpecs ( pathSpec: PathSpec ): PathSpec[] {
   }
   return result;
 }
-export function tracePlan ( tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): string[] {
+export async function tracePlan ( env: Environment, tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<string[]> {
   const result: PP[] = []
   const specs = makeTracePlanSpecs ( pathSpec )
   for ( let i = 0; i < specs.length; i++ ) {
-    const pp = processPathString ( tables, specs[ i ], options )
+    const pp = await processPathString ( env, tables, specs[ i ], options )
     if ( hasErrors ( pp ) ) return pp
     result.push ( pp )
   }
