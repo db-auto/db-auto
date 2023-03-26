@@ -26,8 +26,8 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     // .allowUnknownOption ( true )
     .version ( version )
     .action ( ( path, id, options ) => {
-
-      const errorsOrresult = processPathString ( config.tables, path, id, options, options.plan, options.where );
+      const where = options.where ? options.where : []
+      const errorsOrresult = processPathString ( config.tables, path, id, options, options.plan, where );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return

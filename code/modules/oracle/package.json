@@ -1,7 +1,7 @@
 {
   "name": "@db-auto/oracle",
   "description": "",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "oracledb": "^5.5.0",
-    "@db-auto/utils": "0.0.14"
+    "@db-auto/utils": "0.0.15"
   },
   "devDependencies": {
     "typescript": "^4.0.5",
