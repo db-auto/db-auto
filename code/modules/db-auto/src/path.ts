@@ -2,7 +2,7 @@ import { ErrorsAnd, flatMap, hasErrors, mapErrors, NameAnd } from "@db-auto/util
 import { buildPlan, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
 import { Environment } from "@db-auto/environments";
 import { postgresDal } from "@db-auto/postgres";
-import { DalResult, prettyPrintDalResult } from "@db-auto/dal";
+import { DalResult, DalResultDisplayOptions, prettyPrintDalResult } from "@db-auto/dal";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -46,10 +46,9 @@ function processQueryPP ( tables: NameAnd<CleanTable>, parts: string[] ): Errors
 }
 
 
-interface ProcessPathOptions {
+interface ProcessPathOptions extends DalResultDisplayOptions {
   plan?: boolean,
   sql?: boolean
-
 }
 export async function processPathString ( env: Environment, tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<ErrorsAnd<PP>> {
   const path = pathSpec.path
@@ -73,11 +72,11 @@ export async function processPathString ( env: Environment, tables: NameAnd<Clea
 
 }
 
-export function prettyPrintPP ( pp: PP ): string[] {
+export function prettyPrintPP ( options: DalResultDisplayOptions, pp: PP ): string[] {
   if ( pp.type === 'links' ) return [ "Links:", '  ' + pp.links.join ( ', ' ) ]
   if ( pp.type === 'selectData' ) return [ JSON.stringify ( pp.data, null, 2 ) ]
   if ( pp.type === 'sql' ) return pp.sql
-  if ( pp.type === 'res' ) return prettyPrintDalResult ( pp.res )
+  if ( pp.type === 'res' ) return prettyPrintDalResult ( options, pp.res )
   throw new Error ( `Unknown PP type\n${JSON.stringify ( pp )}` )
 }
 
@@ -97,5 +96,5 @@ export async function tracePlan ( env: Environment, tables: NameAnd<CleanTable>,
     if ( hasErrors ( pp ) ) return pp
     result.push ( pp )
   }
-  return flatMap<PP, string> ( result, ( pp, i ) => [ `${specs[ i ].path.join ( '.' )}`, ...prettyPrintPP ( pp ), '' ] )
+  return flatMap<PP, string> ( result, ( pp, i ) => [ `${specs[ i ].path.join ( '.' )}`, ...prettyPrintPP ( options, pp ), '' ] )
 }

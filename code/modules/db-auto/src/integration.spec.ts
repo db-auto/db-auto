@@ -60,6 +60,14 @@ describe ( "db-auto paths", () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.mission.expected.txt' );
       expect ( await executeDbAuto ( mockTestDir, `driver.mission` ) ).toEqual ( expected );
     } )
+    it ( "should db-auto driver.mission with json output", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.driver.mission.expected.json' );
+      expect ( await executeDbAuto ( mockTestDir, `driver.mission --json` ) ).toEqual ( expected );
+    } )
+    it ( "should db-auto driver.audit with oneline json output", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.driver.audit.expected.oneline.json' );
+      expect ( await executeDbAuto ( mockTestDir, `driver.audit --onelinejson` ) ).toEqual ( expected );
+    } )
   } )
 } )
 

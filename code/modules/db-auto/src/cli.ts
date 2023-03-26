@@ -31,6 +31,8 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .option ( '-p, --plan', "show the plan instead of executing", false )
     .option ( '-s, --sql', "show the sql instead of executing", false )
     .option ( '-t, --trace', "trace the results", false )
+    .option ( '-j, --json', "Sql output as json instead of columns", false )
+    .option ( '--onelinejson', "Sql output as 'one json per line for the row' instead of columns", false )
     .option ( '-w, --where [where...]', "a where clause added to the query. There is no syntax checking", [] )
     // .allowUnknownOption ( true )
     .version ( version )
@@ -48,7 +50,7 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
         reportErrors ( errorsOrresult );
         return
       }
-      prettyPrintPP ( errorsOrresult ).forEach ( line => console.log ( line ) )
+      prettyPrintPP (options, errorsOrresult ).forEach ( line => console.log ( line ) )
     } )
   findQueryParams ( config.tables ).forEach ( param => program.option ( '--' + param.name + " <" + param.name + ">", param.description ) )
 

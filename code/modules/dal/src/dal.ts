@@ -31,5 +31,4 @@ export interface ReadDal {
 }
 export interface Dal extends ReadDal, WriteDal {
   close ();
-
 }
