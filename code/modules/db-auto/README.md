@@ -28,6 +28,17 @@ this has to be populated manually, but I expect to auto generate it from the dat
 
 ## -s or --sql or --fullSql
 Show the sql instead of executing it. FullSql includes the paging sql (which can be 'noisy')
+```shell
+ db-auto driver 123 -s            
+# select T0.*
+#    from DriverTable T0 where T0.driverId=123
+
+db-auto driver 123 --fullSql
+# select T0.*
+#    from DriverTable T0 where T0.driverId=123
+# LIMIT 15 OFFSET 0
+
+```
 
 ## -t or --trace
 Execute the command one step at a time, showing the sql and the results
@@ -96,7 +107,7 @@ Show the results as json. This is useful for piping to jq
 
 # Environments
 
-Typicaly, we have multiple environments. The tool can be configured to use different databases for different environments:
+Typically, we have multiple environments. The tool can be configured to use different databases for different environments:
 this is in the `db-auto.json` file. The default environment is `dev` (and in current state that's the only one usable)
 
 The environment gives the database type and the connection details
@@ -109,10 +120,6 @@ db-auto envs
 
 ```
 
-
-```shell
-
-```
 
 ## Secrets
 
