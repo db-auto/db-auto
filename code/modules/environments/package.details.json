@@ -6,7 +6,7 @@
     "dependencies":    {},
     "devDependencies": {}
   },
-  "links":       ["@db-auto/utils"],
+  "links":       ["@db-auto/utils", "@db-auto/postgres", "@db-auto/mysql", "@db-auto/oracle"],
   "guards":      {
     "compile": true,
     "publish": true,

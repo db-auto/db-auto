@@ -1,16 +1,8 @@
 {
   "state":        {"file": ".db-auto"},
   "environments": {
-    "dev":  {
-      "type":     "postgres",
-      "url":      "postgres://localhost:5432/dev",
-      "username": "sa",
-      "password": ""
-    },
-    "test": {
-      "type": "postgres",
-      "url":  "postgres://localhost:5432/test"
-    }
+    "dev":  {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil"},
+    "test": {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil"}
   },
   "tables":       {
     "driver":      {
@@ -36,9 +28,9 @@
       }
     },
     "driver_aud":  {
-      "primary":   {"name": "driverId", "type": "integer"},
+      "primary":     {"name": "driverId", "type": "integer"},
       "dataColumns": {"who": {}, "action": {}, "date": {}},
-      "views":     {
+      "views":       {
         "all":   "*",
         "short": ["driverId", "action", "date"]
       }

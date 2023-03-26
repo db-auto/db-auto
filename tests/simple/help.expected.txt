@@ -11,6 +11,7 @@ Options:
                                false)
   -s, --sql                    show the sql instead of executing (default:
                                false)
+  -t, --trace                  trace the results (default: false)
   -w, --where [where...]       a where clause added to the query. There is no
                                syntax checking (default: [])
   -V, --version                output the version number

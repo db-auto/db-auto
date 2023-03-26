@@ -1,10 +1,9 @@
-import { composeNameAndValidators, mapObject, NameAnd, NameAndValidator, validateChildString, validateChildValue } from "@db-auto/utils";
+import { mapObject, NameAnd, NameAndValidator } from "@db-auto/utils";
+import { PostgresEnv, postgresEnvValidator } from "@db-auto/postgres";
 
-export interface Environment {
-  type: "oracle" | "mysql" | "postgres",
-  url: string,
-  username?: string,
-  password?: string
+
+export type Environment = PostgresEnv
+{
 }
 export interface CleanEnvironment extends Required<Environment> {
   name: string
@@ -27,9 +26,8 @@ export function cleanEnvironment ( envVars: NameAnd<string>, env: NameAnd<Enviro
   }) )
 }
 
-export const environmentValidator: NameAndValidator<Environment> = composeNameAndValidators<Environment> (
-  validateChildValue ( 'type', 'oracle', 'mysql', 'postgres' ),
-  validateChildString ( 'url' ),
-  validateChildString ( 'username', true ),
-  validateChildString ( 'password', true )
-)
+export const environmentValidator: NameAndValidator<Environment> = name => env => {
+  if ( env.type === 'postgres' ) return postgresEnvValidator ( name ) ( env )
+  return [ `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify(env)}` ]
+}
+

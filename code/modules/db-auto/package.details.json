@@ -23,6 +23,6 @@
   "guards":      {
     "compile": true,
     "publish": true,
-    "test":    false
+    "test":    true
   }
 }

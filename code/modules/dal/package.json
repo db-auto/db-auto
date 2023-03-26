@@ -1,5 +1,5 @@
 {
-  "name": "@db-auto/environments",
+  "name": "@db-auto/dal",
   "description": "",
   "version": "0.0.18",
   "main": "dist/index",
@@ -16,12 +16,7 @@
       "not op_mini all"
     ]
   },
-  "dependencies": {
-    "@db-auto/utils": "0.0.18",
-    "@db-auto/postgres": "0.0.18",
-    "@db-auto/mysql": "0.0.18",
-    "@db-auto/oracle": "0.0.18"
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^4.0.5",
     "@types/node": "^14.14.7",

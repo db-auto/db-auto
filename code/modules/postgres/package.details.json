@@ -1,0 +1,15 @@
+{
+  "template":    "typescript",
+  "name":        "@db-auto/postgres",
+  "description": "",
+  "packageJson": {
+    "dependencies":    {"pg": "^8.10.0"},
+    "devDependencies": {"@types/pg": "^8.6.6"}
+  },
+  "links":       ["@db-auto/utils", "@db-auto/dal"],
+  "guards":      {
+    "compile": true,
+    "publish": true,
+    "test":    true
+  }
+}

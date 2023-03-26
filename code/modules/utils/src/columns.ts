@@ -1,4 +1,5 @@
 import { mapEntries, NameAnd } from "./nameAnd";
+import { orEmptyStringFn } from "./strings";
 
 
 export interface ColumnDefn<T> {
@@ -18,7 +19,7 @@ export interface ColumnData {
 export const columnDataFor = <T> ( defn: NameAnd<ColumnDefn<T>>, showTitles?: false ) => ( ts: T[] ): ColumnData => {
   const columnFor = ( d: ColumnDefn<T>, name: string ): string[] => {
     const title = showTitles !== false ? [ d.title || name ] : [];
-    const strings = ts.map ( d.dataFn );
+    const strings = ts.map ( orEmptyStringFn(d.dataFn) );
     return [ ...title, ...strings ];
   };
   const columns = mapEntries ( defn, columnFor );
