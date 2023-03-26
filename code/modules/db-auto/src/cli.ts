@@ -4,7 +4,7 @@ import { CleanTable, findQueryParams, makePathSpec, prettyPrintTables } from "@d
 import { makeCreateTableSqlForMock } from "@db-auto/mocks";
 import { cleanConfig, CleanConfig } from "./config";
 import { findFileInParentsOrError } from "@db-auto/files";
-import { prettyPrintEnvironments, sqlDialect } from "@db-auto/environments";
+import { currentEnvironment, prettyPrintEnvironments, saveEnvName, sqlDialect } from "@db-auto/environments";
 import { prettyPrintPP, processPathString, tracePlan } from "./path";
 
 
@@ -22,7 +22,7 @@ export function findVersion () {
     return "version not known"
   }
 }
-export function makeProgram ( config: CleanConfig, version: string ): Command {
+export function makeProgram ( cwd: string, config: CleanConfig, version: string ): Command {
   let program = new Command ()
     .name ( 'db-auto' )
     .usage ( '<command> [options]' )
@@ -30,6 +30,7 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .argument ( '[id]', "the id of the primary key in the first table in the path" )
     .option ( ' --plan', "show the plan instead of executing", false )
     .option ( '-s, --sql', "show the sql instead of executing", false )
+    .option ( '-e, --env <env>', "override the default environment. Use 'db-auto envs' to see a list of names" )
     .option ( '--fullSql', "normally the show sql doesn't include limits. This shows them", false )
     .option ( '-c, --count', "returns the count of the items in the table", false )
     .option ( '-d, --distinct', "only return distinct values", false )
@@ -43,8 +44,13 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     // .allowUnknownOption ( true )
     .version ( version )
     .action ( async ( path, id, options ) => {
-      const env = config.environments.dev
-      if ( !env ) throw new Error ( 'Need to have a dev environment' )
+      //TODO move sql dialect here..
+      const envAndNameOrErrors = currentEnvironment ( cwd, config.environments, options.env )
+      if ( hasErrors ( envAndNameOrErrors ) ) {
+        reportErrors ( envAndNameOrErrors )
+        return;
+      }
+      const { env, envName } = envAndNameOrErrors
       const dialect = sqlDialect ( env.type );
       const page = options.page ? parseInt ( options.page ) : 1
       const fullOptions = { ...options, limitBy: dialect.limitFn, page }
@@ -53,16 +59,16 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
       const where = fullOptions.where ? fullOptions.where : []
       let pathSpec = makePathSpec ( path, id, fullOptions, where );
       if ( fullOptions.trace ) {
-        const pps = await tracePlan ( env, config.tables, pathSpec, fullOptions )
+        const pps = await tracePlan ( envAndNameOrErrors, config.tables, pathSpec, fullOptions )
         pps.forEach ( line => console.log ( line ) )
         return
       }
-      const errorsOrresult = await processPathString ( env, config.tables, pathSpec, fullOptions );
+      const errorsOrresult = await processPathString ( envAndNameOrErrors, config.tables, pathSpec, fullOptions );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return
       }
-      prettyPrintPP ( fullOptions, errorsOrresult ).forEach ( line => console.log ( line ) )
+      prettyPrintPP ( fullOptions, true, errorsOrresult ).forEach ( line => console.log ( line ) )
     } )
   findQueryParams ( config.tables ).forEach ( param => program.option ( '--' + param.name + " <" + param.name + ">", param.description ) )
 
@@ -78,7 +84,24 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
 
   const envs = program.command ( 'envs' )
     .action ( ( command, options ) => {
+      const envAndNameOrErrors = currentEnvironment ( cwd, config.environments, options.env )
+      if ( hasErrors ( envAndNameOrErrors ) ) {
+        reportErrors ( envAndNameOrErrors )
+        return;
+      }
+      console.log ( "Current environment is " + envAndNameOrErrors.envName )
       prettyPrintEnvironments ( config.environments ).forEach ( line => console.log ( line ) )
+    } )
+
+  const env = program.command ( 'env' )
+    .arguments ( '<env>' )
+    .action ( ( env, command, options ) => {
+      const check = config.environments[ env ]
+      if ( !check ) {
+        console.log ( `Environment ${env} is not defined` )
+        process.exit ( 1 )
+      }
+      saveEnvName ( cwd, env )
     } )
 
   const tables = program.command ( 'tables' )

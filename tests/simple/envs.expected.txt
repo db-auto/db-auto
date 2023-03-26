@@ -1,3 +1,4 @@
+Current environment is dev
 Environment Type     Host      Port Database UserName
 dev         postgres localhost 5432 postgres phil
 test        postgres localhost 5432 postgres phil

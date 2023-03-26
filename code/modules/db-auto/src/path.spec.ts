@@ -1,62 +1,62 @@
-import { processPathString } from "./path";
+import { processPathString, SqlPP } from "./path";
 import { buildPlan, clean, makePathSpec, mergeSelectData, PathSpec, selectData, sqlFor } from "@db-auto/tables";
 import { mapErrors } from "@db-auto/utils";
-import { cleanEnv } from "@db-auto/environments";
+import { cleanEnv, EnvAndName } from "@db-auto/environments";
 
-const dev = cleanEnv.dev;
+const envAndName: EnvAndName = { env: cleanEnv.dev, envName: 'dev' };
 describe ( 'processPath', () => {
   describe ( 'notfounds', () => {
 
     it ( 'should handle notfound', async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( 'notfound' ), {} ) ).toEqual ( [
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( 'notfound' ), {} ) ).toEqual ( [
         "Cannot find table notfound in tables. Available tables are: driver,driver_aud,mission,mission_aud"
       ] )
     } )
     it ( 'should handle notfound.?', async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( 'notfound.?' ), {} ) ).toEqual ( [
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( 'notfound.?' ), {} ) ).toEqual ( [
         "Cannot find table notfound in tables. Available tables are: driver,driver_aud,mission,mission_aud"
       ] )
     } )
     it ( 'should handle driver.notfound.', async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( 'driver.notfound' ), {} ) ).toEqual ( [
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( 'driver.notfound' ), {} ) ).toEqual ( [
         "Cannot find link notfound in table DriverTable for path [driver]. Available links are: audit,mission"
       ] )
     } )
     it ( 'should handle driver.notfound.?', async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( 'driver.notfound.?' ), {} ) ).toEqual ( [
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( 'driver.notfound.?' ), {} ) ).toEqual ( [
         "Cannot find link notfound in table DriverTable for path [driver]. Available links are: audit,mission",
       ] )
     } )
     it ( 'should handle driver.mission.notfound.?', async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( 'driver.mission.notfound.?' ), {} ) ).toEqual ( [
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( 'driver.mission.notfound.?' ), {} ) ).toEqual ( [
         "Cannot find link notfound in table mission for path [driver.mission]. Available links are: driver,mission_aud"
       ] )
     } )
   } )
   describe ( 'links', () => {
     it ( 'should handle ?', async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( '?' ), {} ) )
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( '?' ), {} ) )
         .toEqual ( {
           "links": [ "driver", "driver_aud", "mission", "mission_aud" ],
           "type": "links"
         } )
     } )
     it ( 'should handle d?', async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( 'd?' ), {} ) )
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( 'd?' ), {} ) )
         .toEqual ( {
           "links": [ "driver", "driver_aud" ],
           "type": "links"
         } )
     } )
     it ( 'should handle notin?', async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( 'notin?' ), {} ) )
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( 'notin?' ), {} ) )
         .toEqual ( {
           "links": [],
           "type": "links"
         } )
     } )
     it ( "should handle driver.?", async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( "driver.?" ), {} ) ).toEqual (
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( "driver.?" ), {} ) ).toEqual (
         {
           "links": [ "mission", "audit" ],
           "type": "links"
@@ -65,7 +65,7 @@ describe ( 'processPath', () => {
 
     } )
     it ( "should handle driver.m?", async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( "driver.m?" ), {} ) ).toEqual (
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( "driver.m?" ), {} ) ).toEqual (
         {
           "links": [ "mission" ],
           "type": "links"
@@ -74,7 +74,7 @@ describe ( 'processPath', () => {
 
     } )
     it ( "should handle driver.notin?", async () => {
-      expect ( await processPathString ( dev, clean, makePathSpec ( "driver.notin?" ), {} ) ).toEqual (
+      expect ( await processPathString ( envAndName, clean, makePathSpec ( "driver.notin?" ), {} ) ).toEqual (
         {
           "links": [],
           "type": "links"
@@ -85,7 +85,7 @@ describe ( 'processPath', () => {
   } )
   describe ( "returning a plan", () => {
     async function forPlan ( path: string ) {
-      const actual = await processPathString ( dev, clean, makePathSpec ( path ), { plan: true } )
+      const actual = await processPathString ( envAndName, clean, makePathSpec ( path ), { plan: true } )
       const data = mapErrors ( buildPlan ( clean, makePathSpec ( path ) ), selectData ( "all" ) )
       const expected = { type: 'selectData', data }
       return { actual, expected }
@@ -106,10 +106,10 @@ describe ( 'processPath', () => {
   } )
   describe ( "returning a sql", () => {
     async function forSql ( pathSpec: PathSpec ) {
-      const actual = await processPathString ( dev, clean, pathSpec, { sql: true } )
+      const actual = await processPathString ( envAndName, clean, pathSpec, { sql: true } )
       const sql = mapErrors ( buildPlan ( clean, pathSpec ), plan =>
         sqlFor ( {} ) ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) )
-      const expected = { type: 'sql', sql }
+      const expected: SqlPP = { type: 'sql', sql, envName: 'dev' }
       return { actual, expected }
     }
     it ( "should handle driver", async () => {

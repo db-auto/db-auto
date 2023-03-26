@@ -24,7 +24,7 @@ db-auto driver.mission.audit 123 -date '2023-6-3'    # lists the audit records f
 
 # TODO
 
-* Support 'current env': record the current and allow switching between them
+
 * Start using ? notation and stored procedures so that we can avoid sql injection
 * Allow join notation. 
 * Work out how to do a left join `db-auto driver+mission+audit 123` use + instead of . ?
@@ -37,6 +37,14 @@ db-auto driver.mission.audit 123 -date '2023-6-3'    # lists the audit records f
 * History of the commands run
 * Scripting 
 * Secrets in a 'secrets file' that is not checked in as well as environment variables because it's just easier (although not better)
+
+# Error handling still to do
+What if types aren't right? 
+```shell
+db-auto driver someThingNotANumber
+db-auto driver 123 -date 123
+```
+
 
 # Things to contemplate
 If the same field is in multiple tables we just see the 'latest' value. Do we care for this? If we do care how do we let people tweak it

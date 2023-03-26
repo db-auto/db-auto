@@ -1,2 +1,3 @@
+Environment: dev
 select distinct T0.*, T1.*
    from DriverTable T0, mission T1 where T0.driverId = T1.driverId

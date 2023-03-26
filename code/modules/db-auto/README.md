@@ -114,10 +114,19 @@ The environment gives the database type and the connection details
 
 ```shell
 db-auto envs
+# Current environment is dev
 # Environment Type     Host      Port Database UserName
 # dev         postgres localhost 5432 postgres phil
 # test        postgres localhost 5432 postgres phil
 
+```
+
+## Current environment
+This defaults to 'dev'.
+
+It can be changed to another legal value by 
+```shell
+db-auto env test
 ```
 
 

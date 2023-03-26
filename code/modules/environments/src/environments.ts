@@ -1,9 +1,56 @@
-import { mapObject, NameAnd, NameAndValidator } from "@db-auto/utils";
+import { ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator } from "@db-auto/utils";
 import { postgresDal, postgresDalDialect, PostgresEnv, postgresEnvValidator } from "@db-auto/postgres";
+import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@db-auto/files";
+import * as Path from "path";
+import * as fs from "fs";
 
 
 export type Environment = PostgresEnv
-{
+
+export interface CurrentEnvironment {
+  currentEnvironment: string
+}
+
+const stateFileName = '.db-auto.state.json';
+export function currentEnvName ( cwd: string, env: string | undefined ): ErrorsAnd<string> {
+  if ( env ) return env
+  const dir = findDirectoryHoldingFileOrError ( cwd, 'db-auto.json' )
+  if ( hasErrors ( dir ) ) return dir
+  const envFile = Path.join ( dir, stateFileName )
+  try {
+    const contents = fs.readFileSync ( envFile ).toString ( 'utf-8' )
+    try {
+      return JSON.parse ( contents ).currentEnvironment
+    } catch ( e ) {
+      return [ `Error parsing ${envFile}: ${e.message}` ]
+    }
+  } catch ( e ) {
+    return 'dev'
+  }
+}
+
+export function saveEnvName ( cwd: string, env: string ): ErrorsAnd<void> {
+  const dir = findDirectoryHoldingFileOrError ( cwd, 'db-auto.json' )
+  if ( hasErrors ( dir ) ) return dir
+  const envFile = Path.join ( dir, stateFileName )
+  try {
+    fs.writeFileSync ( envFile, JSON.stringify ( { currentEnvironment: env } ) )
+    return undefined
+  } catch ( e ) {
+    return [ `Error writing ${envFile}: ${e.message}` ]
+  }
+}
+
+export interface EnvAndName {
+  env: CleanEnvironment
+  envName: string
+}
+export function currentEnvironment ( cwd: string, envs: NameAnd<CleanEnvironment>, env: string | undefined ): ErrorsAnd<EnvAndName> {
+  return mapErrors ( currentEnvName ( cwd, env ), ( envName ) => {
+    const env = envs[ envName ]
+    if ( env ) return { env, envName }
+    return [ `Environment ${envName} not found. Legal names are ${Object.keys ( envs ).sort ()}` ]
+  } );
 }
 export interface CleanEnvironment extends Required<Environment> {
   name: string

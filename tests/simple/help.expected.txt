@@ -11,6 +11,8 @@ Options:
                                false)
   -s, --sql                    show the sql instead of executing (default:
                                false)
+  -e, --env <env>              override the default environment. Use 'db-auto
+                               envs' to see a list of names
   --fullSql                    normally the show sql doesn't include limits.
                                This shows them (default: false)
   -c, --count                  returns the count of the items in the table
@@ -37,4 +39,5 @@ Options:
 Commands:
   mocks [tables...]
   envs
+  env <env>
   tables
