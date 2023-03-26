@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapObject, NameAnd, parseFile, reportErrors } from "@db-auto/utils";
-import { CleanTable, findQueryParams, prettyPrintTables } from "@db-auto/tables";
+import { CleanTable, findQueryParams, makePathSpec, prettyPrintTables } from "@db-auto/tables";
 import { makeCreateTableSqlForMock } from "@db-auto/mocks";
 import { cleanConfig, CleanConfig } from "./config";
 import { findFileInParentsOrError } from "@db-auto/files";
@@ -14,6 +14,14 @@ export function makeConfig ( cwd: string, envVars: NameAnd<string> ): ErrorsAnd<
       mapErrors ( config, cleanConfig ( envVars ) ) ) )
 }
 
+export function findVersion () {
+  let packageJsonFileName = "../../package.json";
+  try {
+    return require ( packageJsonFileName ).version
+  } catch ( e ) {
+    return "version not known"
+  }
+}
 export function makeProgram ( config: CleanConfig, version: string ): Command {
   let program = new Command ()
     .name ( 'db-auto' )
@@ -27,7 +35,7 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .version ( version )
     .action ( ( path, id, options ) => {
       const where = options.where ? options.where : []
-      const errorsOrresult = processPathString ( config.tables, path, id, options, options.plan, where );
+      const errorsOrresult = processPathString ( config.tables, makePathSpec ( path, id, options, where ), options.plan );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return

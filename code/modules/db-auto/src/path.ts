@@ -1,5 +1,5 @@
 import { ErrorsAnd, hasErrors, mapErrors, NameAnd } from "@db-auto/utils";
-import { buildPlan, clean, CleanTable, mergeSelectData, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
+import { buildPlan, clean, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -18,10 +18,11 @@ export interface SqlPP {
 type PP = SelectDataPP | LinksPP | SqlPP
 
 
-function findLinks ( tables: NameAnd<CleanTable>, parts: string[] ): ErrorsAnd<LinksPP> {
-  let withoutQuery = parts.slice ( 0, -1 );
+function findLinks ( tables: NameAnd<CleanTable>, path: string[] ): ErrorsAnd<LinksPP> {
+  let withoutQuery = path.slice ( 0, -1 );
+
   if ( withoutQuery.length === 0 ) return { links: Object.keys ( tables ), type: 'links' }
-  const planOrErrors: string[] | Plan = buildPlan ( clean, withoutQuery )
+  const planOrErrors: string[] | Plan = buildPlan ( clean, { path: withoutQuery, wheres: [], queryParams: {}, id: undefined } )
   if ( hasErrors ( planOrErrors ) ) return planOrErrors
   return { links: Object.keys ( planOrErrors.table.links ), type: 'links' }
 }
@@ -33,14 +34,21 @@ const filterLinkPP = ( lookfor: string ) => ( l: LinksPP ): LinksPP => {
 
 function processQueryPP ( tables: NameAnd<CleanTable>, parts: string[] ): ErrorsAnd<LinksPP> {
   let lastPart = parts[ parts.length - 1 ];
-  return mapErrors ( findLinks ( tables, parts ), filterLinkPP ( lastPart.substring(0,lastPart.length-1) ) )
+  return mapErrors ( findLinks ( tables, parts ), filterLinkPP ( lastPart.substring ( 0, lastPart.length - 1 ) ) )
 }
-export function processPathString ( tables: NameAnd<CleanTable>, path: string, id: string | undefined, queryParams: NameAnd<string>, showPlan?: boolean, where?: string[] ): ErrorsAnd<PP> {
-  const parts = path.split ( '.' )
-  if ( parts.length === 0 ) return [ 'Path must have at least one part' ]
-  const lastPart = parts[ parts.length - 1 ]
-  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( tables, parts )
-  let plan = buildPlan ( clean, parts, id, queryParams, where );
+
+
+interface ProcessPathOptions {
+  showPlan?: boolean,
+  where?: string[]
+
+}
+export function processPathString ( tables: NameAnd<CleanTable>, pathSpec: PathSpec, showPlan?: boolean, ): ErrorsAnd<PP> {
+  const path = pathSpec.path
+  if ( path.length === 0 ) return [ 'Path must have at least one part' ]
+  const lastPart = path[ path.length - 1 ]
+  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( tables, path )
+  let plan = buildPlan ( clean, pathSpec );
   if ( hasErrors ( plan ) ) return plan
   const data = selectData ( "all" ) ( plan )
   if ( showPlan ) return { type: 'selectData', data }
