@@ -4,6 +4,7 @@ import { ColumnDefn, mapEntries, NameAnd, toColumns } from "@db-auto/utils";
 const tableColumnDefn: NameAnd<ColumnDefn<[ string, CleanTable ]>> = {
   "name": { title: "Name", dataFn: ( t: [ string, CleanTable ] ) => t[ 0 ] },
   "table": { title: "Table", dataFn: ( t: [ string, CleanTable ] ) => t[ 1 ].table },
+  "pk": { title: "PK", dataFn: ( t: [ string, CleanTable ] ) => t[ 1 ].primary },
   "links": { title: "Links", dataFn: ( t: [ string, CleanTable ] ) => mapEntries ( t[ 1 ].links, ( l, name ) => name ).join ( ',' ) },
   "params": { title: "Params", dataFn: ( t: [ string, CleanTable ] ) => mapEntries ( t[ 1 ].queries, ( q, name ) => name ).join ( ',' ) },
   "views": { title: "Views", dataFn: ( t: [ string, CleanTable ] ) => mapEntries ( t[ 1 ].views, ( v, name ) => name ).join ( ',' ) }

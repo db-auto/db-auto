@@ -67,8 +67,8 @@ export interface KeyData extends ColumnDataObj {
 }
 export type Key = KeyData | string
 export function nameOfKey ( k: Key ): string {
-  if ( typeof k === 'string' ) return k
-  return k.name
+  let result = typeof k === 'string' ? k : k.name;
+  return result;
 }
 
 export const keyValidator: NameAndValidator<Key> = composeNameAndValidators<Key> (

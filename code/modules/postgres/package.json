@@ -1,7 +1,7 @@
 {
   "name": "@db-auto/postgres",
   "description": "",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "pg": "^8.10.0",
-    "@db-auto/utils": "0.0.18",
-    "@db-auto/dal": "0.0.18"
+    "@db-auto/utils": "0.0.19",
+    "@db-auto/dal": "0.0.19"
   },
   "devDependencies": {
     "@types/pg": "^8.6.6",

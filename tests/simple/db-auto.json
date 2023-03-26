@@ -1,13 +1,13 @@
 {
   "state":        {"file": ".db-auto"},
   "environments": {
-    "dev":  {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil"},
+    "dev":  {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil", "comment": "don't store your passwords like this! This is just for tests"},
     "test": {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil"}
   },
   "tables":       {
     "driver":      {
       "table":       "DriverTable",
-      "primary":     {"name": "id", "type": "integer"},
+      "primary":     {"name": "driverId", "type": "integer"},
       "queries":     {
         "name":        {"type": "string", "description": "driver name "},
         "employeeNum": {"type": "string"}
@@ -24,7 +24,7 @@
       },
       "views":       {
         "all":   "*",
-        "short": ["id", "name"]
+        "short": ["driverId", "name"]
       }
     },
     "driver_aud":  {
@@ -36,7 +36,7 @@
       }
     },
     "mission":     {
-      "primary": "id",
+      "primary": "missionId",
       "queries": {"date": {"type": "date"}},
       "links":   {
         "driver":      {"type": "many-to-one", "idHereAndThere": "driverId"},

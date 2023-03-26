@@ -1,28 +1,20 @@
 {
   "state":        {"file": ".db-auto"},
   "environments": {
-    "dev":  {
-      "type":     "postgres",
-      "url":      "postgres://localhost:5432/dev",
-      "username": "sa",
-      "password": ""
-    },
-    "test": {
-      "type": "postgres",
-      "url":  "postgres://localhost:5432/test"
-    }
+    "dev":  {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil", "comment": "don't store your passwords like this! This is just for tests"},
+    "test": {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil"}
   },
   "tables":       {
     "driver":      {
       "table":       "DriverTable",
-      "primary":     {"name": "id", "type": "string"},
+      "primary":     {"name": "driverId", "type": "integer"},
       "queries":     {
         "name":        {"type": "string", "description": "driver name "},
         "employeeNum": {"type": "string"}
       },
       "links":       {
         "mission": {"type": "one-to-many", "idHereAndThere": "driverId"},
-        "audit":   {"type": "one-to-many", "table": "driver_aud", "idHereAndThere": "driverId"}
+        "audit":   {"type": "one-to-many", "idHereAndThere": "driverId"}
       },
       "dataColumns": {
         "livesIn":     {"type": "string"},
@@ -32,7 +24,7 @@
       },
       "views":       {
         "all":   "*",
-        "short": ["id", "name"]
+        "short": ["driverId", "name"]
       }
     },
     "driver_aud":  {

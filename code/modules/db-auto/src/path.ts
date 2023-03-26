@@ -1,5 +1,5 @@
 import { ErrorsAnd, flatMap, flatMapErrors, foldErrors, hasErrors, mapErrors, NameAnd } from "@db-auto/utils";
-import { buildPlan, clean, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
+import { buildPlan, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -22,7 +22,7 @@ function findLinks ( tables: NameAnd<CleanTable>, path: string[] ): ErrorsAnd<Li
   let withoutQuery = path.slice ( 0, -1 );
 
   if ( withoutQuery.length === 0 ) return { links: Object.keys ( tables ), type: 'links' }
-  const planOrErrors: string[] | Plan = buildPlan ( clean, { path: withoutQuery, wheres: [], queryParams: {}, id: undefined } )
+  const planOrErrors: string[] | Plan = buildPlan ( tables, { path: withoutQuery, wheres: [], queryParams: {}, id: undefined } )
   if ( hasErrors ( planOrErrors ) ) return planOrErrors
   return { links: Object.keys ( planOrErrors.table.links ), type: 'links' }
 }
@@ -48,7 +48,7 @@ export function processPathString ( tables: NameAnd<CleanTable>, pathSpec: PathS
   if ( path.length === 0 ) return [ 'Path must have at least one part' ]
   const lastPart = path[ path.length - 1 ]
   if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( tables, path )
-  let plan = buildPlan ( clean, pathSpec );
+  let plan = buildPlan ( tables, pathSpec );
   if ( hasErrors ( plan ) ) return plan
   const data = selectData ( "all" ) ( plan )
   const { plan: showPlan, sql: showSql } = options
@@ -79,5 +79,5 @@ export function tracePlan ( tables: NameAnd<CleanTable>, pathSpec: PathSpec, opt
     if ( hasErrors ( pp ) ) return pp
     result.push ( pp )
   }
-  return flatMap<PP, string> ( result, ( pp, i ) => [ `${specs[ i ].path.join('.')}`, ...prettyPrintPP ( pp ),'' ] )
+  return flatMap<PP, string> ( result, ( pp, i ) => [ `${specs[ i ].path.join ( '.' )}`, ...prettyPrintPP ( pp ), '' ] )
 }
