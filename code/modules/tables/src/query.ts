@@ -1,4 +1,4 @@
-import { ErrorsAnd, flatMapEntries, hasErrors, mapEntries, NameAnd } from "@db-auto/utils";
+import { ErrorsAnd, flatMapEntries, hasErrors, NameAnd, safeArray } from "@db-auto/utils";
 import { Link } from "./tables";
 import { CleanTable } from "./clean";
 
@@ -33,12 +33,12 @@ function makeWhere ( id: string | undefined, queryParams: NameAnd<string>, alias
   } )
   return [ ...whereFromId, ...whereFromParams ];
 }
-export function buildPlan ( tables: NameAnd<CleanTable>, path: string[], id?: string, queryParams?: NameAnd<string>, ): ErrorsAnd<Plan | undefined> {
+export function buildPlan ( tables: NameAnd<CleanTable>, path: string[], id?: string, queryParams?: NameAnd<string>, wheres?: string[] ): ErrorsAnd<Plan | undefined> {
   if ( path.length === 0 ) return [ 'Cannot build plan for empty path' ]
   const params = queryParams || {};
   let table = tables[ path[ 0 ] ];
   let alias = `T${0}`;
-  const where: string[] = makeWhere ( id, params, alias, table )
+  const where: string[] = [ ...safeArray ( wheres ), ...makeWhere ( id, params, alias, table ) ]
   const plan = { table, alias: alias, where }
   return buildNextStep ( tables, path, params, plan, 1 );
 }

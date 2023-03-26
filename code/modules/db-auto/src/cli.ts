@@ -20,11 +20,14 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .usage ( '<command> [options]' )
     .argument ( '<path>', "the list of table names joined by a . For example driver.mission.mission_aud" )
     .argument ( '[id]', "the id of the primary key in the first table in the path" )
-    .option ( '-p, --plan', "show the plan", false )
+    .option ( '-p, --plan', "show the plan instead of executing", false )
+    .option ( '-s, --sql', "show the sql instead of executing", false )
+    .option ( '-w, --where [where...]', "a where clause added to the query. There is no syntax checking", [] )
     // .allowUnknownOption ( true )
     .version ( version )
     .action ( ( path, id, options ) => {
-      const errorsOrresult = processPathString ( config.tables, path, id, options, options.plan );
+
+      const errorsOrresult = processPathString ( config.tables, path, id, options, options.plan, options.where );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return
