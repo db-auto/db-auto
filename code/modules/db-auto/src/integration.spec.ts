@@ -69,3 +69,10 @@ describe ( 'db-auto path --options that are query params', () => {
     expect ( await executeDbAuto ( mockTestDir, `driver --name fred` ) ).toEqual ( expected );
   } )
 } )
+
+describe ( "db-auto trace", () => {
+  it ( "should build up the results", async () => {
+    const expected = readTestFile ( mockTestDir, 'trace.expected.txt' );
+    expect ( await executeDbAuto ( mockTestDir, `driver.mission.driver.audit -t` ) ).toEqual ( expected );
+  } )
+} )

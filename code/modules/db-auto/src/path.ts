@@ -79,5 +79,5 @@ export function tracePlan ( tables: NameAnd<CleanTable>, pathSpec: PathSpec, opt
     if ( hasErrors ( pp ) ) return pp
     result.push ( pp )
   }
-  return flatMap<PP, string> ( result, ( pp, i ) => [ `${specs[ i ].path}`, ...prettyPrintPP ( pp ),'' ] )
+  return flatMap<PP, string> ( result, ( pp, i ) => [ `${specs[ i ].path.join('.')}`, ...prettyPrintPP ( pp ),'' ] )
 }
