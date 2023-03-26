@@ -35,7 +35,7 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .version ( version )
     .action ( ( path, id, options ) => {
       const where = options.where ? options.where : []
-      const errorsOrresult = processPathString ( config.tables, makePathSpec ( path, id, options, where ), options.plan );
+      const errorsOrresult = processPathString ( config.tables, makePathSpec ( path, id, options, where ), options );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return

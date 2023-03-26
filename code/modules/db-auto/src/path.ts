@@ -39,11 +39,11 @@ function processQueryPP ( tables: NameAnd<CleanTable>, parts: string[] ): Errors
 
 
 interface ProcessPathOptions {
-  showPlan?: boolean,
-  where?: string[]
+  plan?: boolean,
+  sql?: boolean
 
 }
-export function processPathString ( tables: NameAnd<CleanTable>, pathSpec: PathSpec, showPlan?: boolean, ): ErrorsAnd<PP> {
+export function processPathString ( tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): ErrorsAnd<PP> {
   const path = pathSpec.path
   if ( path.length === 0 ) return [ 'Path must have at least one part' ]
   const lastPart = path[ path.length - 1 ]
@@ -51,6 +51,7 @@ export function processPathString ( tables: NameAnd<CleanTable>, pathSpec: PathS
   let plan = buildPlan ( clean, pathSpec );
   if ( hasErrors ( plan ) ) return plan
   const data = selectData ( "all" ) ( plan )
+  const { plan: showPlan, sql: showSql } = options
   if ( showPlan ) return { type: 'selectData', data }
   return ({ type: 'sql', sql: sqlFor ( mergeSelectData ( data ) ) })
 
