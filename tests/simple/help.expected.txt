@@ -37,7 +37,9 @@ Options:
   -h, --help                   display help for command
 
 Commands:
-  mocks [tables...]
-  envs
-  env <env>
-  tables
+  mocks [tables...]            Create table sql for the tables
+  envs                         Lists all the environments
+  status                       Checks that the environments are accessible and
+                               gives report
+  env <env>                    Sets the current environment
+  tables                       Lists the known tables

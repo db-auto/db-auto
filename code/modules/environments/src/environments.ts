@@ -1,4 +1,4 @@
-import { ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator } from "@db-auto/utils";
+import { ColumnDefn, ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator } from "@db-auto/utils";
 import { postgresDal, postgresDalDialect, PostgresEnv, postgresEnvValidator } from "@db-auto/postgres";
 import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@db-auto/files";
 import * as Path from "path";
@@ -86,4 +86,40 @@ export function sqlDialect ( type: string ) {
 export function dalFor ( env: Environment ) {
   if ( env.type === 'postgres' ) return postgresDal ( env )
   throw new Error ( `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify ( env )}` )
+}
+
+export interface EnvStatus {
+  name: string
+  up: boolean
+  env: CleanEnvironment
+}
+//TODO do in parallel
+export async function envIsUp ( env: CleanEnvironment ): Promise<boolean> {
+  let dal = dalFor ( env );
+  try {
+    const dialect = sqlDialect ( env.type );
+    await dal.query ( dialect.safeQuery );
+    return true
+  } catch ( e ) {
+    return false
+  } finally {
+    await dal.close ();
+  }
+}
+
+export async function checkStatus ( envs: NameAnd<CleanEnvironment> ): Promise<NameAnd<EnvStatus>> {
+  let result: NameAnd<EnvStatus> = {}
+  for ( const [ name, env ] of Object.entries ( envs ) )
+    result[ name ] = { name, env, up: await envIsUp ( env ) }
+  return result;
+}
+
+export const statusColDefn: NameAnd<ColumnDefn<EnvStatus>> = {
+  "Environment": { dataFn: ( t: EnvStatus, ) => t.name },
+  "Type": { dataFn: ( t: EnvStatus ) => t.env.type },
+  "Host": { dataFn: ( t: EnvStatus ) => t.env.host },
+  "Port": { dataFn: ( t: EnvStatus ) => t.env.port === undefined ? '' : t.env.port.toString () },
+  "Database": { dataFn: ( t: EnvStatus ) => t.env.database },
+  "UserName": { dataFn: ( t: EnvStatus ) => t.env.username },
+  "Up": { dataFn: ( t: EnvStatus ) => t.up.toString () },
 }

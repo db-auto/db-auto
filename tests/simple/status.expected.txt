@@ -1,0 +1,3 @@
+Environment Type     Host      Port Database UserName Up
+dev         postgres localhost 5432 postgres phil     true
+test        postgres localhost 5432 postgres phil     true

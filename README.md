@@ -27,22 +27,29 @@ db-auto driver.mission.audit 123 -date '2023-6-3'    # lists the audit records f
 
 * Start using ? notation and stored procedures so that we can avoid sql injection
 * Allow join notation. 
-* Work out how to do a left join `db-auto driver+mission+audit 123` use + instead of . ?
 * `db-auto status` which checks each of the environments in the db-auto.json file
 * `db-auto validate` Validate the db-auto.json file
-* views so that we can restrict the columns visible 
 * Auto-detect the database details and populate db-auto.json
+* views so that we can restrict the columns visible 
 * manually saying which fields we want (views or fields)
 * Oracle/Mysql/sqllite support
 * History of the commands run
 * Scripting 
 * Secrets in a 'secrets file' that is not checked in as well as environment variables because it's just easier (although not better)
+* Work out how to do a left join `db-auto driver+mission+audit 123` use + instead of . ?
 
 # Error handling still to do
 What if types aren't right? 
+Bombs at the moment if the config file/tables are wrong. e,g 
 ```shell
+db-auto driver.mission.mission_aud
+# (node:23068) UnhandledPromiseRejectionWarning: error: column t1.missionid does not exist
+
 db-auto driver someThingNotANumber
-db-auto driver 123 -date 123
+# db-auto driver someThingNotANumber
+# (node:15960) UnhandledPromiseRejectionWarning: error: column "somethingnotanumber" does not exist
+
+
 ```
 
 

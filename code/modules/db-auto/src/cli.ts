@@ -1,10 +1,10 @@
 import { Command } from "commander";
-import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapObject, NameAnd, parseFile, reportErrors } from "@db-auto/utils";
+import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapObject, NameAnd, parseFile, reportErrors, toColumns } from "@db-auto/utils";
 import { CleanTable, findQueryParams, makePathSpec, prettyPrintTables } from "@db-auto/tables";
 import { makeCreateTableSqlForMock } from "@db-auto/mocks";
 import { cleanConfig, CleanConfig } from "./config";
 import { findFileInParentsOrError } from "@db-auto/files";
-import { currentEnvironment, prettyPrintEnvironments, saveEnvName, sqlDialect } from "@db-auto/environments";
+import { checkStatus, currentEnvironment, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn } from "@db-auto/environments";
 import { prettyPrintPP, processPathString, tracePlan } from "./path";
 
 
@@ -75,6 +75,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
 
   const mock = program
     .command ( 'mocks' )
+    .description ( "Create table sql for the tables" )
     .arguments ( '[tables...]' )
     .action ( ( tables, command, options ) => {
       const theTables: NameAnd<CleanTable> = config.tables
@@ -82,7 +83,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
       console.log ( JSON.stringify ( rest, null, 2 ) )
     } )
 
-  const envs = program.command ( 'envs' )
+  const envs = program.command ( 'envs' ).description ( "Lists all the environments" )
     .action ( ( command, options ) => {
       const envAndNameOrErrors = currentEnvironment ( cwd, config.environments, options.env )
       if ( hasErrors ( envAndNameOrErrors ) ) {
@@ -93,7 +94,13 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
       prettyPrintEnvironments ( config.environments ).forEach ( line => console.log ( line ) )
     } )
 
-  const env = program.command ( 'env' )
+  const status = program.command ( 'status' ).description ( "Checks that the environments are accessible and gives report" )
+    .action ( async ( command, options ) => {
+      const status: NameAnd<EnvStatus> = await checkStatus ( config.environments )
+      toColumns ( statusColDefn ) ( Object.values ( status ) ).forEach ( line => console.log ( line ) )
+      // console.log ( JSON.stringify ( status, null, 2 ) )
+    } )
+  const env = program.command ( 'env' ).description ( "Sets the current environment" )
     .arguments ( '<env>' )
     .action ( ( env, command, options ) => {
       const check = config.environments[ env ]
@@ -104,7 +111,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
       saveEnvName ( cwd, env )
     } )
 
-  const tables = program.command ( 'tables' )
+  const tables = program.command ( 'tables' ).description ( "Lists the known tables" )
     .action ( ( command, options ) => {
       prettyPrintTables ( config.tables ).forEach ( line => console.log ( line ) )
     } )

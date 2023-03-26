@@ -8,6 +8,7 @@ export interface CommonEnvironment {
 
 export interface DalDialect {
   limitFn: ( pageNum: number, pageSize: number, s: string[] ) => string[]
+  safeQuery: string
 }
 
 export interface WriteDal {

@@ -133,3 +133,10 @@ describe ( "db-auto trace", () => {
   } )
 } )
 
+
+describe("status", () =>{
+  it("should return status", async () => {
+    const expected = readTestFile(mockTestDir, 'status.expected.txt');
+    expect(await executeDbAuto(mockTestDir, `status`)).toEqual(expected);
+  })
+})
