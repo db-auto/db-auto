@@ -6,7 +6,7 @@
     "dependencies":    {"oracledb": "^5.5.0"},
     "devDependencies": {}
   },
-  "links":       ["@db-auto/utils"],
+  "links":       ["@db-auto/utils","@db-auto/dal"],
   "guards":      {
     "compile": true,
     "publish": true,

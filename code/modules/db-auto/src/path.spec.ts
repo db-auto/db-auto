@@ -1,61 +1,61 @@
 import { processPathString } from "./path";
-import { buildPlan, clean, makePathSpec, mergeSelectData, PathSpec, selectData, selectDataForOne, sqlFor } from "@db-auto/tables";
-import { mapErrors, NameAnd } from "@db-auto/utils";
+import { buildPlan, clean, makePathSpec, mergeSelectData, PathSpec, selectData, sqlFor } from "@db-auto/tables";
+import { mapErrors } from "@db-auto/utils";
 
 
 describe ( 'processPath', () => {
   describe ( 'notfounds', () => {
 
     it ( 'should handle notfound', () => {
-      expect ( processPathString ( clean, makePathSpec ( 'notfound' ), true ) ).toEqual ( [
+      expect ( processPathString ( clean, makePathSpec ( 'notfound' ), {} ) ).toEqual ( [
         "Cannot find table notfound in tables. Available tables are: driver,driver_aud,mission,mission_aud"
       ] )
     } )
     it ( 'should handle notfound.?', () => {
-      expect ( processPathString ( clean, makePathSpec ( 'notfound.?' ), true ) ).toEqual ( [
+      expect ( processPathString ( clean, makePathSpec ( 'notfound.?' ), {} ) ).toEqual ( [
         "Cannot find table notfound in tables. Available tables are: driver,driver_aud,mission,mission_aud"
       ] )
     } )
     it ( 'should handle driver.notfound.', () => {
-      expect ( processPathString ( clean, makePathSpec ( 'driver.notfound' ), true ) ).toEqual ( [
+      expect ( processPathString ( clean, makePathSpec ( 'driver.notfound' ), {} ) ).toEqual ( [
         "Cannot find link notfound in table DriverTable for path [driver]. Available links are: audit,mission"
       ] )
     } )
     it ( 'should handle driver.notfound.?', () => {
-      expect ( processPathString ( clean, makePathSpec ( 'driver.notfound.?' ), true ) ).toEqual ( [
+      expect ( processPathString ( clean, makePathSpec ( 'driver.notfound.?' ), {} ) ).toEqual ( [
         "Cannot find link notfound in table DriverTable for path [driver]. Available links are: audit,mission",
       ] )
     } )
     it ( 'should handle driver.mission.notfound.?', () => {
-      expect ( processPathString ( clean, makePathSpec ( 'driver.mission.notfound.?' ), true ) ).toEqual ( [
+      expect ( processPathString ( clean, makePathSpec ( 'driver.mission.notfound.?' ), {} ) ).toEqual ( [
         "Cannot find link notfound in table mission for path [driver.mission]. Available links are: driver,mission_aud"
       ] )
     } )
   } )
   describe ( 'links', () => {
     it ( 'should handle ?', () => {
-      expect ( processPathString ( clean, makePathSpec ( '?' ), true ) )
+      expect ( processPathString ( clean, makePathSpec ( '?' ), {} ) )
         .toEqual ( {
           "links": [ "driver", "driver_aud", "mission", "mission_aud" ],
           "type": "links"
         } )
     } )
     it ( 'should handle d?', () => {
-      expect ( processPathString ( clean, makePathSpec ( 'd?' ), true ) )
+      expect ( processPathString ( clean, makePathSpec ( 'd?' ), {} ) )
         .toEqual ( {
           "links": [ "driver", "driver_aud" ],
           "type": "links"
         } )
     } )
     it ( 'should handle notin?', () => {
-      expect ( processPathString ( clean, makePathSpec ( 'notin?' ), true ) )
+      expect ( processPathString ( clean, makePathSpec ( 'notin?' ), {} ) )
         .toEqual ( {
           "links": [],
           "type": "links"
         } )
     } )
     it ( "should handle driver.?", () => {
-      expect ( processPathString ( clean, makePathSpec ( "driver.?" ), true ) ).toEqual (
+      expect ( processPathString ( clean, makePathSpec ( "driver.?" ), {} ) ).toEqual (
         {
           "links": [ "mission", "audit" ],
           "type": "links"
@@ -64,7 +64,7 @@ describe ( 'processPath', () => {
 
     } )
     it ( "should handle driver.m?", () => {
-      expect ( processPathString ( clean, makePathSpec ( "driver.m?" ), true ) ).toEqual (
+      expect ( processPathString ( clean, makePathSpec ( "driver.m?" ), {} ) ).toEqual (
         {
           "links": [ "mission" ],
           "type": "links"
@@ -73,7 +73,7 @@ describe ( 'processPath', () => {
 
     } )
     it ( "should handle driver.notin?", () => {
-      expect ( processPathString ( clean, makePathSpec ( "driver.notin?" ), true ) ).toEqual (
+      expect ( processPathString ( clean, makePathSpec ( "driver.notin?" ), {} ) ).toEqual (
         {
           "links": [],
           "type": "links"
@@ -84,7 +84,7 @@ describe ( 'processPath', () => {
   } )
   describe ( "returning a plan", () => {
     function forPlan ( path: string ) {
-      const actual = processPathString ( clean, makePathSpec ( path ), true )
+      const actual = processPathString ( clean, makePathSpec ( path ), { plan: true } )
       const data = mapErrors ( buildPlan ( clean, makePathSpec ( path ) ), selectData ( "all" ) )
       const expected = { type: 'selectData', data }
       return { actual, expected }
@@ -105,7 +105,7 @@ describe ( 'processPath', () => {
   } )
   describe ( "returning a sql", () => {
     function forSql ( pathSpec: PathSpec ) {
-      const actual = processPathString ( clean, pathSpec, false )
+      const actual = processPathString ( clean, pathSpec, { sql: true } )
       const sql = mapErrors ( buildPlan ( clean, pathSpec ), plan =>
         sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) )
       const expected = { type: 'sql', sql }

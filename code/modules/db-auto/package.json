@@ -23,6 +23,7 @@
     "commander": "^10.0.0",
     "@db-auto/oracle": "0.0.16",
     "@db-auto/mysql": "0.0.16",
+    "@db-auto/postgres": "0.0.16",
     "@db-auto/tables": "0.0.16",
     "@db-auto/utils": "0.0.16",
     "@db-auto/files": "0.0.16",
