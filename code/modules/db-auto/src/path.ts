@@ -1,4 +1,4 @@
-import { ErrorsAnd, hasErrors, mapErrors, NameAnd } from "@db-auto/utils";
+import { ErrorsAnd, flatMap, flatMapErrors, foldErrors, hasErrors, mapErrors, NameAnd } from "@db-auto/utils";
 import { buildPlan, clean, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
 
 export interface SelectDataPP {
@@ -61,4 +61,23 @@ export function prettyPrintPP ( pp: PP ): string[] {
   if ( pp.type === 'links' ) return [ "Links:", '  ' + pp.links.join ( ', ' ) ]
   if ( pp.type === 'selectData' ) return [ JSON.stringify ( pp.data, null, 2 ) ]
   return pp.sql
+}
+
+export function makeTracePlanSpecs ( pathSpec: PathSpec ): PathSpec[] {
+  const path = pathSpec.path
+  const result: PathSpec[] = []
+  for ( let i = 0; i < path.length; i++ ) {
+    result.push ( { ...pathSpec, path: path.slice ( 0, i + 1 ) } )
+  }
+  return result;
+}
+export function tracePlan ( tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): string[] {
+  const result: PP[] = []
+  const specs = makeTracePlanSpecs ( pathSpec )
+  for ( let i = 0; i < specs.length; i++ ) {
+    const pp = processPathString ( tables, specs[ i ], options )
+    if ( hasErrors ( pp ) ) return pp
+    result.push ( pp )
+  }
+  return flatMap<PP, string> ( result, ( pp, i ) => [ `${specs[ i ].path}`, ...prettyPrintPP ( pp ),'' ] )
 }

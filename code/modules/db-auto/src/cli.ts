@@ -5,7 +5,7 @@ import { makeCreateTableSqlForMock } from "@db-auto/mocks";
 import { cleanConfig, CleanConfig } from "./config";
 import { findFileInParentsOrError } from "@db-auto/files";
 import { prettyPrintEnvironments } from "@db-auto/environments";
-import { prettyPrintPP, processPathString } from "./path";
+import { prettyPrintPP, processPathString, tracePlan } from "./path";
 
 
 export function makeConfig ( cwd: string, envVars: NameAnd<string> ): ErrorsAnd<CleanConfig> {
@@ -30,12 +30,18 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .argument ( '[id]', "the id of the primary key in the first table in the path" )
     .option ( '-p, --plan', "show the plan instead of executing", false )
     .option ( '-s, --sql', "show the sql instead of executing", false )
+    .option ( '-t, --trace', "trace the results", false )
     .option ( '-w, --where [where...]', "a where clause added to the query. There is no syntax checking", [] )
     // .allowUnknownOption ( true )
     .version ( version )
     .action ( ( path, id, options ) => {
       const where = options.where ? options.where : []
-      const errorsOrresult = processPathString ( config.tables, makePathSpec ( path, id, options, where ), options );
+      let pathSpec = makePathSpec ( path, id, options, where );
+      if ( options.trace ) {
+        tracePlan ( config.tables, pathSpec, options ).forEach ( line => console.log ( line ) )
+        return
+      }
+      const errorsOrresult = processPathString ( config.tables, pathSpec, options );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return
