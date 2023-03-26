@@ -1,9 +1,13 @@
 import { NameAnd } from "@db-auto/utils";
 
-export interface CommonEnvironment{
+export interface CommonEnvironment {
   type: string,
   username?: string,
   password?: string
+}
+
+export interface DalDialect {
+  limitFn: ( pageNum: number, pageSize: number, s: string[] ) => string[]
 }
 
 export interface WriteDal {

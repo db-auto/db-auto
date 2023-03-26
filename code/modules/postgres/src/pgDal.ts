@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from "pg";
 
-import { CommonEnvironment, Dal, DalQueryFn, DalResult, DalUpdateFn } from "@db-auto/dal";
+import { CommonEnvironment, Dal, DalDialect, DalQueryFn, DalResult, DalUpdateFn } from "@db-auto/dal";
 import { composeNameAndValidators, NameAndValidator, validateChildNumber, validateChildString, validateChildValue } from "@db-auto/utils";
 
 export interface PostgresEnv extends CommonEnvironment {
@@ -60,3 +60,11 @@ export const postgresEnvValidator: NameAndValidator<PostgresEnv> = composeNameAn
   validateChildString ( 'host' ),
   validateChildString ( 'database' )
 )
+
+export const postgresDalDialect: DalDialect = {
+  limitFn: ( pageNum: number, pageSize: number, s: string[] ) => {
+    const offset = (pageNum - 1) * pageSize
+    return [ ...s, `LIMIT ${pageSize} OFFSET ${offset}` ]
+  }
+}
+

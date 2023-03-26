@@ -1,7 +1,6 @@
 import { ErrorsAnd, flatMap, hasErrors, mapErrors, NameAnd } from "@db-auto/utils";
-import { buildPlan, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
-import { Environment } from "@db-auto/environments";
-import { postgresDal } from "@db-auto/postgres";
+import { buildPlan, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor, SqlOptions } from "@db-auto/tables";
+import { dalFor, Environment } from "@db-auto/environments";
 import { DalResult, DalResultDisplayOptions, prettyPrintDalResult } from "@db-auto/dal";
 
 export interface SelectDataPP {
@@ -46,9 +45,10 @@ function processQueryPP ( tables: NameAnd<CleanTable>, parts: string[] ): Errors
 }
 
 
-interface ProcessPathOptions extends DalResultDisplayOptions {
+interface ProcessPathOptions extends DalResultDisplayOptions, SqlOptions {
   plan?: boolean,
   sql?: boolean
+  fullSql?: boolean
 }
 export async function processPathString ( env: Environment, tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<ErrorsAnd<PP>> {
   const path = pathSpec.path
@@ -58,11 +58,12 @@ export async function processPathString ( env: Environment, tables: NameAnd<Clea
   let plan = buildPlan ( tables, pathSpec );
   if ( hasErrors ( plan ) ) return plan
   const data = selectData ( "all" ) ( plan )
-  const { plan: showPlan, sql: showSql } = options
+  const { plan: showPlan, sql: showSql, fullSql } = options
   if ( showPlan ) return { type: 'selectData', data }
-  const sql = sqlFor ( mergeSelectData ( data ) );
-  if ( showSql ) return ({ type: 'sql', sql })
-  const dal = postgresDal ( env )
+  const optionsModifiedForLimits = showSql && !fullSql ? { ...options, limitBy: undefined } : options
+  const sql = sqlFor ( optionsModifiedForLimits ) ( mergeSelectData ( data ) );
+  if ( showSql || fullSql ) return ({ type: 'sql', sql })
+  const dal = dalFor ( env )
   try {
     const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
     return result

@@ -7,10 +7,18 @@ Arguments:
                                the path
 
 Options:
-  -p, --plan                   show the plan instead of executing (default:
+   --plan                      show the plan instead of executing (default:
                                false)
   -s, --sql                    show the sql instead of executing (default:
                                false)
+  --fullSql                    normally the show sql doesn't include limits.
+                               This shows them (default: false)
+  -c, --count                  returns the count of the items in the table
+                               (default: false)
+  -d, --distinct               only return distinct values (default: false)
+  --page <page>                which page of the results should be returned
+  --pageSize <pageSize>        Changes the page of the returned results
+                               (default: 15)
   -t, --trace                  trace the results (default: false)
   -j, --json                   Sql output as json instead of columns (default:
                                false)

@@ -30,6 +30,7 @@ export interface PathSpec extends PathSpecForWheres {
   id: string | undefined,
   queryParams: NameAnd<string>,
   wheres: string[]
+  limit?: number
 }
 
 export function makePathSpec ( path: string, id?: string, queryParams?: NameAnd<string>, wheres?: string[] ): PathSpec {

@@ -4,7 +4,7 @@ import { CleanTable, findQueryParams, makePathSpec, prettyPrintTables } from "@d
 import { makeCreateTableSqlForMock } from "@db-auto/mocks";
 import { cleanConfig, CleanConfig } from "./config";
 import { findFileInParentsOrError } from "@db-auto/files";
-import { prettyPrintEnvironments } from "@db-auto/environments";
+import { prettyPrintEnvironments, sqlDialect } from "@db-auto/environments";
 import { prettyPrintPP, processPathString, tracePlan } from "./path";
 
 
@@ -28,8 +28,13 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     .usage ( '<command> [options]' )
     .argument ( '<path>', "the list of table names joined by a . For example driver.mission.mission_aud" )
     .argument ( '[id]', "the id of the primary key in the first table in the path" )
-    .option ( '-p, --plan', "show the plan instead of executing", false )
+    .option ( ' --plan', "show the plan instead of executing", false )
     .option ( '-s, --sql', "show the sql instead of executing", false )
+    .option ( '--fullSql', "normally the show sql doesn't include limits. This shows them", false )
+    .option ( '-c, --count', "returns the count of the items in the table", false )
+    .option ( '-d, --distinct', "only return distinct values", false )
+    .option ( '--page <page> ', "which page of the results should be returned" )
+    .option ( "--pageSize <pageSize>", "Changes the page of the returned results", parseInt, 15 )
     .option ( '-t, --trace', "trace the results", false )
     .option ( '-j, --json', "Sql output as json instead of columns", false )
     .option ( '--onelinejson', "Sql output as 'one json per line for the row' instead of columns", false )
@@ -38,20 +43,26 @@ export function makeProgram ( config: CleanConfig, version: string ): Command {
     // .allowUnknownOption ( true )
     .version ( version )
     .action ( async ( path, id, options ) => {
-      const where = options.where ? options.where : []
-      let pathSpec = makePathSpec ( path, id, options, where );
       const env = config.environments.dev
-      if ( options.trace ) {
-        const pps = await tracePlan ( env, config.tables, pathSpec, options )
+      if ( !env ) throw new Error ( 'Need to have a dev environment' )
+      const dialect = sqlDialect ( env.type );
+      const page = options.page ? parseInt ( options.page ) : 1
+      const fullOptions = { ...options, limitBy: dialect.limitFn, page }
+
+      if ( page < 1 ) throw new Error ( "Page must be greater than 0" )
+      const where = fullOptions.where ? fullOptions.where : []
+      let pathSpec = makePathSpec ( path, id, fullOptions, where );
+      if ( fullOptions.trace ) {
+        const pps = await tracePlan ( env, config.tables, pathSpec, fullOptions )
         pps.forEach ( line => console.log ( line ) )
         return
       }
-      const errorsOrresult = await processPathString ( env, config.tables, pathSpec, options );
+      const errorsOrresult = await processPathString ( env, config.tables, pathSpec, fullOptions );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return
       }
-      prettyPrintPP (options, errorsOrresult ).forEach ( line => console.log ( line ) )
+      prettyPrintPP ( fullOptions, errorsOrresult ).forEach ( line => console.log ( line ) )
     } )
   findQueryParams ( config.tables ).forEach ( param => program.option ( '--' + param.name + " <" + param.name + ">", param.description ) )
 

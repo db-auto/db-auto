@@ -85,31 +85,31 @@ describe ( "merge", () => {
 
 describe ( "sqlFor", () => {
   it ( "should make sql for a single step", () => {
-    expect ( mapErrors ( buildPlan ( clean, makePathSpec ( "driver" ) ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
+    expect ( mapErrors ( buildPlan ( clean, makePathSpec ( "driver" ) ), plan => sqlFor ( {} ) ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
       "select T0.*",
       "   from DriverTable T0"
     ] )
   } )
   it ( "should make sql for two steps", () => {
-    expect ( mapErrors ( buildPlan ( clean, makePathSpec ( "driver.mission" ) ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
+    expect ( mapErrors ( buildPlan ( clean, makePathSpec ( "driver.mission" ) ), plan => sqlFor ( {} ) ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
       "select T0.*, T1.*",
       "   from DriverTable T0, mission T1 where T0.driverId = T1.driverId"
     ] )
   } )
   it ( "should make sql for three steps", () => {
-    expect ( mapErrors ( buildPlan ( clean, makePathSpec ( "driver.mission.mission_aud" ) ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
+    expect ( mapErrors ( buildPlan ( clean, makePathSpec ( "driver.mission.mission_aud" ) ), plan => sqlFor ( {} ) ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
       "select T0.*, T1.*, T2.*",
       "   from DriverTable T0, mission T1, mission_aud T2 where T0.driverId = T1.driverId and T1.missionId = T2.missionId"
     ] )
   } )
   it ( "should make sql when link name isn't table name", () => {
-    expect ( mapErrors ( buildPlan ( clean, makePathSpec ( "driver.audit" ) ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
+    expect ( mapErrors ( buildPlan ( clean, makePathSpec ( "driver.audit" ) ), plan => sqlFor ( {} ) ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
       "select T0.*, T1.*",
       "   from DriverTable T0, driver_aud T1 where T0.driverId = T1.driverId"
     ] )
   } )
   it ( "should make sql when link name isn't table name and there is an id", () => {
-    expect ( mapErrors ( buildPlan ( clean, makePathSpec ( "driver.audit", "123", {}, [], ) ), plan => sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
+    expect ( mapErrors ( buildPlan ( clean, makePathSpec ( "driver.audit", "123", {}, [], ) ), plan => sqlFor ( {} ) ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) ) ).toEqual ( [
       "select T0.*, T1.*",
       "   from DriverTable T0, driver_aud T1 where T0.id=123 and T0.driverId = T1.driverId"
     ] )

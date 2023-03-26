@@ -83,7 +83,7 @@ describe ( 'processPath', () => {
     } )
 
   } )
-  describe ( "returning a plan",  () => {
+  describe ( "returning a plan", () => {
     async function forPlan ( path: string ) {
       const actual = await processPathString ( dev, clean, makePathSpec ( path ), { plan: true } )
       const data = mapErrors ( buildPlan ( clean, makePathSpec ( path ) ), selectData ( "all" ) )
@@ -108,7 +108,7 @@ describe ( 'processPath', () => {
     async function forSql ( pathSpec: PathSpec ) {
       const actual = await processPathString ( dev, clean, pathSpec, { sql: true } )
       const sql = mapErrors ( buildPlan ( clean, pathSpec ), plan =>
-        sqlFor ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) )
+        sqlFor ( {} ) ( mergeSelectData ( selectData ( "all" ) ( plan ) ) ) )
       const expected = { type: 'sql', sql }
       return { actual, expected }
     }

@@ -1,5 +1,5 @@
 import { mapObject, NameAnd, NameAndValidator } from "@db-auto/utils";
-import { PostgresEnv, postgresEnvValidator } from "@db-auto/postgres";
+import { postgresDal, postgresDalDialect, PostgresEnv, postgresEnvValidator } from "@db-auto/postgres";
 
 
 export type Environment = PostgresEnv
@@ -28,6 +28,15 @@ export function cleanEnvironment ( envVars: NameAnd<string>, env: NameAnd<Enviro
 
 export const environmentValidator: NameAndValidator<Environment> = name => env => {
   if ( env.type === 'postgres' ) return postgresEnvValidator ( name ) ( env )
-  return [ `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify(env)}` ]
+  return [ `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify ( env )}` ]
 }
 
+
+export function sqlDialect ( type: string ) {
+  if ( type === 'postgres' ) return postgresDalDialect
+  throw new Error ( `Unknown environment type ${type}. Currently on postgres is supported. ${JSON.stringify ( type )}` )
+}
+export function dalFor ( env: Environment ) {
+  if ( env.type === 'postgres' ) return postgresDal ( env )
+  throw new Error ( `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify ( env )}` )
+}
