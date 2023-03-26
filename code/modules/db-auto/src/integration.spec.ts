@@ -86,8 +86,13 @@ describe ( 'db-auto path --options that are query params', () => {
 } )
 
 describe ( "db-auto trace", () => {
-  it ( "should build up the results", async () => {
-    const expected = readTestFile ( mockTestDir, 'trace.expected.txt' );
+  it ( "should build up the results - sql", async () => {
+    const expected = readTestFile ( mockTestDir, 'trace.sql.expected.txt' );
     expect ( await executeDbAuto ( mockTestDir, `driver.mission.driver.audit -ts` ) ).toEqual ( expected );
+  } )
+
+  it ( "should build up the results - execution", async () => {
+    const expected = readTestFile ( mockTestDir, 'trace.execution.expected.txt' );
+    expect ( await executeDbAuto ( mockTestDir, `driver.mission.driver.audit -t` ) ).toEqual ( expected );
   } )
 } )

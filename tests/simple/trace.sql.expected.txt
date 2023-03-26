@@ -12,5 +12,5 @@ select T0.*, T1.*, T2.*
 
 driver.mission.driver.audit
 select T0.*, T1.*, T2.*, T3.*
-   from DriverTable T0, mission T1, DriverTable T2, driver_aud T3 where T0.driverId = T1.driverId and T1.driverId = T2.driverId and T2.driverId = T3.driverId
+   from DriverTable T0, mission T1, DriverTable T2, driver_aud T3 where T0.driverId = T1.driverId and T1.driverId = T2.driverId and T2.driverId = T3.id
 

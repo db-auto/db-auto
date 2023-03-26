@@ -16,7 +16,7 @@ export function whereFor ( plan: Plan ): string[] {
   const link = planLink.link
   const previousTable = planLink.linkTo
 
-  return [ ...plan.where, `${previousTable.alias}.${idThere ( link )} = ${plan.alias}.${idHere ( link )}` ]
+  return [ ...plan.where, `${previousTable.alias}.${idHere ( link )} = ${plan.alias}.${idThere ( link )}` ]
 }
 export function selectDataForOne ( plan: Plan, view: string ): SelectData {
   return {

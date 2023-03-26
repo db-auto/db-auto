@@ -14,7 +14,7 @@
       },
       "links":       {
         "mission": {"type": "one-to-many", "idHereAndThere": "driverId"},
-        "audit":   {"type": "one-to-many", "table": "driver_aud", "idHereAndThere": "driverId"}
+        "audit":   {"type": "one-to-many", "table": "driver_aud", "idHere": "driverId", "idThere": "id"}
       },
       "dataColumns": {
         "livesIn":     {"type": "string"},
