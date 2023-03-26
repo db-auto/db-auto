@@ -1,7 +1,7 @@
 {
   "name": "@db-auto/mysql",
   "description": "",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "mysql2": "3.2.0",
-    "@db-auto/utils": "0.0.22",
-    "@db-auto/dal": "0.0.22"
+    "@db-auto/utils": "0.0.23",
+    "@db-auto/dal": "0.0.23"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

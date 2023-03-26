@@ -1,0 +1,1 @@
+General utilities for db-auto: no domain knowledge at all in any of these
