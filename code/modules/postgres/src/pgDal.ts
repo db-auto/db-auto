@@ -26,7 +26,7 @@ const postgresDalQuery = ( pool: Pool ): DalQueryFn => async ( sql, ...params: a
   const client: PoolClient = await pool.connect ()
   try {
     var res = await client.query ( sql, params )
-    return ({ meta: { columns: [] }, rows: res.rows });
+    return ({ meta: { columns: res.fields.map ( md => ({ name: md.name }) ) }, rows: res.rows });
   } finally {
     client.release ()
   }

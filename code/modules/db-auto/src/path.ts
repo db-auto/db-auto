@@ -1,8 +1,8 @@
-import { ErrorsAnd, flatMap, flatMapErrors, foldErrors, hasErrors, mapErrors, NameAnd } from "@db-auto/utils";
+import { ErrorsAnd, flatMap, hasErrors, mapErrors, NameAnd } from "@db-auto/utils";
 import { buildPlan, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor } from "@db-auto/tables";
 import { Environment } from "@db-auto/environments";
 import { postgresDal } from "@db-auto/postgres";
-import { DalResult } from "@db-auto/dal";
+import { DalResult, prettyPrintDalResult } from "@db-auto/dal";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -77,7 +77,7 @@ export function prettyPrintPP ( pp: PP ): string[] {
   if ( pp.type === 'links' ) return [ "Links:", '  ' + pp.links.join ( ', ' ) ]
   if ( pp.type === 'selectData' ) return [ JSON.stringify ( pp.data, null, 2 ) ]
   if ( pp.type === 'sql' ) return pp.sql
-  if ( pp.type === 'res' ) return [ JSON.stringify ( pp.res, null, 2 ) ]
+  if ( pp.type === 'res' ) return prettyPrintDalResult ( pp.res )
   throw new Error ( `Unknown PP type\n${JSON.stringify ( pp )}` )
 }
 

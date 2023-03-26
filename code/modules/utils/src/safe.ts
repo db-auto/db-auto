@@ -5,6 +5,10 @@ export function safeArray<T> ( ts: T | T[] | undefined ): T[] {
   if ( Array.isArray ( ts ) ) return ts
   return [ ts ];
 }
+export function safeToString ( t: any ): string {
+  return t === undefined || t === null ? '' : t.toString ()
+}
+
 export function stringOrUndefinedAsString ( s: string | undefined ): string {
   return s === undefined ? 'undefined' : s
 }

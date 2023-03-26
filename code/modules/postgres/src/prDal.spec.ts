@@ -1,4 +1,5 @@
 import { postgresDal, PostgresEnv } from "./pgDal";
+import { DalResult } from "@db-auto/dal";
 
 const inCi = process.env[ 'CI' ] === 'true'
 
@@ -26,7 +27,7 @@ describe ( 'pgDal', () => {
       await dal.update ( "insert into driver_aud (id, who, what) values ($1, $2, $3)", 2, "phil", "insert2" )
       await dal.update ( "insert into mission_aud (id, who, what) values ($1, $2, $3)", 1, "phil", "insert" )
 
-      const res = await dal.query ( "select * from drivertable" )
+      const res: DalResult = await dal.query ( "select * from drivertable" )
       expect ( res.rows ).toEqual ( [
         {
           "driverid": 1,
@@ -37,6 +38,12 @@ describe ( 'pgDal', () => {
           "name": "joe"
         }
       ] );
+      expect ( res.meta ).toEqual ( {
+        "columns": [
+          { "name": "driverid" },
+          { "name": "name" }
+        ]
+      } )
 
     } finally {
       dal.close ();

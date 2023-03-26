@@ -1,78 +1,20 @@
 driver
-{
-  "meta": {
-    "columns": []
-  },
-  "rows": [
-    {
-      "driverid": 1,
-      "name": "phil"
-    },
-    {
-      "driverid": 2,
-      "name": "joe"
-    }
-  ]
-}
+driverid name
+1        phil
+2        joe
 
 driver.mission
-{
-  "meta": {
-    "columns": []
-  },
-  "rows": [
-    {
-      "driverid": 1,
-      "name": "phil",
-      "id": 1
-    },
-    {
-      "driverid": 2,
-      "name": "joe",
-      "id": 2
-    }
-  ]
-}
+driverid name id
+1        phil 1
+2        joe  2
 
 driver.mission.driver
-{
-  "meta": {
-    "columns": []
-  },
-  "rows": [
-    {
-      "driverid": 1,
-      "name": "phil",
-      "id": 1
-    },
-    {
-      "driverid": 2,
-      "name": "joe",
-      "id": 2
-    }
-  ]
-}
+driverid name id
+1        phil 1
+2        joe  2
 
 driver.mission.driver.audit
-{
-  "meta": {
-    "columns": []
-  },
-  "rows": [
-    {
-      "driverid": 1,
-      "name": "phil",
-      "id": 1,
-      "who": "phil",
-      "what": "insert1"
-    },
-    {
-      "driverid": 2,
-      "name": "joe",
-      "id": 2,
-      "who": "phil",
-      "what": "insert2"
-    }
-  ]
-}
+driverid name id who  what
+1        phil 1  phil insert1
+2        joe  2  phil insert2
 
