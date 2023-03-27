@@ -4,7 +4,7 @@ import { CleanTable, findQueryParams, makePathSpec, prettyPrintTables } from "@d
 import { makeCreateTableSqlForMock } from "@db-auto/mocks";
 import { cleanConfig, CleanConfig } from "./config";
 import { findFileInParentsOrError } from "@db-auto/files";
-import { checkStatus, currentEnvironment, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn } from "@db-auto/environments";
+import { checkStatus, currentEnvironment, dalFor, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn } from "@db-auto/environments";
 import { prettyPrintPP, processPathString, tracePlan } from "./path";
 
 
@@ -109,6 +109,23 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
         process.exit ( 1 )
       }
       saveEnvName ( cwd, env )
+    } )
+  const scrape = program.command ( 'scrape' ).description ( "Scrapes the database" )
+    .option ( '-e, --env <env>', "override the default environment. Use 'db-auto envs' to see a list of names" )
+    .action ( async ( command, options ) => {
+      const envAndNameOrErrors = currentEnvironment ( cwd, config.environments, options.env )
+      if ( hasErrors ( envAndNameOrErrors ) ) {
+        reportErrors ( envAndNameOrErrors )
+        return;
+      }
+      const { env, envName } = envAndNameOrErrors
+      const dal = dalFor ( env )
+      try {
+        console.log ( "Scraping " + envName )
+        console.log ( JSON.stringify ( await dal.metaData (), null, 2 ) )
+      } finally {
+        dal.close ()
+      }
     } )
 
   const tables = program.command ( 'tables' ).description ( "Lists the known tables" )

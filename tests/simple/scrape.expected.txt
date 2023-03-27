@@ -1,0 +1,98 @@
+Scraping dev
+{
+  "tables": {
+    "drivertable": {
+      "columns": {
+        "driverid": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "text"
+        }
+      },
+      "fk": {
+        "fk_mission_driver": {
+          "column": "driverid",
+          "refTable": "mission",
+          "refColumn": "driverid",
+          "raw": "FOREIGN KEY (driverid) REFERENCES drivertable(driverid) reversed"
+        },
+        "fk_driver_aud_driver": {
+          "column": "driverid",
+          "refTable": "driver_aud",
+          "refColumn": "id",
+          "raw": "FOREIGN KEY (id) REFERENCES drivertable(driverid) reversed"
+        }
+      }
+    },
+    "mission": {
+      "columns": {
+        "id": {
+          "type": "integer"
+        },
+        "driverid": {
+          "type": "integer"
+        },
+        "mission": {
+          "type": "text"
+        }
+      },
+      "fk": {
+        "fk_mission_driver": {
+          "column": "driverid",
+          "refTable": "drivertable",
+          "refColumn": "driverid",
+          "raw": "FOREIGN KEY (driverid) REFERENCES drivertable(driverid)"
+        },
+        "fk_mission_aud_mission": {
+          "column": "id",
+          "refTable": "mission_aud",
+          "refColumn": "id",
+          "raw": "FOREIGN KEY (id) REFERENCES mission(id) reversed"
+        }
+      }
+    },
+    "driver_aud": {
+      "columns": {
+        "id": {
+          "type": "integer"
+        },
+        "who": {
+          "type": "text"
+        },
+        "what": {
+          "type": "text"
+        }
+      },
+      "fk": {
+        "fk_driver_aud_driver": {
+          "column": "id",
+          "refTable": "drivertable",
+          "refColumn": "driverid",
+          "raw": "FOREIGN KEY (id) REFERENCES drivertable(driverid)"
+        }
+      }
+    },
+    "mission_aud": {
+      "columns": {
+        "id": {
+          "type": "integer"
+        },
+        "who": {
+          "type": "text"
+        },
+        "what": {
+          "type": "text"
+        }
+      },
+      "fk": {
+        "fk_mission_aud_mission": {
+          "column": "id",
+          "refTable": "mission",
+          "refColumn": "id",
+          "raw": "FOREIGN KEY (id) REFERENCES mission(id)"
+        }
+      }
+    }
+  }
+}

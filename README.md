@@ -26,8 +26,7 @@ db-auto driver.mission.audit 123 -date '2023-6-3'    # lists the audit records f
 
 
 * Start using ? notation and stored procedures so that we can avoid sql injection
-* Allow join notation. 
-* `db-auto status` which checks each of the environments in the db-auto.json file
+* Allow join notation (e.g. join ... on ... instead of select). 
 * `db-auto validate` Validate the db-auto.json file
 * Auto-detect the database details and populate db-auto.json
 * views so that we can restrict the columns visible 
@@ -48,8 +47,6 @@ db-auto driver.mission.mission_aud
 db-auto driver someThingNotANumber
 # db-auto driver someThingNotANumber
 # (node:15960) UnhandledPromiseRejectionWarning: error: column "somethingnotanumber" does not exist
-
-
 ```
 
 

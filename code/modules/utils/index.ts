@@ -7,3 +7,4 @@ export * from './src/json'
 export * from "./src/validators";
 export * from "./src/strings";
 export * from "./src/columns";
+export * from "./src/maputils";

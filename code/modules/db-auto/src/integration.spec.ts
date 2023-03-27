@@ -86,7 +86,7 @@ describe ( "db-auto paths", () => {
     } )
     it ( "should db-auto driver.mission with no titles", async () => {
       if ( inCi ) return
-      const expected = readTestFile ( mockTestDir, 'path.driver.mission.notitles.expected.json' );
+      const expected = readTestFile ( mockTestDir, 'path.driver.mission.notitles.expected.txt' );
       expect ( await executeDbAuto ( mockTestDir, `driver.mission --notitles` ) ).toEqual ( expected );
     } )
     it ( "should db-auto driver.audit with oneline json output", async () => {
@@ -133,6 +133,12 @@ describe ( "db-auto trace", () => {
   } )
 } )
 
+describe("scraping", () => {
+  it("should scrape", async () => {
+    const expected = readTestFile(mockTestDir, 'scrape.expected.txt');
+    expect(await executeDbAuto(mockTestDir, `scrape`)).toEqual(expected);
+  })
+})
 
 describe("status", () =>{
   it("should return status", async () => {

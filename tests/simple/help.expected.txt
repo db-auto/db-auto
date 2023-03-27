@@ -42,4 +42,5 @@ Commands:
   status                       Checks that the environments are accessible and
                                gives report
   env <env>                    Sets the current environment
+  scrape [options]             Scrapes the database
   tables                       Lists the known tables

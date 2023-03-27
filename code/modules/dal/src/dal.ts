@@ -13,7 +13,28 @@ export interface DalDialect {
 
 export interface WriteDal {
   update: DalUpdateFn
+}
 
+export interface ColumnMetaData {
+  type: string
+}
+export interface ForeignKeyMetaData {
+  column: string
+  refTable: string
+  refColumn: string
+  raw: string
+}
+export interface TableMetaData {
+  columns: NameAnd<ColumnMetaData>
+  fk: NameAnd<ForeignKeyMetaData>
+}
+export interface DatabaseMetaData {
+  tables: NameAnd<TableMetaData>
+}
+
+export type MetaDataFn = () => Promise<DatabaseMetaData>
+export interface MetaDal {
+  metaData: () => Promise<DatabaseMetaData>
 
 }
 export interface DalRow extends NameAnd<any> {
@@ -34,6 +55,6 @@ export type DalUpdateFn = ( sql: string, ...params: any[] ) => Promise<number>
 export interface ReadDal {
   query: DalQueryFn;
 }
-export interface Dal extends ReadDal, WriteDal {
+export interface Dal extends ReadDal, WriteDal, MetaDal {
   close ();
 }

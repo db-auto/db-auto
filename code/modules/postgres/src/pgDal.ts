@@ -2,6 +2,7 @@ import { Pool, PoolClient } from "pg";
 
 import { CommonEnvironment, Dal, DalDialect, DalQueryFn, DalResult, DalUpdateFn } from "@db-auto/dal";
 import { composeNameAndValidators, NameAndValidator, validateChildNumber, validateChildString, validateChildValue } from "@db-auto/utils";
+import { pgMeta } from "./pgMeta";
 
 export interface PostgresEnv extends CommonEnvironment {
   host: string,
@@ -48,7 +49,8 @@ export function postgresDal ( env: PostgresEnv ): Dal {
   return {
     query: postgresDalQuery ( pool ),
     update: postgresDalUpdate ( pool ),
-    close: () => postgresClose ( pool )
+    close: () => postgresClose ( pool ),
+    metaData: pgMeta ( pool, 'public' )
   }
 }
 
