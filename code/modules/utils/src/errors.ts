@@ -1,4 +1,4 @@
-import { flatten } from "./utils";
+import { flatMap, flatten } from "./utils";
 
 
 export type ErrorFn<From, To> = ( value: From ) => ErrorsAnd<To>
@@ -25,9 +25,22 @@ export function errors<T> ( t: ErrorsAnd<T> ): string[] {
 export function value<T> ( t: ErrorsAnd<T> ): T | undefined {
   return hasErrors ( t ) ? undefined : t
 }
-
 export function mapErrors<T, T1> ( t: ErrorsAnd<T>, fn: ( t: T ) => ErrorsAnd<T1> ): ErrorsAnd<T1> {
   return hasErrors ( t ) ? t : fn ( t )
+}
+export function mapAndforEachErrorFn<T, Acc, T1> ( ts: T[], mapFn: ( t: T ) => ErrorsAnd<T1>, forEach: ( t1: T1, index: number ) => Acc ): ErrorsAnd<void> {
+  const raw = ts.map ( mapFn )
+  const errors = allErrorsIn ( raw )
+  if ( errors.length > 0 ) return errors
+  const values: T1 [] = allValuesIn ( raw )
+  values.forEach ( ( t1, i ) => forEach ( t1, i ) )
+}
+
+function allErrorsIn<T> ( ts: ErrorsAnd<T>[] ): string[] {
+  return flatMap ( ts, t => hasErrors ( t ) ? errors ( t ) : [] )
+}
+function allValuesIn<T> ( ts: ErrorsAnd<T>[] ): T[] {
+  return flatMap ( ts, t => hasErrors ( t ) ? [] : [ t ] )
 }
 export function mapErrorsK<T, T1> ( t: ErrorsAnd<T>, fn: ( t: T ) => Promise<ErrorsAnd<T1>> ): Promise<ErrorsAnd<T1>> {
   return hasErrors ( t ) ? Promise.resolve ( t ) : fn ( t )

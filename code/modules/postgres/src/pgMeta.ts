@@ -1,7 +1,6 @@
 import { Pool } from "pg";
 import { ColumnMetaData, ForeignKeyMetaData, MetaDataFn, TableMetaData } from "@dbpath/dal";
-import { addNameAnd2, fromEntries, NameAnd } from "@dbpath/utils";
-import { deepSortNames } from "@dbpath/utils/dist/src/sort";
+import { addNameAnd2, deepSortNames, fromEntries, NameAnd } from "@dbpath/utils";
 
 
 export const pgMeta = ( p: Pool, schema: string ): MetaDataFn => async (): Promise<any> => {
