@@ -6,40 +6,19 @@ Scraping dev
         "id": {
           "type": "integer"
         },
-        "who": {
+        "what": {
           "type": "text"
         },
-        "what": {
+        "who": {
           "type": "text"
         }
       },
       "fk": {
         "fk_driver_aud_driver": {
           "column": "id",
-          "refTable": "drivertable",
+          "raw": "FOREIGN KEY (id) REFERENCES drivertable(driverid)",
           "refColumn": "driverid",
-          "raw": "FOREIGN KEY (id) REFERENCES drivertable(driverid)"
-        }
-      }
-    },
-    "mission_aud": {
-      "columns": {
-        "id": {
-          "type": "integer"
-        },
-        "who": {
-          "type": "text"
-        },
-        "what": {
-          "type": "text"
-        }
-      },
-      "fk": {
-        "fk_mission_aud_mission": {
-          "column": "id",
-          "refTable": "mission",
-          "refColumn": "id",
-          "raw": "FOREIGN KEY (id) REFERENCES mission(id)"
+          "refTable": "drivertable"
         }
       }
     },
@@ -53,26 +32,26 @@ Scraping dev
         }
       },
       "fk": {
-        "fk_mission_driver": {
-          "column": "driverid",
-          "refTable": "mission",
-          "refColumn": "driverid",
-          "raw": "FOREIGN KEY (driverid) REFERENCES drivertable(driverid) reversed"
-        },
         "fk_driver_aud_driver": {
           "column": "driverid",
-          "refTable": "driver_aud",
+          "raw": "FOREIGN KEY (id) REFERENCES drivertable(driverid) reversed",
           "refColumn": "id",
-          "raw": "FOREIGN KEY (id) REFERENCES drivertable(driverid) reversed"
+          "refTable": "driver_aud"
+        },
+        "fk_mission_driver": {
+          "column": "driverid",
+          "raw": "FOREIGN KEY (driverid) REFERENCES drivertable(driverid) reversed",
+          "refColumn": "driverid",
+          "refTable": "mission"
         }
       }
     },
     "mission": {
       "columns": {
-        "id": {
+        "driverid": {
           "type": "integer"
         },
-        "driverid": {
+        "id": {
           "type": "integer"
         },
         "mission": {
@@ -80,17 +59,38 @@ Scraping dev
         }
       },
       "fk": {
-        "fk_mission_driver": {
-          "column": "driverid",
-          "refTable": "drivertable",
-          "refColumn": "driverid",
-          "raw": "FOREIGN KEY (driverid) REFERENCES drivertable(driverid)"
-        },
         "fk_mission_aud_mission": {
           "column": "id",
-          "refTable": "mission_aud",
+          "raw": "FOREIGN KEY (id) REFERENCES mission(id) reversed",
           "refColumn": "id",
-          "raw": "FOREIGN KEY (id) REFERENCES mission(id) reversed"
+          "refTable": "mission_aud"
+        },
+        "fk_mission_driver": {
+          "column": "driverid",
+          "raw": "FOREIGN KEY (driverid) REFERENCES drivertable(driverid)",
+          "refColumn": "driverid",
+          "refTable": "drivertable"
+        }
+      }
+    },
+    "mission_aud": {
+      "columns": {
+        "id": {
+          "type": "integer"
+        },
+        "what": {
+          "type": "text"
+        },
+        "who": {
+          "type": "text"
+        }
+      },
+      "fk": {
+        "fk_mission_aud_mission": {
+          "column": "id",
+          "raw": "FOREIGN KEY (id) REFERENCES mission(id)",
+          "refColumn": "id",
+          "refTable": "mission"
         }
       }
     }

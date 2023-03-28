@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import { ColumnMetaData, ForeignKeyMetaData, MetaDataFn, TableMetaData } from "@dbpath/dal";
 import { addNameAnd2, fromEntries, NameAnd } from "@dbpath/utils";
+import { deepSortNames } from "@dbpath/utils/dist/src/sort";
 
 
 export const pgMeta = ( p: Pool, schema: string ): MetaDataFn => async (): Promise<any> => {
@@ -8,12 +9,14 @@ export const pgMeta = ( p: Pool, schema: string ): MetaDataFn => async (): Promi
   try {
     const tables = await client.query ( `    SELECT table_name
                                              FROM information_schema.tables
-                                             WHERE table_schema = $1 order by table_name`, [ schema ] );
+                                             WHERE table_schema = $1
+                                             order by table_name`, [ schema ] );
 
     const tableNames = tables.rows.map ( r => r.table_name );
     const columns = await client.query ( `SELECT table_name, column_name, data_type
                                           FROM information_schema.columns
-                                          where table_schema = $1 order by table_name,column_name`, [ schema ] );
+                                          where table_schema = $1
+                                          order by table_name, column_name`, [ schema ] );
     const table2Columns: NameAnd<NameAnd<ColumnMetaData>> = {};
     columns.rows.forEach ( r => {
       addNameAnd2 ( table2Columns ) ( r.table_name, r.column_name, { type: r.data_type.toString () } );
@@ -54,8 +57,7 @@ export const pgMeta = ( p: Pool, schema: string ): MetaDataFn => async (): Promi
       let tableMetadata: TableMetaData = { columns: table2Columns[ t ], fk: table2Fks[ t ] };
       return [ t.toString (), tableMetadata ]
     } );
-    const table2Meta: NameAnd<TableMetaData> = fromEntries<TableMetaData> ( ...tableNamesAndMetaData );
-    return { tables: table2Meta };
+    return { tables: deepSortNames ( fromEntries ( ...tableNamesAndMetaData ) ) };
   } finally {
     client.release ();
   }

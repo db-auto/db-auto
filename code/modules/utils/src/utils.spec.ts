@@ -3,6 +3,7 @@ import { foldK, mapK, unique } from "./utils";
 import { safeArray } from "./safe";
 import { deepCombineTwoObjects } from "./combine";
 import { fromEntries, mapObject, mapObjectKeys, removeEmptyArrays } from "./nameAnd";
+import { deepSort } from "./sort";
 
 describe ( 'safeArray', () => {
   it ( "should return the array if defined", () => {
@@ -97,4 +98,27 @@ describe ( "mapK", () => {
   it ( 'should map', async () => {
     expect ( mapK ( [ 1, 2, 3 ], v => Promise.resolve ( v + 1 ) ) ).resolves.toEqual ( [ 2, 3, 4 ] )
   } )
+} )
+
+describe ( "deepsort", () => {
+  it ( "should return param if not array or obejct", () => {
+    expect ( deepSort ( 1 ) ).toEqual ( 1 )
+    expect ( deepSort ( "1" ) ).toEqual ( "1" )
+  } )
+  it ( "should sort arrays", () => {
+    expect ( deepSort ( [ [ 3, 2, 1 ], [ 1, 2, 3 ] ] ) ).toEqual ( [ [ 1,2,3 ], [ 1,2,3 ] ] )
+  } )
+  it ("should sort objects", () =>{
+    expect(deepSort({w: 1, b: {z: 1,y: [3,2,1]}})).toEqual({
+      "b": {
+        "y": [
+          1,
+          2,
+          3
+        ],
+        "z": 1
+      },
+      "w": 1
+    })
+  })
 } )
