@@ -1,5 +1,5 @@
 import { sampleMeta } from "@dbpath/dal";
-import { EnvSummary, findAllFieldsNames, findFieldNameFromSquareBrackets, findTableName, findTablePartAndFieldPart, parsePath, tableParser } from "./parser";
+import { EnvSummary, findAllFieldsNames, findFieldNameFromSquareBrackets, findFullTableNameValidatingIfSpecified, findTablePartAndFieldPartWithoutValidation, parsePath, tableParser } from "./parser";
 import { hasErrors } from "@dbpath/utils";
 
 const summary: EnvSummary = {
@@ -11,16 +11,33 @@ describe ( "pathParser", () => {
 
   describe ( "findTableName", () => {
     it ( "should return name (found from summary if needed) or error", () => {
-      const parse = findTableName ( sampleMeta, summary );
-      expect ( parse ( "driver" ) ).toEqual ( "drivertable" )
-      expect ( parse ( "mission" ) ).toEqual ( "mission" )
-      expect ( parse ( "notIn" ) ).toEqual ( [ "Table notIn not found. Legal names are driver_aud,drivertable,mission,mission_aud" ] )
+      const parse = findFullTableNameValidatingIfSpecified ( sampleMeta, summary );
+      expect ( parse ( "driver", undefined ) ).toEqual ( "drivertable" )
+      expect ( parse ( "driver", "drivertable" ) ).toEqual ( "drivertable" )
+      expect ( parse ( "driver", "notDriverTable" ) ).toEqual ( [
+        "Full table name [notDriverTable]  for summary [driver] does not match expected [drivertable]" ] )
+
+      expect ( parse ( "mission", undefined ) ).toEqual ( "mission" )
+      expect ( parse ( "mission", "mission" ) ).toEqual ( "mission" )
+      expect ( parse ( "mission", "notMission" ) ).toEqual ( [
+        "Summary [mission] is not found. Legal summaries are driver"] )
+
+      expect ( parse ( "notIn", undefined ) ).toEqual ( [
+        "Table notIn not found as either a summary or a table name. Legal summaries are driver and full tables are driver_aud,drivertable,mission,mission_aud" ] )
+
+      expect ( parse ( "notIn", "alsoNotIn" ) ).toEqual ( [
+        "Summary [notIn] is not found. Legal summaries are driver"
+      ] )
+
+      expect ( parse ( "notIn", "notIn" ) ).toEqual ( [
+        "Table notIn not found. Legal names are driver_aud,drivertable,mission,mission_aud"
+      ] )
     } )
   } )
-  describe ( "findTablePartAndFieldPart", () => {
-    it ( "should find findTablePartAndFieldPart", () => {
-      expect ( findTablePartAndFieldPart ( "driver[a,b,c]" ) ).toEqual ( { table: "driver", fields: "a,b,c" } )
-      expect ( findTablePartAndFieldPart ( "driver" ) ).toEqual ( { table: "driver", fields: undefined } )
+  describe ( "findTablePartAndFieldPartWithoutValidation", () => {
+    it ( "should find findTablePartAndFieldPartWithoutValidation", () => {
+      expect ( findTablePartAndFieldPartWithoutValidation ( "driver[a,b,c]" ) ).toEqual ( { table: "driver", fields: "a,b,c" } )
+      expect ( findTablePartAndFieldPartWithoutValidation ( "driver" ) ).toEqual ( { table: "driver", fields: undefined } )
     } )
   } )
   describe ( "fields", () => {
@@ -63,10 +80,13 @@ describe ( "pathParser", () => {
       } )
     } )
     it ( "should only parse a path with fields and !table if legal table", () => {
-      expect ( tableParser ( sampleMeta, summary ) ( "driver!notlegal[name]" ) ).toEqual ( {} )
+      expect ( tableParser ( sampleMeta, summary ) ( "driver!notlegal[name]" ) ).toEqual ( [
+        "Full table name [notlegal]  for summary [driver] does not match expected [drivertable]" ] )
     } )
     it ( "should only parse a path with fields and !table if legal summary", () => {
-      expect ( tableParser ( sampleMeta, summary ) ( "d!drivertable[name]" ) ).toEqual ( {} )
+      expect ( tableParser ( sampleMeta, summary ) ( "d!drivertable[name]" ) ).toEqual ( [
+        "Summary [d] is not found. Legal summaries are driver"
+      ] )
     } )
   } )
 } )

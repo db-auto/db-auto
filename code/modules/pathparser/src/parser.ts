@@ -1,5 +1,5 @@
 import { DatabaseMetaData } from "@dbpath/dal";
-import { ErrorsAnd, flatMapErrors, hasErrors, mapAndforEachErrorFn, mapErrors, NameAnd } from "@dbpath/utils";
+import { ErrorsAnd, flatMapErrors, hasErrors, mapAndforEachErrorFn, NameAnd } from "@dbpath/utils";
 
 export interface TableSummary {
   tableName: string
@@ -41,11 +41,22 @@ export const findAllFieldsNames = ( meta: DatabaseMetaData ) => ( tableName: str
   return Object.keys ( tableMeta.columns )
 }
 
-export const findTableName = ( meta: DatabaseMetaData, summary: EnvSummary ) => ( s: string ): ErrorsAnd<string> => {
-  const table = summary?.tables?.[ s ]?.tableName
-  const fullName = table ? table : s
-  if ( meta.tables[ fullName ] === undefined ) return [ `Table ${fullName} not found. Legal names are ${Object.keys ( meta.tables ).sort ()}` ]
-  return table === undefined || table === s ? s : table
+export const findFullTableNameValidatingIfSpecified = ( meta: DatabaseMetaData, summary: EnvSummary ) => ( tableOrSummary: string, providedFullTableName: string ): ErrorsAnd<string> => {
+  const foundTable = summary?.tables?.[ tableOrSummary ]?.tableName
+  const fullName = foundTable ? foundTable : tableOrSummary
+  if ( providedFullTableName && providedFullTableName !== fullName ) {
+    if ( foundTable === undefined )
+      return [ `Summary [${tableOrSummary}] is not found. Legal summaries are ${Object.keys ( summary.tables ).sort ()}` ]
+    else
+      return [ `Full table name [${providedFullTableName}]  for summary [${tableOrSummary}] does not match expected [${fullName}]` ]
+  }
+  if ( meta.tables[ fullName ] === undefined ) {
+    if ( providedFullTableName === undefined )
+      return [ `Table ${fullName} not found as either a summary or a table name. Legal summaries are ${Object.keys ( summary.tables ).sort ()} and full tables are ${Object.keys ( meta.tables ).sort ()}` ]
+    else
+      return [ `Table ${fullName} not found. Legal names are ${Object.keys ( meta.tables ).sort ()}` ]
+  }
+  return fullName
 };
 
 export const checkFields = ( meta: DatabaseMetaData, table: string ) => ( fields: string[] ): ErrorsAnd<void> => {
@@ -55,9 +66,12 @@ export const checkFields = ( meta: DatabaseMetaData, table: string ) => ( fields
   return undefined
 }
 
-interface TableAndFieldPart {
+interface TablePart {
   table: string
-  fields: string | undefined
+  fullTable?: string
+}
+interface TableAndFieldPart extends TablePart {
+  fields?: string
 }
 
 interface PathparserTable {
@@ -65,24 +79,35 @@ interface PathparserTable {
   fullTable: string
   fields: string[] | undefined
 }
-export const findTablePartAndFieldPart = ( s: string ): TableAndFieldPart => {
-  const matchStructure = s.match ( /^[a-zA-Z0-9_-]*\[[a-zA-Z0-9_-]+(,[a-zA-Z0-9_-]*)*]$/ ) // e.g.asd[a,b,c]
-  if ( matchStructure === null ) return { table: s, fields: undefined }
-  const matchFields = s.match ( /^[a-zA-Z0-9_-]*\[([a-zA-Z0-9_\-,]*)]$/ ) // e.g. [a,b,c]
+
+export function findTableAndFullTable ( s: string ): TablePart {
+  const matchStructure = s.match ( /^([a-zA-Z0-9_-]*)(![a-zA-Z0-9_-]+)?$/ )
+  if ( matchStructure === null ) { return { table: s } }
+  if ( matchStructure.length !== 3 ) throw Error ( `findTableAndFullTable: matchStructure.length(${matchStructure.length})!==3 for ${s}` )
+  let fullTable = matchStructure[ 2 ];
+  return { table: matchStructure[ 1 ], fullTable: fullTable ? fullTable.substring ( 1 ) : undefined }
+}
+export const findTablePartAndFieldPartWithoutValidation = ( s: string ): TableAndFieldPart => {
+  const matchStructure = s.match ( /^[a-zA-Z0-9_-]*(![a-zA-Z0-9_-]+)?\[[a-zA-Z0-9_-]+(,[a-zA-Z0-9_-]*)*]$/ ) // e.g.asd[a,b,c]
+  if ( matchStructure === null ) return findTableAndFullTable ( s )
+
+  const matchFields = s.match ( /^([a-zA-Z0-9!_-]*)\[([a-zA-Z0-9_\-,]*)]$/ ) // e.g. [a,b,c]
   if ( matchFields === null ) throw Error ( `findTablePartAndFieldPart: matchFields is null for ${s}` )
-  const fields: string = matchFields[ 1 ]
-  const table = s.slice ( 0, s.length - fields.length - 2 )
-  return { table, fields }
+  if ( matchFields.length !== 3 ) throw Error ( `findTablePartAndFieldPart: matchFields.length(${matchFields.length})!==2 for ${s}: ${matchFields}` )
+  const table: string = matchFields[ 1 ]
+  const fields: string = matchFields[ 2 ]
+  return { ...findTableAndFullTable ( table ), fields }
 }
 export const tableParser = ( meta: DatabaseMetaData, summary: EnvSummary ) => {
-  const find = findTableName ( meta, summary );
-  return ( s: string ): ErrorsAnd<PathparserTable> => flatMapErrors ( findTablePartAndFieldPart ( s ), ( { table, fields: fieldsOrUndef } ) => {
-    return flatMapErrors ( find ( table ), fullTable =>
-      mapErrors ( findFieldNameFromSquareBrackets ( meta, summary ) ( fullTable ) ( fieldsOrUndef ), fields => {
-        const result: PathparserTable = { table, fullTable, ...fields }
-        return result
-      } ) )
-  } )
+  const find = findFullTableNameValidatingIfSpecified ( meta, summary );
+  return ( s: string ): ErrorsAnd<PathparserTable> =>
+    flatMapErrors ( findTablePartAndFieldPartWithoutValidation ( s ), ( { table, fullTable: givenFullTable, fields: fieldsOrUndef } ) => {
+      return flatMapErrors ( find ( table, givenFullTable ), ( fullTable ) =>
+        flatMapErrors ( findFieldNameFromSquareBrackets ( meta, summary ) ( fullTable ) ( fieldsOrUndef ), fields => {
+          const result: PathparserTable = { table, fullTable, ...fields }
+          return result
+        } ) )
+    } )
 
 }
 export const parsePath = ( meta: DatabaseMetaData, summary: EnvSummary ) => {
