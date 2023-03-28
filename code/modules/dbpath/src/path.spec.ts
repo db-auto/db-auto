@@ -1,7 +1,7 @@
 import { processPathString, SqlPP } from "./path";
-import { buildPlan, clean, makePathSpec, mergeSelectData, PathSpec, selectData, sqlFor } from "@db-auto/tables";
-import { mapErrors } from "@db-auto/utils";
-import { cleanEnv, EnvAndName } from "@db-auto/environments";
+import { buildPlan, clean, makePathSpec, mergeSelectData, PathSpec, selectData, sqlFor } from "@dbpath/tables";
+import { mapErrors } from "@dbpath/utils";
+import { cleanEnv, EnvAndName } from "@dbpath/environments";
 
 const envAndName: EnvAndName = { env: cleanEnv.dev, envName: 'dev' };
 describe ( 'processPath', () => {

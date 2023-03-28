@@ -1,4 +1,4 @@
-import { ErrorsAnd, hasErrors, mapErrors } from "@db-auto/utils";
+import { ErrorsAnd, hasErrors, mapErrors } from "@dbpath/utils";
 import { buildPlan, makePathSpec, Plan, PlanLink } from "./query";
 import { mergeSelectData, selectData, sqlFor } from "./sql";
 import { clean } from "./query.fixture";

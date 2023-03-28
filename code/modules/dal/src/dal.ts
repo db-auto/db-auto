@@ -1,4 +1,4 @@
-import { NameAnd } from "@db-auto/utils";
+import { NameAnd } from "@dbpath/utils";
 
 export interface CommonEnvironment {
   type: string,

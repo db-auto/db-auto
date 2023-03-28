@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { hasErrors, reportErrors } from "@db-auto/utils";
+import { hasErrors, reportErrors } from "@dbpath/utils";
 import { findVersion, makeConfig, makeProgram, processProgram } from "./src/cli";
 import Path from "path";
 

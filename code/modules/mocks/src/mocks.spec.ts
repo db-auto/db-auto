@@ -1,5 +1,5 @@
 import { makeCreateTableSqlForMock } from "./mocks";
-import { clean } from "@db-auto/tables";
+import { clean } from "@dbpath/tables";
 
 describe ( "createtable", () => {
   it ( "should create a table", () => {

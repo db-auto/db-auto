@@ -1,5 +1,5 @@
 import { findDirectoryHoldingFileOrError, findFileInParentsOrError, findInParent } from "./files";
-import { hasErrors } from "@db-auto/utils";
+import { hasErrors } from "@dbpath/utils";
 import * as Path from "path";
 
 

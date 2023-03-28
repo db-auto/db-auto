@@ -1,10 +1,10 @@
 {
   "template":    "typescript",
-  "name":        "db-auto",
+  "name":        "dbpath",
   "description": "",
   "packageJson": {
     "bin":             {
-      "db-auto": "dist/index.js"
+      "dbpath": "dist/index.js"
     },
     "dependencies":    {
       "commander": "^10.0.0"
@@ -17,8 +17,8 @@
     "devDependencies": {}
   },
   "links":       [
-    "@db-auto/oracle", "@db-auto/mysql", "@db-auto/postgres", "@db-auto/tables",
-    "@db-auto/utils", "@db-auto/files", "@db-auto/mocks", "@db-auto/environments"
+    "@dbpath/oracle", "@dbpath/mysql", "@dbpath/postgres", "@dbpath/tables",
+    "@dbpath/utils", "@dbpath/files", "@dbpath/mocks", "@dbpath/environments"
   ],
   "guards":      {
     "compile": true,

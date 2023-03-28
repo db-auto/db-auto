@@ -1,4 +1,4 @@
-import { composeNameAndValidators, mapObject, NameAnd, NameAndValidator, orValidators, validateChild, validateChildItemOrArray, validateChildString, validateChildValue, validateItemOrArray, validateNameAnd, validateOrString, validateString, validateValue } from "@db-auto/utils";
+import { composeNameAndValidators, mapObject, NameAnd, NameAndValidator, orValidators, validateChild, validateChildItemOrArray, validateChildString, validateChildValue, validateItemOrArray, validateNameAnd, validateOrString, validateString, validateValue } from "@dbpath/utils";
 import Require = NodeJS.Require;
 
 export type Query = ColumnDataObj

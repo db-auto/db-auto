@@ -1,6 +1,6 @@
-import { composeNameAndValidators, NameAnd, NameAndValidator, validateChild, validateChildDefined, validateNameAnd } from "@db-auto/utils";
-import { CleanTable, createCleanTables, Table, tableValidator } from "@db-auto/tables";
-import { CleanEnvironment, cleanEnvironment, Environment, environmentValidator } from "@db-auto/environments";
+import { composeNameAndValidators, NameAnd, NameAndValidator, validateChild, validateChildDefined, validateNameAnd } from "@dbpath/utils";
+import { CleanTable, createCleanTables, Table, tableValidator } from "@dbpath/tables";
+import { CleanEnvironment, cleanEnvironment, Environment, environmentValidator } from "@dbpath/environments";
 
 export interface Config {
   environments: NameAnd<Environment>,

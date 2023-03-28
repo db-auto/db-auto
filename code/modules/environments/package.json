@@ -1,7 +1,7 @@
 {
-  "name": "@db-auto/environments",
+  "name": "@dbpath/environments",
   "description": "",
-  "version": "0.0.32",
+  "version": "0.1.0",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -17,10 +17,10 @@
     ]
   },
   "dependencies": {
-    "@db-auto/utils": "0.0.32",
-    "@db-auto/postgres": "0.0.32",
-    "@db-auto/mysql": "0.0.32",
-    "@db-auto/oracle": "0.0.32"
+    "@dbpath/utils": "0.1.0",
+    "@dbpath/postgres": "0.1.0",
+    "@dbpath/mysql": "0.1.0",
+    "@dbpath/oracle": "0.1.0"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

@@ -1,6 +1,6 @@
 import { cleanEnvironment, Environment } from "./environments";
-import { NameAnd } from "@db-auto/utils";
-import { PostgresEnv } from "@db-auto/postgres";
+import { NameAnd } from "@dbpath/utils";
+import { PostgresEnv } from "@dbpath/postgres";
 
 const envWithoutUsernamePassword: PostgresEnv = { type: 'postgres', host: 'localhost', port: 5432, 'database': 'postgres' };
 const env: PostgresEnv = { ...envWithoutUsernamePassword, username: 'phil', password: 'phil' };

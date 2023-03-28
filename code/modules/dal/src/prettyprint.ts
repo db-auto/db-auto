@@ -1,5 +1,5 @@
 import { DalResult, DalRow } from "./dal";
-import { ColumnDefn, fromEntries, NameAnd, safeToString, toColumns } from "@db-auto/utils";
+import { ColumnDefn, fromEntries, NameAnd, safeToString, toColumns } from "@dbpath/utils";
 
 export interface DalResultDisplayOptions {
   json?: boolean,

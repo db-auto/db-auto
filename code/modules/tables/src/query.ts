@@ -1,4 +1,4 @@
-import { ErrorsAnd, flatMapEntries, hasErrors, NameAnd, safeArray, safeObject } from "@db-auto/utils";
+import { ErrorsAnd, flatMapEntries, hasErrors, NameAnd, safeArray, safeObject } from "@dbpath/utils";
 import { Link } from "./tables";
 import { CleanTable } from "./clean";
 

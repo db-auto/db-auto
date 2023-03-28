@@ -1,11 +1,11 @@
 {
-  "name": "db-auto",
+  "name": "dbpath",
   "description": "",
-  "version": "0.0.32",
+  "version": "0.1.0",
   "main": "dist/index",
   "types": "dist/index",
   "bin": {
-    "db-auto": "dist/index.js"
+    "dbpath": "dist/index.js"
   },
   "browserslist": {
     "development": [
@@ -21,14 +21,14 @@
   },
   "dependencies": {
     "commander": "^10.0.0",
-    "@db-auto/oracle": "0.0.32",
-    "@db-auto/mysql": "0.0.32",
-    "@db-auto/postgres": "0.0.32",
-    "@db-auto/tables": "0.0.32",
-    "@db-auto/utils": "0.0.32",
-    "@db-auto/files": "0.0.32",
-    "@db-auto/mocks": "0.0.32",
-    "@db-auto/environments": "0.0.32"
+    "@dbpath/oracle": "0.1.0",
+    "@dbpath/mysql": "0.1.0",
+    "@dbpath/postgres": "0.1.0",
+    "@dbpath/tables": "0.1.0",
+    "@dbpath/utils": "0.1.0",
+    "@dbpath/files": "0.1.0",
+    "@dbpath/mocks": "0.1.0",
+    "@dbpath/environments": "0.1.0"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

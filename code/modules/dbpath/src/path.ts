@@ -1,7 +1,7 @@
-import { ErrorsAnd, flatMap, hasErrors, mapErrors, NameAnd } from "@db-auto/utils";
-import { buildPlan, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor, SqlOptions } from "@db-auto/tables";
-import { dalFor, EnvAndName, Environment } from "@db-auto/environments";
-import { DalResult, DalResultDisplayOptions, prettyPrintDalResult } from "@db-auto/dal";
+import { ErrorsAnd, flatMap, hasErrors, mapErrors, NameAnd } from "@dbpath/utils";
+import { buildPlan, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor, SqlOptions } from "@dbpath/tables";
+import { dalFor, EnvAndName, Environment } from "@dbpath/environments";
+import { DalResult, DalResultDisplayOptions, prettyPrintDalResult } from "@dbpath/dal";
 
 export interface SelectDataPP {
   type: 'selectData',

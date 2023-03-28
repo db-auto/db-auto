@@ -1,6 +1,6 @@
 {
   "template": "typescript",
-  "name": "@db-auto/dal",
+  "name": "@dbpath/dal",
   "description": "",
   "packageJson": {
     "dependencies": {},

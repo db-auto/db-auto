@@ -1,5 +1,5 @@
 import { executeDbAuto, testRoot } from "./integration.fixture";
-import { readTestFile } from "@db-auto/files";
+import { readTestFile } from "@dbpath/files";
 
 
 const mockTestDir = testRoot + '/simple';

@@ -1,4 +1,4 @@
-import { fromEntries, mapObject, NameAnd, safeObject, toArray } from "@db-auto/utils";
+import { fromEntries, mapObject, NameAnd, safeObject, toArray } from "@dbpath/utils";
 import { CleanColumnData, CleanLink, ColumnDataObj, HereLinkAndThereLink, Key, Link, nameOfKey, Query, Table, toCleanLink } from "./tables";
 import Require = NodeJS.Require;
 

@@ -1,5 +1,5 @@
 import { CleanTable } from "./clean";
-import { ColumnDefn, mapEntries, NameAnd, toColumns } from "@db-auto/utils";
+import { ColumnDefn, mapEntries, NameAnd, toColumns } from "@dbpath/utils";
 
 const tableColumnDefn: NameAnd<ColumnDefn<[ string, CleanTable ]>> = {
   "name": { title: "Name", dataFn: ( t: [ string, CleanTable ] ) => t[ 0 ] },

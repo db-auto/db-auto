@@ -1,6 +1,6 @@
-import { ColumnDefn, ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator } from "@db-auto/utils";
-import { postgresDal, postgresDalDialect, PostgresEnv, postgresEnvValidator } from "@db-auto/postgres";
-import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@db-auto/files";
+import { ColumnDefn, ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator } from "@dbpath/utils";
+import { postgresDal, postgresDalDialect, PostgresEnv, postgresEnvValidator } from "@dbpath/postgres";
+import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@dbpath/files";
 import * as Path from "path";
 import * as fs from "fs";
 

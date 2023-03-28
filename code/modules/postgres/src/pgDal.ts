@@ -1,7 +1,7 @@
 import { Pool, PoolClient } from "pg";
 
-import { CommonEnvironment, Dal, DalDialect, DalQueryFn, DalResult, DalUpdateFn } from "@db-auto/dal";
-import { composeNameAndValidators, NameAndValidator, validateChildNumber, validateChildString, validateChildValue } from "@db-auto/utils";
+import { CommonEnvironment, Dal, DalDialect, DalQueryFn, DalResult, DalUpdateFn } from "@dbpath/dal";
+import { composeNameAndValidators, NameAndValidator, validateChildNumber, validateChildString, validateChildValue } from "@dbpath/utils";
 import { pgMeta } from "./pgMeta";
 
 export interface PostgresEnv extends CommonEnvironment {

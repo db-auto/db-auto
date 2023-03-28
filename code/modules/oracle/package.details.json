@@ -1,12 +1,12 @@
 {
   "template":    "typescript",
-  "name":        "@db-auto/oracle",
+  "name":        "@dbpath/oracle",
   "description": "",
   "packageJson": {
     "dependencies":    {"oracledb": "^5.5.0"},
     "devDependencies": {}
   },
-  "links":       ["@db-auto/utils","@db-auto/dal"],
+  "links":       ["@dbpath/utils","@dbpath/dal"],
   "guards":      {
     "compile": true,
     "publish": true,

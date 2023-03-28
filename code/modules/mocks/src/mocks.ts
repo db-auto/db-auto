@@ -1,5 +1,5 @@
-import { CleanColumnData, CleanTable } from "@db-auto/tables";
-import { mapEntries, NameAnd } from "@db-auto/utils";
+import { CleanColumnData, CleanTable } from "@dbpath/tables";
+import { mapEntries, NameAnd } from "@dbpath/utils";
 
 
 export function makeCreateTableSqlForColumns ( t: NameAnd<CleanColumnData> ) {

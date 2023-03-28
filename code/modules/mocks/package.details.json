@@ -1,12 +1,12 @@
 {
   "template":    "typescript",
-  "name":        "@db-auto/mocks",
+  "name":        "@dbpath/mocks",
   "description": "Create table sql and mock data for those for test mocks",
   "packageJson": {
     "dependencies":    {},
     "devDependencies": {}
   },
-  "links":       ["@db-auto/tables"],
+  "links":       ["@dbpath/tables"],
   "guards":      {
     "compile": true,
     "publish": true,

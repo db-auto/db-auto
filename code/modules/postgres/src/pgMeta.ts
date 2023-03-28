@@ -1,6 +1,6 @@
 import { Pool } from "pg";
-import { ColumnMetaData, ForeignKeyMetaData, MetaDataFn, TableMetaData } from "@db-auto/dal";
-import { addNameAnd2, fromEntries, NameAnd } from "@db-auto/utils";
+import { ColumnMetaData, ForeignKeyMetaData, MetaDataFn, TableMetaData } from "@dbpath/dal";
+import { addNameAnd2, fromEntries, NameAnd } from "@dbpath/utils";
 
 
 export const pgMeta = ( p: Pool, schema: string ): MetaDataFn => async (): Promise<any> => {

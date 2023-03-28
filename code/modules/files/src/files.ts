@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 import * as Path from "path";
-import { cleanLineEndings, ErrorsAnd, hasErrors, mapErrors } from "@db-auto/utils";
+import { cleanLineEndings, ErrorsAnd, hasErrors, mapErrors } from "@dbpath/utils";
 
 export function findInParent ( directory: string, acceptor: ( filename: string ) => boolean ): string | undefined {
   function find ( dir: string ): string {

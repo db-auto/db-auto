@@ -1,12 +1,12 @@
 {
   "template":    "typescript",
-  "name":        "@db-auto/environments",
+  "name":        "@dbpath/environments",
   "description": "",
   "packageJson": {
     "dependencies":    {},
     "devDependencies": {}
   },
-  "links":       ["@db-auto/utils", "@db-auto/postgres", "@db-auto/mysql", "@db-auto/oracle"],
+  "links":       ["@dbpath/utils", "@dbpath/postgres", "@dbpath/mysql", "@dbpath/oracle"],
   "guards":      {
     "compile": true,
     "publish": true,

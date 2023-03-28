@@ -1,4 +1,4 @@
-import { ColumnDefn, NameAnd, toColumns } from "@db-auto/utils";
+import { ColumnDefn, NameAnd, toColumns } from "@dbpath/utils";
 import { CleanEnvironment, Environment } from "./environments";
 
 

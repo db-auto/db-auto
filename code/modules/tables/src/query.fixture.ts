@@ -1,5 +1,5 @@
 import { Table } from "./tables";
-import { NameAnd } from "@db-auto/utils";
+import { NameAnd } from "@dbpath/utils";
 import { CleanTable, createCleanTables } from "./clean";
 
 let string;

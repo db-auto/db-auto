@@ -1,12 +1,12 @@
 {
   "template": "typescript",
-  "name": "@db-auto/tables",
+  "name": "@dbpath/tables",
   "description": "",
   "packageJson": {
     "dependencies": {},
     "devDependencies": {}
   },
-  "links": ["@db-auto/utils"],
+  "links": ["@dbpath/utils"],
   "guards": {
     "compile": true,
     "publish": true,

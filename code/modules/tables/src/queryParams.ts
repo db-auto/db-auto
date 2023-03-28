@@ -1,5 +1,5 @@
 import { CleanTable } from "./clean";
-import { flatMapEntries, flatMapErrors, mapEntries, NameAnd, unique } from "@db-auto/utils";
+import { flatMapEntries, flatMapErrors, mapEntries, NameAnd, unique } from "@dbpath/utils";
 
 export interface QueryParam {
   name: string;

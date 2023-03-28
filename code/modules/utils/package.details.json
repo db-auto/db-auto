@@ -1,6 +1,6 @@
 {
   "template": "typescript",
-  "name": "@db-auto/utils",
+  "name": "@dbpath/utils",
   "description": "",
   "packageJson": {
     "dependencies": {},

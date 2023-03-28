@@ -1,10 +1,10 @@
 import { Command } from "commander";
-import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapObject, NameAnd, parseFile, reportErrors, toColumns } from "@db-auto/utils";
-import { CleanTable, findQueryParams, makePathSpec, prettyPrintTables } from "@db-auto/tables";
-import { makeCreateTableSqlForMock } from "@db-auto/mocks";
+import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapObject, NameAnd, parseFile, reportErrors, toColumns } from "@dbpath/utils";
+import { CleanTable, findQueryParams, makePathSpec, prettyPrintTables } from "@dbpath/tables";
+import { makeCreateTableSqlForMock } from "@dbpath/mocks";
 import { cleanConfig, CleanConfig } from "./config";
-import { findFileInParentsOrError } from "@db-auto/files";
-import { checkStatus, currentEnvironment, dalFor, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn } from "@db-auto/environments";
+import { findFileInParentsOrError } from "@dbpath/files";
+import { checkStatus, currentEnvironment, dalFor, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn } from "@dbpath/environments";
 import { prettyPrintPP, processPathString, tracePlan } from "./path";
 
 

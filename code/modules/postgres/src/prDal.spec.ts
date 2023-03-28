@@ -1,5 +1,5 @@
 import { postgresDal, PostgresEnv } from "./pgDal";
-import { DalResult, DatabaseMetaData } from "@db-auto/dal";
+import { DalResult, DatabaseMetaData } from "@dbpath/dal";
 
 const inCi = process.env[ 'CI' ] === 'true'
 
