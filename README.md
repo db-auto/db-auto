@@ -70,5 +70,9 @@ This script is a bit long, so why not have a shortcut for it? We can have a shor
 db-audit .emailForMissingVehicles  --name phil --date today()
 ```
 
+## Full definition
 
+
+driver!driver_aud[f1,#,#view].(id=id)tablename
+driver!driver_aud[f1,#,#view].mission!fk_driver_mission
 
