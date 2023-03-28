@@ -1,1 +1,1 @@
-Mysql Database abstraction layer for db-auto.
+Mysql Database abstraction layer for dbpath.

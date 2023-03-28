@@ -1,4 +1,4 @@
-Postgres database abstraction layer for db-auto
+Postgres database abstraction layer for dbpath
 
 Useful links
 https://www.postgresql.org/docs/current/information-schema.html

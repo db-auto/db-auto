@@ -1,1 +1,1 @@
-General utilities for db-auto: no domain knowledge at all in any of these
+General utilities for dbpath: no domain knowledge at all in any of these

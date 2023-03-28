@@ -12,14 +12,14 @@ We don't execute `select * from table where ...` etc because that is not very us
 Instead we give a list of tables and the tool joins them together to give the results we want. 
 
 ```shell
-db-auto ?                                            # lists the tables
-db-auto d?                                           # lists the tables that start with d
-db-auto driver.a?                                    # lists the tables that the table driver and link to which start with a  
-db-auto driver 123                                   # lists the driver with id 123
-db-auto driver --name phil                           # lists the driver with name phil    
-db-auto driver.audit 123                             # lists the audit records for driver 123 (the records for driver are joined to the audit records) 
-db-auto driver.mission.audit 123                     # lists the audit records for the missions that driver 123 has been on
-db-auto driver.mission.audit 123 -date '2023-6-3'    # lists the audit records for the missions that driver 123 has been on for the given date
+dbpath ?                                            # lists the tables
+dbpath d?                                           # lists the tables that start with d
+dbpath driver.a?                                    # lists the tables that the table driver and link to which start with a  
+dbpath driver 123                                   # lists the driver with id 123
+dbpath driver --name phil                           # lists the driver with name phil    
+dbpath driver.audit 123                             # lists the audit records for driver 123 (the records for driver are joined to the audit records) 
+dbpath driver.mission.audit 123                     # lists the audit records for the missions that driver 123 has been on
+dbpath driver.mission.audit 123 -date '2023-6-3'    # lists the audit records for the missions that driver 123 has been on for the given date
 ```
 
 # TODO
@@ -41,10 +41,10 @@ db-auto driver.mission.audit 123 -date '2023-6-3'    # lists the audit records f
 What if types aren't right? 
 Bombs at the moment if the config file/tables are wrong. e,g 
 ```shell
-db-auto driver.mission.mission_aud
+dbpath driver.mission.mission_aud
 # (node:23068) UnhandledPromiseRejectionWarning: error: column t1.missionid does not exist
 
-db-auto driver someThingNotANumber
+dbpath driver someThingNotANumber
 # db-auto driver someThingNotANumber
 # (node:15960) UnhandledPromiseRejectionWarning: error: column "somethingnotanumber" does not exist
 ```
@@ -62,12 +62,12 @@ We should be able to make this quickly from 'the last executed command'.
 
 
 ```shell
-db-audit driver.mission.detailed.audit.email --where 'T3.action="/email"' --view email --name phil
+dbpath driver.mission.detailed.audit.email --where 'T3.action="/email"' --view email --name phil
 ```
 This script is a bit long, so why not have a shortcut for it? We can have a short and a long description as well.
 
 ```shell
-db-audit .emailForMissingVehicles  --name phil --date today()
+dbpath .emailForMissingVehicles  --name phil --date today()
 ```
 
 ## Full definition

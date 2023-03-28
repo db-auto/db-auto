@@ -8,12 +8,12 @@ export const pgMeta = ( p: Pool, schema: string ): MetaDataFn => async (): Promi
   try {
     const tables = await client.query ( `    SELECT table_name
                                              FROM information_schema.tables
-                                             WHERE table_schema = $1`, [ schema ] );
+                                             WHERE table_schema = $1 order by table_name`, [ schema ] );
 
     const tableNames = tables.rows.map ( r => r.table_name );
     const columns = await client.query ( `SELECT table_name, column_name, data_type
                                           FROM information_schema.columns
-                                          where table_schema = $1`, [ schema ] );
+                                          where table_schema = $1 order by table_name,column_name`, [ schema ] );
     const table2Columns: NameAnd<NameAnd<ColumnMetaData>> = {};
     columns.rows.forEach ( r => {
       addNameAnd2 ( table2Columns ) ( r.table_name, r.column_name, { type: r.data_type.toString () } );
@@ -29,7 +29,8 @@ export const pgMeta = ( p: Pool, schema: string ): MetaDataFn => async (): Promi
                                            pg_class c
                                       WHERE r.contype = 'f'
                                         and r.conname = u.constraint_name
-                                        and c.oid = r.conrelid` );
+                                        and c.oid = r.conrelid
+                                      order by c.relname, conname` );
     const table2Fks: NameAnd<NameAnd<ForeignKeyMetaData>> = {};
     function row2Fk ( r: any ): ForeignKeyMetaData {
       let raw = r.raw;

@@ -1,1 +1,1 @@
-Oracle Database Abstraction Layer for db-auto
+Oracle Database Abstraction Layer for dbpath

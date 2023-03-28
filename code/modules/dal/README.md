@@ -1,2 +1,2 @@
-Simple Database Abstraction Layer for db-auto.
+Simple Database Abstraction Layer for dbpath.
 

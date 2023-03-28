@@ -9,7 +9,7 @@ import { cleanLineEndings } from "@dbpath/utils";
 
 export const codeRootDir = findDirectoryHoldingFileOrThrow ( process.cwd (), "laoban.json" );
 export const testRoot = path.resolve ( codeRootDir, '..', 'tests' );
-export const codePath = Path.resolve ( codeRootDir, "modules/db-auto/dist/index.js" )
+export const codePath = Path.resolve ( codeRootDir, "modules/dbpath/dist/index.js" )
 
 
 export function executeDbAuto ( cwd: string, cmd: string ): Promise<string> {
