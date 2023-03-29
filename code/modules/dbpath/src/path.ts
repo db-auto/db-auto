@@ -115,7 +115,8 @@ export function makeTracePlanSpecs ( pathSpec: PathSpec ): PathSpec[] {
   const path = pathSpec.path
   const result: PathSpec[] = []
   for ( let i = 0; i < path.length; i++ ) {
-    result.push ( { ...pathSpec, path: path.slice ( 0, i + 1 ) } )
+    let p = path.slice ( 0, i + 1 );
+    result.push ( { ...pathSpec, rawPath: p.join ( '.' ), path: p } )
   }
   return result;
 }
@@ -123,7 +124,7 @@ export async function tracePlan ( env: EnvAndName, tables: NameAnd<CleanTable>, 
   const result: PP[] = []
   const specs = makeTracePlanSpecs ( pathSpec )
   for ( let i = 0; i < specs.length; i++ ) {
-    const pp = await processPathString ( env, tables, specs[ i ], options )
+    const pp = await processPathString2 ( env, tables, specs[ i ], options )
     if ( hasErrors ( pp ) ) return pp
     result.push ( pp )
   }

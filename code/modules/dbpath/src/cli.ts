@@ -5,7 +5,7 @@ import { makeCreateTableSqlForMock } from "@dbpath/mocks";
 import { cleanConfig, CleanConfig } from "./config";
 import { findFileInParentsOrError } from "@dbpath/files";
 import { checkStatus, currentEnvironment, dalFor, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn } from "@dbpath/environments";
-import { prettyPrintPP, processPathString, tracePlan } from "./path";
+import { prettyPrintPP, processPathString, processPathString2, tracePlan } from "./path";
 import Path from "path";
 import { parsePath } from "@dbpath/pathparser";
 import { DalPathValidator, sampleMeta, sampleSummary } from "@dbpath/dal";
@@ -69,7 +69,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
         pps.forEach ( line => console.log ( line ) )
         return
       }
-      const errorsOrresult = await processPathString ( envAndNameOrErrors, config.tables, pathSpec, fullOptions );
+      const errorsOrresult = await processPathString2 ( envAndNameOrErrors, config.tables, pathSpec, fullOptions );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return
