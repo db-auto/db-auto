@@ -17,8 +17,9 @@
     "devDependencies": {}
   },
   "links":       [
-    "@dbpath/oracle", "@dbpath/mysql", "@dbpath/postgres", "@dbpath/tables",
-    "@dbpath/utils", "@dbpath/files", "@dbpath/mocks", "@dbpath/environments"
+    "@dbpath/tables","@dbpath/pathparser",
+    "@dbpath/utils", "@dbpath/files",
+    "@dbpath/mocks", "@dbpath/environments"
   ],
   "guards":      {
     "compile": true,

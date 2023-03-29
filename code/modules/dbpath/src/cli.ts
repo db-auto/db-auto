@@ -7,7 +7,7 @@ import { findFileInParentsOrError } from "@dbpath/files";
 import { checkStatus, currentEnvironment, dalFor, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn } from "@dbpath/environments";
 import { prettyPrintPP, processPathString, tracePlan } from "./path";
 import Path from "path";
-import { parsePath } from "@dbpath/pathparser/dist/src/parser";
+import { parsePath } from "@dbpath/pathparser";
 import { DalPathValidator, sampleMeta, sampleSummary } from "@dbpath/dal";
 
 

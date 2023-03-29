@@ -1,5 +1,5 @@
 {
-  "name": "@dbpath/postgres",
+  "name": "@dbpath/types",
   "description": "",
   "version": "0.2.3",
   "main": "dist/index",
@@ -16,13 +16,8 @@
       "not op_mini all"
     ]
   },
-  "dependencies": {
-    "pg": "^8.10.0",
-    "@dbpath/utils": "0.2.3",
-    "@dbpath/dal": "0.2.3"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@types/pg": "^8.6.6",
     "typescript": "^4.0.5",
     "@types/node": "^14.14.7",
     "@types/jest": "^26.0.15",
