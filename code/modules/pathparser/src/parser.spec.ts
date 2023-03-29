@@ -241,6 +241,50 @@ describe ( "PathValidator in parsePath", () => {
       "vTable(driver,full)",
       "vTable(mission,undefined)"
     ] )
-
   } )
+  it ( "should error if table name validator fails", () => {
+    const pv = {
+      ...PathValidatorAlwaysOK,
+      validateTableName: ( table ) => [ `table ${table} error` ]
+    }
+    expect ( parsePath ( pv ) ( "driver" ) ).toEqual ( [
+      "driver",
+      "      ^",
+      "table driver error"
+    ] )
+  } )
+  it ( "should error if table name field fails", () => {
+    const pv = {
+      ...PathValidatorAlwaysOK,
+      validateFields: ( table ) => [ `fields ${table} error` ]
+    }
+    expect ( parsePath ( pv ) ( "driver" ) ).toEqual ( [
+      "driver",
+      "      ^",
+      "fields driver error"
+    ] )
+  } )
+  it ( "should error if table links validator fails with driver.mission", () => {
+    const pv = {
+      ...PathValidatorAlwaysOK,
+      validateLink: ( table1, table2, ids ) => [ `link ${table1}.${table2} error ${JSON.stringify ( ids )}` ]
+    }
+    expect ( parsePath ( pv ) ( "driver.mission" ) ).toEqual ( [
+      "driver.mission",
+      "       ^",
+      "link driver.mission error []"
+    ] )
+  } )
+  it ( "should error if table links validator fails with driver.(id1=id2)mission.audit", () => {
+    const pv = {
+      ...PathValidatorAlwaysOK,
+      validateLink: ( table1, table2, ids ) => [ `link ${table1}.${table2} error ${JSON.stringify ( ids )}` ]
+    }
+    expect ( parsePath ( pv ) ( "driver.(id1=id2)mission.audit" ) ).toEqual ( [
+      "driver.(id1=id2)mission.audit",
+      "                ^",
+      "link driver.mission error [{\"fromId\":\"id1\",\"toId\":\"id2\"}]"
+    ] )
+  } )
+
 } )

@@ -64,8 +64,8 @@ function mapParser<T, T1> ( c: ResultAndContext<T>, f: ( c: ParserContext, t: T 
   return result;
 }
 
-function validateAndReturn<T> ( c: ParserContext, t: T, errors: string[] ): ResultAndContext<T> {
-  return errors.length ? liftError ( c, errors ) : lift ( c, t );
+function validateAndReturn<T> ( cError: ParserContext, c: ParserContext, t: T, errors: string[] ): ResultAndContext<T> {
+  return errors.length ? liftError ( cError, errors ) : lift ( c, t );
 }
 function lift<R> ( context: ParserContext, result: R ): ResultAndContext<R> {
   return { context, result }
@@ -137,29 +137,29 @@ export const parseIdEqualsId = ( c: ParserContext ): ResultAndContext<TwoIds> =>
     mapParser ( nextChar ( c, '=' ), c =>
       mapParser ( identifier ( "'to id'" ) ( c ), ( c, toId ) =>
         lift ( c, { fromId, toId } ) ) ) );
-export function parseTableName ( c: ParserContext ): ResultAndContext<TableAndFullTableName> {
-  return mapParser ( identifier ( 'table name' ) ( c ), ( c, tableName ) => {
+export function parseTableName ( context: ParserContext ): ResultAndContext<TableAndFullTableName> {
+  return mapParser ( identifier ( 'table name' ) ( context ), ( c, tableName ) => {
     if ( isNextChar ( c, '!' ) ) {
       return mapParser ( nextChar ( c, '!' ), ( c ) =>
-        mapParser ( identifier ( 'full table name' ) ( c ), ( context, fullTableName ) =>
-          validateAndReturn ( context, { table: tableName, fullTable: fullTableName }, context.validator.validateTableName ( tableName, fullTableName ) )
+        mapParser ( identifier ( 'full table name' ) ( c ), ( c, fullTableName ) =>
+          validateAndReturn ( context, c, { table: tableName, fullTable: fullTableName }, context.validator.validateTableName ( tableName, fullTableName ) )
         ) )
     } else
-      return validateAndReturn ( c, { table: tableName }, c.validator.validateTableName ( tableName ) )
+      return validateAndReturn ( context, c, { table: tableName }, c.validator.validateTableName ( tableName ) )
   } )
 }
 
 
-export const parseTable = ( c: ParserContext ): ResultAndContext<RawTableResult> =>
-  mapParser ( parseTableName ( c ), ( c, tableName ) =>
-    mapParser ( parseBracketedCommaSeparated ( c, '[', ',', identifier ( 'field' ), ']' ), ( c, fields ) =>
-      validateAndReturn ( c, { ...tableName, fields }, c.validator.validateFields ( tableName.table, fields ) ) ) );
+export const parseTable = ( context: ParserContext ): ResultAndContext<RawTableResult> =>
+  mapParser ( parseTableName ( context ), ( cEndOfTable, tableName ) =>
+    mapParser ( parseBracketedCommaSeparated ( cEndOfTable, '[', ',', identifier ( 'field' ), ']' ), ( c, fields ) =>
+      validateAndReturn ( cEndOfTable, c, { ...tableName, fields }, c.validator.validateFields ( tableName.table, fields ) ) ) );
 
-export const parseTableAndNextLink = ( previousTable: RawTableResult | undefined, idEquals: TwoIds[] ): PathParser<RawLinkWithoutIdEqualsResult> => c =>
-  mapParser<RawTableResult, RawLinkWithoutIdEqualsResult> ( parseTable ( c ), ( c, table ) => {
+export const parseTableAndNextLink = ( previousTable: RawTableResult | undefined, idEquals: TwoIds[] ): PathParser<RawLinkWithoutIdEqualsResult> => context =>
+  mapParser<RawTableResult, RawLinkWithoutIdEqualsResult> ( parseTable ( context ), ( c, table ) => {
     let thisLink = { ...table, previousTable, idEquals };
     const errors = c.validator.validateLink ( previousTable?.table, table.table, idEquals )
-    if ( errors.length > 0 ) return liftError ( c, errors )
+    if ( errors.length > 0 ) return liftError ( context, errors )
     return isNextChar ( c, '.' )
       ? parseLink ( thisLink ) ( c )
       : lift ( c, thisLink );
