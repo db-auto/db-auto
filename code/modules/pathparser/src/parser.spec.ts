@@ -1,4 +1,4 @@
-import { errorData, ParserContext, parseTable } from "./parser";
+import { errorData, parseLink, ParserContext, parseTable, RawTableResult } from "./parser";
 import { tokenise } from "./tokeniser";
 
 
@@ -8,16 +8,23 @@ function makeContext ( s: string ): ParserContext {
     pos: 2
   }
 }
+function pt ( s: string, consume: number ) {
+  let initialContext = makeContext ( s )
+  let { context, result, error } = parseTable ( initialContext );
+  if ( error ) throw error
+  expect ( context.pos - initialContext.pos ).toEqual ( consume );
+  return result
+}
+function pl ( s: string, consume: number, pt?: RawTableResult ) {
+  let initialContext = makeContext ( s )
+  let { context, result, error } = parseLink ( pt ) ( initialContext );
+  if ( error ) throw error
+  expect ( context.pos - initialContext.pos ).toEqual ( consume );
+  return result
+}
 describe ( "parseTable", () => {
 
 
-  function pt ( s: string, consume: number ) {
-    let initialContext = makeContext ( s )
-    let { context, result, error } = parseTable ( initialContext );
-    if ( error ) throw error
-    expect ( context.pos - initialContext.pos ).toEqual ( consume );
-    return result
-  }
   function ptError ( s: string, errorPos: number ) {
     let initialContext = makeContext ( s )
     let cr = parseTable ( initialContext );
@@ -36,11 +43,11 @@ describe ( "parseTable", () => {
     expect ( pt ( "driver!drivertable,", 3 ) ).toEqual ( { table: "driver", "fullTable": "drivertable", fields: [] } )
   } )
   it ( "should parse driver[field1,field2]", () => {
-    expect ( pt ( "driver[field1]", 3 ) ).toEqual ( { table: "driver", fields: [ "field1" ] } )
-    expect ( pt ( "driver[field1,field2]", 5 ) ).toEqual ( { table: "driver", fields: [ "field1", "field2" ] } )
+    expect ( pt ( "driver[field1]", 4) ).toEqual ( { table: "driver", fields: [ "field1" ] } )
+    expect ( pt ( "driver[field1,field2]", 6 ) ).toEqual ( { table: "driver", fields: [ "field1", "field2" ] } )
   } )
   it ( "should parse drive!drivertable[field1,field2]", () => {
-    expect ( pt ( "driver[field1,field2]", 5 ) ).toEqual ( { table: "driver", fields: [ "field1", "field2" ] } )
+    expect ( pt ( "driver[field1,field2]", 6 ) ).toEqual ( { table: "driver", fields: [ "field1", "field2" ] } )
   } )
   it ( "should report nice error messages", () => {
     // expect ( ptError ( "driver!", 7 ) ).toEqual ( ["Expected a full table name but got to end"] );
@@ -48,4 +55,90 @@ describe ( "parseTable", () => {
     expect ( ptError ( "driver!dt[", 10 ) ).toEqual ( [ "Expected a field but got to end" ] );
     expect ( ptError ( "driver!dt[(]", 10 ) ).toEqual ( [ "Expected a field unexpected character (" ] );
   } )
+} )
+
+describe ( "parseLink", () => {
+  it ( "should parse .drive", () => {
+    expect ( pl ( ".driver", 2 ) ).toEqual ( { table: "driver", fields: [] , "idEquals": [],} )
+    expect ( pl ( ".driver,", 2 ) ).toEqual ( { table: "driver", fields: [], "idEquals": [], } )
+  } )
+  it ( "should parse .drive!name[f1,f2]", () => {
+    const previousTable = pt ( "someTable", 1 )
+    expect ( pl ( ".driver!name[f1,f2]!!", 9, previousTable ) ).toEqual ( {
+      "fullTable": "name",
+      "table": "driver",
+      "fields": [ "f1", "f2" ],
+      previousTable,
+      "idEquals": [],
+    } )
+  } )
+
+  it ( "should parse .drive.mission.audit", () => {
+    expect ( pl ( ".drive.mission.audit", 6 ) ).toEqual ( {
+      "fields": [],
+      "idEquals": [],
+      "previousTable": {
+        "fields": [],
+        "idEquals": [],
+        "previousTable": {
+          "fields": [],
+          "idEquals": [],
+          "table": "drive"
+        },
+        "table": "mission"
+      },
+      "table": "audit"
+    })
+  } )
+  it ( "should parse .(id1=id2)drive", () => {
+    expect ( pl ( ".(id1=id2)drive", 7 ) ).toEqual ( {
+      "fields": [],
+      "idEquals": [
+        {
+          "fromId": "id1",
+          "toId": "id2"
+        }
+      ],
+      "table": "drive"
+    })
+  } )
+
+  it ( "should parse .drive!fullDrive.mission.audit", () => {
+    expect ( pl ( ".drive!fullDrive.mission.audit", 8 ) ).toEqual ( {
+      "fields": [],
+      "idEquals": [],
+      "previousTable": {
+        "fields": [],
+        "idEquals": [],
+        "previousTable": {
+          "fields": [],
+          "fullTable": "fullDrive",
+          "idEquals": [],
+          "table": "drive"
+        },
+        "table": "mission"
+      },
+      "table": "audit"
+    })
+
+  })
+  it ( "should parse .drive!fullDrive[f1,f2].(id1=id2)mission[f3].(id3=id4)audit", () => {
+    expect ( pl ( ".drive!full[f1,f2].mission.audit", 13 ) ).toEqual ( {
+      "fields": [],
+      "previousTable": {
+        "fields": [],
+        "previousTable": {
+          "fields": [ "f1", "f2" ],
+          "fullTable": "full",
+          "table": "drive",
+          "idEquals": [],
+        },
+        "table": "mission",
+        "idEquals": [],
+      },
+      "table": "audit",
+      "idEquals": [],
+    } )
+  } )
+
 } )

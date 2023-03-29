@@ -5,8 +5,12 @@ export interface RawTableResult {
   fullTable?: string
   fields?: string[ ]
 };
-export interface RawLinkResult extends RawTableResult {
-  previousTable?: RawTableResult
+export interface RawLinkWithoutIdEqualsResult extends RawTableResult {
+  previousLink?: RawLinkResult
+}
+export interface RawLinkResult extends RawLinkWithoutIdEqualsResult {
+
+  idEquals: TwoIds[]
 };
 
 export type Result = RawTableResult;
@@ -67,6 +71,42 @@ export function gotForError ( c: ParserContext ): string {
   if ( token.type === 'string' ) return 'unexpected string ' + token.value;
   if ( token.type === 'error' ) throw new Error ( `Unexpected error token\n${JSON.stringify ( token )}` );
 }
+
+export function parseCommaSeparated<R> ( c: ParserContext, comma: string, parser: PathParser<R> ): ResultAndContext<R[]> {
+  return mapParser ( parser ( c ), ( c, r ) => {
+    if ( isNextChar ( c, comma ) )
+      return mapParser ( nextChar ( c, comma ), ( c ) =>
+        mapParser ( parseCommaSeparated<R> ( c, comma, parser ), ( c, ids ) => {
+          return { result: [ r, ...ids ], context: c };
+        } ) )
+    else
+      return { result: [ r ], context: c };
+  } )
+}
+
+export type PathParser<R> = ( c: ParserContext ) => ResultAndContext<R>
+
+export function parseBracketedCommaSeparated<R> ( c: ParserContext, open: string, comma: string, parser: PathParser<R>, close: string ): ResultAndContext<R[]> {
+  if ( isNextChar ( c, open ) ) {
+    return mapParser ( nextChar ( c, open ), ( c ) =>
+      mapParser ( parseCommaSeparated ( c, comma, parser ), ( c, ids ) => {
+        return mapParser ( nextChar ( c, close ), c => {
+          return { result: ids, context: c };
+        } )
+      } ) )
+  }
+  return { context: c, result: [] }
+}
+
+export interface TwoIds {
+  fromId: string,
+  toId: string
+}
+export const parseIdEqualsId = ( c: ParserContext ): ResultAndContext<TwoIds> =>
+  mapParser ( identifier ( 'from id' ) ( c ), ( c, fromId ) =>
+    mapParser ( nextChar ( c, '=' ), c =>
+      mapParser ( identifier ( 'to id' ) ( c ), ( c, toId ) =>
+        ({ context: c, result: { fromId, toId } }) ) ) );
 export function parseTableName ( c: ParserContext ): ResultAndContext<TableAndFullTableName> {
   return mapParser ( identifier ( 'table name' ) ( c ), ( c, tableName ) => {
     if ( isNextChar ( c, '!' ) ) {
@@ -78,38 +118,29 @@ export function parseTableName ( c: ParserContext ): ResultAndContext<TableAndFu
   } )
 }
 
-export function parseCommaSeparated<R> ( c: ParserContext, parser: PathParser<R> ): ResultAndContext<R[]> {
-  return mapParser ( parser ( c ), ( c, r ) => {
-    if ( isNextChar ( c, ',' ) )
-      return mapParser ( nextChar ( c, ',' ), ( c ) =>
-        mapParser ( parseCommaSeparated<R> ( c, parser ), ( c, ids ) => {
-          return { result: [ r, ...ids ], context: c };
-        } ) )
-    else
-      return { result: [ r ], context: c };
-  } )
-}
 
-export type PathParser<R> = ( c: ParserContext ) => ResultAndContext<R>
+export const parseTable = ( c: ParserContext ): ResultAndContext<RawTableResult> =>
+  mapParser ( parseTableName ( c ), ( c, tableName ) =>
+    mapParser ( parseBracketedCommaSeparated ( c, '[', ',', identifier ( 'field' ), ']' ), ( c, fields ) =>
+      ({ result: { ...tableName, fields }, context: c }) ) );
 
-export function parseBracketedCommaSeparated<R> ( c: ParserContext, open: string, parser: PathParser<R>, close: string ): ResultAndContext<R[]> {
-  if ( isNextChar ( c, open ) ) {
-    return mapParser ( nextChar ( c, open ), ( c ) =>
-      mapParser ( parseCommaSeparated ( c, parser ), ( c, ids ) => {
-        return mapParser ( nextChar ( c, close ), () => {
-          return { result: ids, context: c };
-        } )
-      } ) )
-  }
-  return { context: c, result: [] }
-}
+export const parseTableAndNextLink = ( previousTable: RawTableResult | undefined, idEquals: TwoIds[] ): PathParser<RawLinkWithoutIdEqualsResult> => c =>
+  mapParser<RawTableResult, RawLinkWithoutIdEqualsResult> ( parseTable ( c ), ( c, table ) => {
+    let thisLink = { ...table, previousTable, idEquals };
+    return isNextChar ( c, '.' )
+      ? parseLink ( thisLink ) ( c )
+      : { context: c, result: thisLink, idEquals };
+  } );
+export const parseLink = ( previousTable: RawTableResult | undefined ): PathParser<RawLinkResult> =>
+  c => mapParser ( nextChar ( c, '.' ), c =>
+    mapParser ( parseBracketedCommaSeparated ( c, "(", ',', parseIdEqualsId, ')' ), ( c, idEquals ) =>
+      mapParser ( parseTableAndNextLink ( previousTable, idEquals ) ( c ), ( c, link ) =>
+        ({ context: c, result: { ...link, idEquals } }) )
+    ) )
 
-
-export function parseTable ( c: ParserContext ): ResultAndContext<RawTableResult> {
-  return mapParser ( parseTableName ( c ), ( c, tableName ) =>
-    mapParser ( parseBracketedCommaSeparated ( c, '[', identifier ( 'field' ), ']' ), ( c, fields ) =>
-      ({ result: { ...tableName, fields }, context: c }) ) )
-}
+export const parsePath: PathParser<RawLinkResult> = c =>
+  mapParser ( parseTable ( c ), ( c, previousLink ) =>
+    parseLink ( previousLink ) ( c ) )
 
 
 export function errorData<R> ( pr: ResultAndContext<R>, s: string ) {
