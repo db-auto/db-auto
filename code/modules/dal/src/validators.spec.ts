@@ -65,6 +65,5 @@ describe ( "validators", () => {
         "  driver.(driverid,driverid)mission"
       ] )
     } )
-
   } )
 } )
