@@ -1,11 +1,12 @@
-import { errorData, parseLink, parseTableAndLinks, ParserContext, parseTable, RawTableResult, parsePath } from "./parser";
+import { errorData, parseLink, parseTableAndLinks, ParserContext, parseTable, RawTableResult, parsePath, PathValidatorAlwaysOK } from "./parser";
 import { tokenise } from "./tokeniser";
 
 
 function makeContext ( s: string ): ParserContext {
   return {
     tokens: tokenise ( "junk." + s ),
-    pos: 2
+    pos: 2,
+    validator: PathValidatorAlwaysOK
   }
 }
 function pt ( s: string, consume: number ) {
@@ -144,14 +145,14 @@ describe ( "parseLink", () => {
 
 describe ( "parsePath", () => {
   it ( "should parse a simple path", () => {
-    expect ( parsePath ( "driver" ) ).toEqual ( {
+    expect ( parsePath ( PathValidatorAlwaysOK ) ( "driver" ) ).toEqual ( {
       "fields": [],
       "table": "driver"
     } )
   } )
   it ( "should parse a complex path", () => {
 
-    expect ( parsePath ( "driver!full.(id1=id2)mission.audit[f3,f4]" ) ).toEqual ( {
+    expect ( parsePath ( PathValidatorAlwaysOK ) ( "driver!full.(id1=id2)mission.audit[f3,f4]" ) ).toEqual ( {
       "fields": [
         "f3",
         "f4"
@@ -182,28 +183,28 @@ describe ( "parsePath", () => {
   } )
   describe ( "error message", () => {
     it ( "should process a()", () => {
-      expect ( parsePath ( "a()" ) ).toEqual ( [
+      expect ( parsePath ( PathValidatorAlwaysOK ) ( "a()" ) ).toEqual ( [
         "a()",
         " ^",
         "Expected '.'"
       ] )
     } )
     it ( "should process a.()", () => {
-      expect ( parsePath ( "a.()" ) ).toEqual ( [
+      expect ( parsePath ( PathValidatorAlwaysOK ) ( "a.()" ) ).toEqual ( [
         "a.()",
         "   ^",
         "Expected a 'from id'='to id' unexpected character )"
       ] )
     } )
     it ( "should process a.[]", () => {
-      expect ( parsePath ( "a.[]" ) ).toEqual ( [
+      expect ( parsePath ( PathValidatorAlwaysOK ) ( "a.[]" ) ).toEqual ( [
         "a.[]",
         "  ^",
         "Expected a table name unexpected character ["
       ] )
     } )
     it ( "should process a.(noequals)b", () => {
-      expect ( parsePath ( "a.(noequals)b" ) ).toEqual ( [
+      expect ( parsePath ( PathValidatorAlwaysOK ) ( "a.(noequals)b" ) ).toEqual ( [
         "a.(noequals)b",
         "           ^",
         "Expected = unexpected character )"

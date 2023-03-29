@@ -1,6 +1,26 @@
 import { Token, tokenise } from "./tokeniser";
 import { ErrorsAnd } from "@dbpath/utils";
 
+
+export type ValidateTableNameFn = ( tableName: string, fullTableName: string ) => string[]
+export type ValidateFieldsFn = ( tableName: string, fields: string[] ) => string[]
+export type ValidateLinkFn = ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ) => string[]
+/** These will be called at suitable times during parsing
+ * The table name in driver!driver_table would be 'driver', so the valdiation has to handle summaries
+ */
+
+export interface PathValidator {
+  validateTableName: ValidateTableNameFn,
+  validateFields: ValidateFieldsFn,
+  validateLink: ValidateLinkFn
+}
+
+export const PathValidatorAlwaysOK: PathValidator = {
+  validateTableName: (): string[] => [],
+  validateFields: (): string[] => [],
+  validateLink: () => []
+}
+
 export interface RawTableResult {
   table: string
   fullTable?: string
@@ -18,6 +38,7 @@ export type Result = RawTableResult;
 export interface ParserContext {
   tokens: Token[ ]
   pos: number
+  validator: PathValidator
 }
 interface ResultAndContext<R> {
   result?: R
@@ -42,6 +63,12 @@ function mapParser<T, T1> ( c: ResultAndContext<T>, f: ( c: ParserContext, t: T 
   let result = f ( c.context, c.result );
   return result;
 }
+function lift<R> ( context: ParserContext, result: R ): ResultAndContext<R> {
+  return { context, result }
+}
+function liftError<R> ( context: ParserContext, error: string[] ): ResultAndContext<R> {
+  return { context, error }
+}
 
 function isNextChar ( c: ParserContext, ch: string ): boolean {
   const tokens = c.tokens;
@@ -55,7 +82,7 @@ function nextChar ( c: ParserContext, ch: string ): ResultAndContext<undefined> 
   if ( token?.type === 'char' && token.value === ch ) {
     return { result: undefined, context: { ...c, pos } };
   } else {
-    return { context: c, error: [ `Expected ${ch} ${gotForError ( c )}` ] };
+    return liftError ( c, [ `Expected ${ch} ${gotForError ( c )}` ] )
   }
 }
 
@@ -76,11 +103,10 @@ export function parseCommaSeparated<R> ( c: ParserContext, comma: string, parser
   return mapParser ( parser ( c ), ( c, r ) => {
     if ( isNextChar ( c, comma ) )
       return mapParser ( nextChar ( c, comma ), ( c ) =>
-        mapParser ( parseCommaSeparated<R> ( c, comma, parser ), ( c, ids ) => {
-          return { result: [ r, ...ids ], context: c };
-        } ) )
+        mapParser ( parseCommaSeparated<R> ( c, comma, parser ), ( c, ids ) =>
+          lift ( c, [ r, ...ids ] ) ) )
     else
-      return { result: [ r ], context: c };
+      return lift ( c, [ r ] )
   } )
 }
 
@@ -91,11 +117,11 @@ export function parseBracketedCommaSeparated<R> ( c: ParserContext, open: string
     return mapParser ( nextChar ( c, open ), ( c ) =>
       mapParser ( parseCommaSeparated ( c, comma, parser ), ( c, ids ) => {
         return mapParser ( nextChar ( c, close ), c => {
-          return { result: ids, context: c };
+          return lift ( c, ids )
         } )
       } ) )
   }
-  return { context: c, result: [] }
+  return lift ( c, [] )
 }
 
 export interface TwoIds {
@@ -106,15 +132,15 @@ export const parseIdEqualsId = ( c: ParserContext ): ResultAndContext<TwoIds> =>
   mapParser ( identifier ( "'from id'='to id'" ) ( c ), ( c, fromId ) =>
     mapParser ( nextChar ( c, '=' ), c =>
       mapParser ( identifier ( "'to id'" ) ( c ), ( c, toId ) =>
-        ({ context: c, result: { fromId, toId } }) ) ) );
+        lift ( c, { fromId, toId } ) ) ) );
 export function parseTableName ( c: ParserContext ): ResultAndContext<TableAndFullTableName> {
   return mapParser ( identifier ( 'table name' ) ( c ), ( c, tableName ) => {
     if ( isNextChar ( c, '!' ) ) {
       return mapParser ( nextChar ( c, '!' ), ( c ) =>
         mapParser ( identifier ( 'full table name' ) ( c ), ( context, fullTableName ) =>
-          ({ result: { table: tableName, fullTable: fullTableName }, context }) ) )
+          lift ( context, { table: tableName, fullTable: fullTableName } ) ) )
     } else
-      return { result: { table: tableName }, context: c }
+      return lift ( c, { table: tableName } )
   } )
 }
 
@@ -122,27 +148,26 @@ export function parseTableName ( c: ParserContext ): ResultAndContext<TableAndFu
 export const parseTable = ( c: ParserContext ): ResultAndContext<RawTableResult> =>
   mapParser ( parseTableName ( c ), ( c, tableName ) =>
     mapParser ( parseBracketedCommaSeparated ( c, '[', ',', identifier ( 'field' ), ']' ), ( c, fields ) =>
-      ({ result: { ...tableName, fields }, context: c }) ) );
+      lift ( c, { ...tableName, fields } ) ) );
 
 export const parseTableAndNextLink = ( previousTable: RawTableResult | undefined, idEquals: TwoIds[] ): PathParser<RawLinkWithoutIdEqualsResult> => c =>
   mapParser<RawTableResult, RawLinkWithoutIdEqualsResult> ( parseTable ( c ), ( c, table ) => {
     let thisLink = { ...table, previousTable, idEquals };
     return isNextChar ( c, '.' )
       ? parseLink ( thisLink ) ( c )
-      : { context: c, result: thisLink, idEquals };
+      : lift ( c, thisLink );
   } );
 export const parseLink = ( previousTable: RawTableResult | undefined ): PathParser<RawLinkResult> =>
   c => mapParser ( nextChar ( c, '.' ), c =>
     mapParser ( parseBracketedCommaSeparated ( c, "(", ',', parseIdEqualsId, ')' ), ( c, idEquals ) =>
       mapParser ( parseTableAndNextLink ( previousTable, idEquals ) ( c ), ( c, link ) =>
-        ({ context: c, result: { ...link, idEquals } }) )
-    ) )
+        lift ( c, { ...link, idEquals } ) ) ) )
 
 export const parseTableAndLinks: PathParser<RawLinkResult | RawTableResult> = c =>
   mapParser ( parseTable ( c ), ( c, previousLink ) => {
     if ( isNextChar ( c, '.' ) )
       return parseLink ( previousLink ) ( c );
-    else return { context: c, result: previousLink }
+    else return lift ( c, previousLink )
   } )
 
 function errorMessage ( s: string, c: ParserContext, errors: string[] ) {
@@ -151,17 +176,17 @@ function errorMessage ( s: string, c: ParserContext, errors: string[] ) {
   return [ s, '^'.padStart ( pos + 1 ), ...errors ]
 }
 
-export function parsePath ( s: string ): ErrorsAnd<RawLinkResult | RawTableResult> {
+export const parsePath = ( validator: PathValidator ) => ( s: string ): ErrorsAnd<RawLinkResult | RawTableResult> => {
   const tokens = tokenise ( s )
   const errorTokens = tokens.filter ( t => t.type === 'error' )
   if ( errorTokens.length > 0 ) return [ 'sort out tokeniser issues' ]
-  const c: ParserContext = { pos: 0, tokens }
+  const c: ParserContext = { pos: 0, tokens, validator }
   const { context, error, result } = parseTableAndLinks ( c )
   if ( error ) return errorMessage ( s, context, error );
   if ( context.pos < tokens.length - 1 )
     return errorMessage ( s, context, [ "Expected '.'" ] )
   return result
-}
+};
 
 export function errorData<R> ( pr: ResultAndContext<R>, s: string ) {
   let token = pr.context.tokens[ pr.context.pos ];
