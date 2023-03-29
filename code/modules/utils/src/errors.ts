@@ -36,10 +36,10 @@ export function mapAndforEachErrorFn<T, Acc, T1> ( ts: T[], mapFn: ( t: T ) => E
   values.forEach ( ( t1, i ) => forEach ( t1, i ) )
 }
 
-function allErrorsIn<T> ( ts: ErrorsAnd<T>[] ): string[] {
+export function allErrorsIn<T> ( ts: ErrorsAnd<T>[] ): string[] {
   return flatMap ( ts, t => hasErrors ( t ) ? errors ( t ) : [] )
 }
-function allValuesIn<T> ( ts: ErrorsAnd<T>[] ): T[] {
+export function allValuesIn<T> ( ts: ErrorsAnd<T>[] ): T[] {
   return flatMap ( ts, t => hasErrors ( t ) ? [] : [ t ] )
 }
 export function mapErrorsK<T, T1> ( t: ErrorsAnd<T>, fn: ( t: T ) => Promise<ErrorsAnd<T1>> ): Promise<ErrorsAnd<T1>> {
