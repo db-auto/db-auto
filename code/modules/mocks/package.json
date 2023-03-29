@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/mocks",
   "description": "Create table sql and mock data for those for test mocks",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -17,7 +17,7 @@
     ]
   },
   "dependencies": {
-    "@dbpath/tables": "0.1.1"
+    "@dbpath/tables": "0.2.0"
   },
   "devDependencies": {
     "typescript": "^4.0.5",
