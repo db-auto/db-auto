@@ -1,4 +1,4 @@
-import { Token, tokenise } from "./tokeniser";
+import { Token } from "./tokeniser";
 
 export interface RawTableResult {
   table: string
@@ -21,7 +21,7 @@ interface ResultAndContext<R> {
   error?: string[]
 }
 
-export function identifier ( context: ParserContext, type: string ): ResultAndContext<string> {
+export const identifier = ( type: string ) => ( context: ParserContext ): ResultAndContext<string> => {
   var pos = context.pos;
   const tokens = context.tokens;
   let token = tokens[ pos++ ];
@@ -31,7 +31,7 @@ export function identifier ( context: ParserContext, type: string ): ResultAndCo
   } else {
     return { context, error: [ `Expected a ${type} ${gotForError ( context )}` ] };
   }
-}
+};
 
 function mapParser<T, T1> ( c: ResultAndContext<T>, f: ( c: ParserContext, t: T ) => ResultAndContext<T1> ): ResultAndContext<T1> {
   if ( c.error ) return c as any;
@@ -68,32 +68,34 @@ export function gotForError ( c: ParserContext ): string {
   if ( token.type === 'error' ) throw new Error ( `Unexpected error token\n${JSON.stringify ( token )}` );
 }
 export function parseTableName ( c: ParserContext ): ResultAndContext<TableAndFullTableName> {
-  return mapParser ( identifier ( c, 'table name' ), ( c, tableName ) => {
+  return mapParser ( identifier ( 'table name' ) ( c ), ( c, tableName ) => {
     if ( isNextChar ( c, '!' ) ) {
       return mapParser ( nextChar ( c, '!' ), ( c ) =>
-        mapParser ( identifier ( c, 'full table name' ), ( context, fullTableName ) =>
+        mapParser ( identifier ( 'full table name' ) ( c ), ( context, fullTableName ) =>
           ({ result: { table: tableName, fullTable: fullTableName }, context }) ) )
     } else
       return { result: { table: tableName }, context: c }
   } )
 }
 
-export function parseCommaSeparatedIdentifiers ( c: ParserContext, type: string ): ResultAndContext<string[]> {
-  return mapParser ( identifier ( c, type ), ( c, id ) => {
+export function parseCommaSeparated<R> ( c: ParserContext, parser: PathParser<R> ): ResultAndContext<R[]> {
+  return mapParser ( parser ( c ), ( c, r ) => {
     if ( isNextChar ( c, ',' ) )
       return mapParser ( nextChar ( c, ',' ), ( c ) =>
-        mapParser ( parseCommaSeparatedIdentifiers ( c, type ), ( c, ids ) => {
-          return { result: [ id, ...ids ], context: c };
+        mapParser ( parseCommaSeparated<R> ( c, parser ), ( c, ids ) => {
+          return { result: [ r, ...ids ], context: c };
         } ) )
     else
-      return { result: [ id ], context: c };
+      return { result: [ r ], context: c };
   } )
 }
 
-export function parseBracketedCommaSeparatedIdentifiers ( c: ParserContext, open: string, close: string ): ResultAndContext<string[]> {
+export type PathParser<R> = ( c: ParserContext ) => ResultAndContext<R>
+
+export function parseBracketedCommaSeparated<R> ( c: ParserContext, open: string, parser: PathParser<R>, close: string ): ResultAndContext<R[]> {
   if ( isNextChar ( c, open ) ) {
     return mapParser ( nextChar ( c, open ), ( c ) =>
-      mapParser ( parseCommaSeparatedIdentifiers ( c, 'field' ), ( c, ids ) => {
+      mapParser ( parseCommaSeparated ( c, parser ), ( c, ids ) => {
         return mapParser ( nextChar ( c, close ), () => {
           return { result: ids, context: c };
         } )
@@ -105,7 +107,7 @@ export function parseBracketedCommaSeparatedIdentifiers ( c: ParserContext, open
 
 export function parseTable ( c: ParserContext ): ResultAndContext<RawTableResult> {
   return mapParser ( parseTableName ( c ), ( c, tableName ) =>
-    mapParser ( parseBracketedCommaSeparatedIdentifiers ( c, '[', ']' ), ( c, fields ) =>
+    mapParser ( parseBracketedCommaSeparated ( c, '[', identifier ( 'field' ), ']' ), ( c, fields ) =>
       ({ result: { ...tableName, fields }, context: c }) ) )
 }
 
