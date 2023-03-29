@@ -1,7 +1,8 @@
 import { ErrorsAnd, flatMap, hasErrors, mapErrors, NameAnd } from "@dbpath/utils";
-import { buildPlan, CleanTable, mergeSelectData, PathSpec, Plan, selectData, SelectData, sqlFor, SqlOptions } from "@dbpath/tables";
-import { dalFor, EnvAndName, Environment } from "@dbpath/environments";
-import { DalResult, DalResultDisplayOptions, prettyPrintDalResult } from "@dbpath/dal";
+import { buildPlan, CleanTable, mergeSelectData, PathSpec, pathToSelectData, Plan, selectData, SelectData, sqlFor, SqlOptions } from "@dbpath/tables";
+import { dalFor, EnvAndName } from "@dbpath/environments";
+import { DalPathValidator, DalResult, DalResultDisplayOptions, prettyPrintDalResult, sampleMeta, sampleSummary } from "@dbpath/dal";
+import { parsePath } from "@dbpath/pathparser";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -26,11 +27,11 @@ export interface ResPP {
 type PP = SelectDataPP | LinksPP | SqlPP | ResPP
 
 
-function findLinks ( tables: NameAnd<CleanTable>, path: string[] ): ErrorsAnd<LinksPP> {
+function findLinks ( tables: NameAnd<CleanTable>, rawPath: string, path: string[] ): ErrorsAnd<LinksPP> {
   let withoutQuery = path.slice ( 0, -1 );
 
   if ( withoutQuery.length === 0 ) return { links: Object.keys ( tables ), type: 'links' }
-  const planOrErrors: string[] | Plan = buildPlan ( tables, { path: withoutQuery, wheres: [], queryParams: {}, id: undefined } )
+  const planOrErrors: string[] | Plan = buildPlan ( tables, { rawPath, path: withoutQuery, wheres: [], queryParams: {}, id: undefined } )
   if ( hasErrors ( planOrErrors ) ) return planOrErrors
   return { links: Object.keys ( planOrErrors.table.links ), type: 'links' }
 }
@@ -40,9 +41,9 @@ const filterLinkPP = ( lookfor: string ) => ( l: LinksPP ): LinksPP => {
   return ({ type: 'links', links });
 };
 
-function processQueryPP ( tables: NameAnd<CleanTable>, parts: string[] ): ErrorsAnd<LinksPP> {
+function processQueryPP ( tables: NameAnd<CleanTable>, rawPath: string, parts: string[] ): ErrorsAnd<LinksPP> {
   let lastPart = parts[ parts.length - 1 ];
-  return mapErrors ( findLinks ( tables, parts ), filterLinkPP ( lastPart.substring ( 0, lastPart.length - 1 ) ) )
+  return mapErrors ( findLinks ( tables, rawPath, parts ), filterLinkPP ( lastPart.substring ( 0, lastPart.length - 1 ) ) )
 }
 
 
@@ -57,10 +58,33 @@ export async function processPathString ( envAndName: EnvAndName, tables: NameAn
   const { env, envName } = envAndName
   if ( path.length === 0 ) return [ 'Path must have at least one part' ]
   const lastPart = path[ path.length - 1 ]
-  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( tables, path )
+  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( tables, pathSpec.rawPath, path )
   let plan = buildPlan ( tables, pathSpec );
   if ( hasErrors ( plan ) ) return plan
   const data = selectData ( "all" ) ( plan )
+  const { plan: showPlan, sql: showSql, fullSql } = options
+  if ( showPlan ) return { type: 'selectData', data }
+  const optionsModifiedForLimits = showSql && !fullSql ? { ...options, limitBy: undefined } : options
+  const sql = sqlFor ( optionsModifiedForLimits ) ( mergeSelectData ( data ) );
+  if ( showSql || fullSql ) return ({ type: 'sql', sql, envName })
+  const dal = dalFor ( env )
+  try {
+    const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
+    return result
+  } finally {
+    dal.close ()
+  }
+
+}
+export async function processPathString2 ( envAndName: EnvAndName, tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<ErrorsAnd<PP>> {
+  const path = pathSpec.path
+  const { env, envName } = envAndName
+  if ( path.length === 0 ) return [ 'Path must have at least one part' ]
+  const lastPart = path[ path.length - 1 ]
+  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( tables, pathSpec.rawPath, path )
+  let plan = parsePath ( DalPathValidator ( sampleSummary, sampleMeta ) ) ( pathSpec.rawPath );
+  if ( hasErrors ( plan ) ) return plan
+  const data = pathToSelectData ( plan )
   const { plan: showPlan, sql: showSql, fullSql } = options
   if ( showPlan ) return { type: 'selectData', data }
   const optionsModifiedForLimits = showSql && !fullSql ? { ...options, limitBy: undefined } : options

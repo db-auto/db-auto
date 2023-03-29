@@ -76,7 +76,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
       }
       prettyPrintPP ( fullOptions, true, errorsOrresult ).forEach ( line => console.log ( line ) )
     } )
-  findQueryParams ( config.tables ).forEach ( param => program.option ( '--' + param.name + " <" + param.name + ">", param.description ) )
+  // findQueryParams ( config.tables ).forEach ( param => program.option ( '--' + param.name + " <" + param.name + ">", param.description ) )
 
 
   const mock = program

@@ -26,6 +26,7 @@ export interface PathSpecForWheres {
 
 }
 export interface PathSpec extends PathSpecForWheres {
+  rawPath: string,
   path: string[],
   id: string | undefined,
   queryParams: NameAnd<string>,
@@ -35,6 +36,7 @@ export interface PathSpec extends PathSpecForWheres {
 
 export function makePathSpec ( path: string, id?: string, queryParams?: NameAnd<string>, wheres?: string[] ): PathSpec {
   return {
+    rawPath: path,
     path: path.split ( '.' ).filter ( p => p !== '' ),
     id,
     queryParams: safeObject ( queryParams ),
