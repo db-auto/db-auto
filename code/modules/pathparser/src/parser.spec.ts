@@ -1,6 +1,7 @@
-import { errorData, parseLink, parsePath, ParserContext, parseTable, RawTableResult } from "./parser";
+import { errorData, parseLink, parsePath, ParserContext, parseTable } from "./parser";
 import { tokenise } from "./tokeniser";
 import { PathValidator, PathValidatorAlwaysOK, TwoIds } from "@dbpath/dal";
+import { TableInPath } from "./path";
 
 
 function makeContext ( s: string ): ParserContext {
@@ -17,7 +18,7 @@ function pt ( s: string, consume: number ) {
   expect ( context.pos - initialContext.pos ).toEqual ( consume );
   return result
 }
-function pl ( s: string, consume: number, pt?: RawTableResult ) {
+function pl ( s: string, consume: number, pt?: TableInPath ) {
   let initialContext = makeContext ( s )
   let { context, result, error } = parseLink ( pt ) ( initialContext );
   if ( error ) throw error

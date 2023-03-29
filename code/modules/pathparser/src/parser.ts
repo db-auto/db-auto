@@ -1,21 +1,14 @@
 import { Token, tokenise } from "./tokeniser";
 import { ErrorsAnd } from "@dbpath/utils";
 import { PathValidator, TwoIds } from "@dbpath/dal";
+import { LinkInPath, PathItem, TableInPath } from "./path";
 
-
-export interface RawTableResult {
+export interface TableAndFullTableName {
   table: string
   fullTable?: string
-  fields?: string[ ]
-};
-export interface RawLinkWithoutIdEqualsResult extends RawTableResult {
-  previousLink?: RawLinkResult
 }
-export interface RawLinkResult extends RawLinkWithoutIdEqualsResult {
-  idEquals: TwoIds[]
-};
 
-export type Result = RawTableResult;
+export type Result = TableInPath;
 
 export interface ParserContext {
   tokens: Token[ ]
@@ -72,11 +65,6 @@ function nextChar ( c: ParserContext, ch: string ): ResultAndContext<undefined> 
   }
 }
 
-export interface TableAndFullTableName {
-  table: string
-  fullTable?: string
-}
-
 export function gotForError ( c: ParserContext ): string {
   let token = c.tokens[ c.pos ];
   if ( token === undefined ) return 'end of path';
@@ -129,13 +117,13 @@ export function parseTableName ( context: ParserContext ): ResultAndContext<Tabl
 }
 
 
-export const parseTable = ( context: ParserContext ): ResultAndContext<RawTableResult> =>
+export const parseTable = ( context: ParserContext ): ResultAndContext<TableInPath> =>
   mapParser ( parseTableName ( context ), ( cEndOfTable, tableName ) =>
     mapParser ( parseBracketedCommaSeparated ( cEndOfTable, '[', ',', identifier ( 'field' ), ']' ), ( c, fields ) =>
       validateAndReturn ( cEndOfTable, c, { ...tableName, fields }, c.validator.validateFields ( tableName.table, fields ) ) ) );
 
-export const parseTableAndNextLink = ( previousTable: RawTableResult | undefined, idEquals: TwoIds[] ): PathParser<RawLinkWithoutIdEqualsResult> => context =>
-  mapParser<RawTableResult, RawLinkWithoutIdEqualsResult> ( parseTable ( context ), ( c, table ) => {
+export const parseTableAndNextLink = ( previousTable: TableInPath | undefined, idEquals: TwoIds[] ): PathParser<LinkInPath> => context =>
+  mapParser<TableInPath, LinkInPath> ( parseTable ( context ), ( c, table ) => {
     let thisLink = { ...table, previousTable, idEquals };
     const errors = c.validator.validateLink ( previousTable?.table, table.table, idEquals )
     if ( errors.length > 0 ) return liftError ( context, errors )
@@ -143,17 +131,18 @@ export const parseTableAndNextLink = ( previousTable: RawTableResult | undefined
       ? parseLink ( thisLink ) ( c )
       : lift ( c, thisLink );
   } );
-export const parseLink = ( previousTable: RawTableResult | undefined ): PathParser<RawLinkResult> =>
+export const parseLink = ( previousTable: TableInPath | undefined ): PathParser<LinkInPath> =>
   c => mapParser ( nextChar ( c, '.' ), c =>
     mapParser ( parseBracketedCommaSeparated ( c, "(", ',', parseIdEqualsId, ')' ), ( c, idEquals ) =>
       mapParser ( parseTableAndNextLink ( previousTable, idEquals ) ( c ), ( c, link ) =>
         lift ( c, { ...link, idEquals } ) ) ) )
 
-export const parseTableAndLinks: PathParser<RawLinkResult | RawTableResult> = c =>
+export const parseTableAndLinks: PathParser<PathItem> = c =>
   mapParser ( parseTable ( c ), ( c, previousLink ) => {
-    if ( isNextChar ( c, '.' ) )
-      return parseLink ( previousLink ) ( c );
-    else return lift ( c, previousLink )
+    if ( isNextChar ( c, '.' ) ) {
+      const linkInPathResultAndContext: ResultAndContext<PathItem> = parseLink ( previousLink ) ( c );
+      return linkInPathResultAndContext;
+    } else return lift ( c, previousLink )
   } )
 
 function errorMessage ( s: string, c: ParserContext, errors: string[] ) {
@@ -162,7 +151,7 @@ function errorMessage ( s: string, c: ParserContext, errors: string[] ) {
   return [ s, '^'.padStart ( pos + 1 ), ...errors ]
 }
 
-export const parsePath = ( validator: PathValidator ) => ( s: string ): ErrorsAnd<RawLinkResult | RawTableResult> => {
+export const parsePath = ( validator: PathValidator ) => ( s: string ): ErrorsAnd<LinkInPath | TableInPath> => {
   const tokens = tokenise ( s )
   const errorTokens = tokens.filter ( t => t.type === 'error' )
   if ( errorTokens.length > 0 ) return [ 'sort out tokeniser issues' ]

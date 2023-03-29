@@ -1,15 +1,15 @@
 {
-  "template": "typescript",
-  "name": "@dbpath/tables",
+  "template":    "typescript",
+  "name":        "@dbpath/tables",
   "description": "",
   "packageJson": {
-    "dependencies": {},
+    "dependencies":    {},
     "devDependencies": {}
   },
-  "links": ["@dbpath/utils"],
-  "guards": {
+  "links":       ["@dbpath/utils", "@dbpath/types"],
+  "guards":      {
     "compile": true,
     "publish": true,
-    "test": true
+    "test":    true
   }
 }
