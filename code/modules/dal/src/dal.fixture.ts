@@ -20,6 +20,7 @@ export const sampleMeta: DatabaseMetaData = {
           "type": "text"
         }
       },
+      pk: [],
       "fk": {
         "fk_driver_aud_driver": {
           "column": "id",
@@ -38,6 +39,7 @@ export const sampleMeta: DatabaseMetaData = {
           "type": "text"
         }
       },
+      pk: [ "driverid" ],
       "fk": {
         "fk_driver_aud_driver": {
           "column": "driverid",
@@ -54,6 +56,7 @@ export const sampleMeta: DatabaseMetaData = {
       }
     },
     "mission": {
+      pk: [ "id" ],
       "columns": {
         "driverid": {
           "type": "integer"
@@ -81,6 +84,7 @@ export const sampleMeta: DatabaseMetaData = {
       }
     },
     "mission_aud": {
+      pk: [],
       "columns": {
         "id": {
           "type": "integer"

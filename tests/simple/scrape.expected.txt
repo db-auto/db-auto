@@ -20,7 +20,8 @@ Scraping dev
           "refColumn": "driverid",
           "refTable": "drivertable"
         }
-      }
+      },
+      "pk": []
     },
     "drivertable": {
       "columns": {
@@ -44,7 +45,10 @@ Scraping dev
           "refColumn": "driverid",
           "refTable": "mission"
         }
-      }
+      },
+      "pk": [
+        "driverid"
+      ]
     },
     "mission": {
       "columns": {
@@ -71,7 +75,10 @@ Scraping dev
           "refColumn": "driverid",
           "refTable": "drivertable"
         }
-      }
+      },
+      "pk": [
+        "id"
+      ]
     },
     "mission_aud": {
       "columns": {
@@ -92,7 +99,8 @@ Scraping dev
           "refColumn": "id",
           "refTable": "mission"
         }
-      }
+      },
+      "pk": []
     }
   }
 }

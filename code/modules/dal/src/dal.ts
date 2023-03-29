@@ -26,6 +26,7 @@ export interface ForeignKeyMetaData {
 }
 export interface TableMetaData {
   columns: NameAnd<ColumnMetaData>
+  pk: string[]
   fk: NameAnd<ForeignKeyMetaData>
 }
 export interface DatabaseMetaData {

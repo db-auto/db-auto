@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { ColumnMetaData, ForeignKeyMetaData, MetaDataFn, TableMetaData } from "@dbpath/dal";
-import { addNameAnd2, deepSortNames, fromEntries, NameAnd } from "@dbpath/utils";
+import { addNameAnd2, deepSortNames, fromEntries, NameAnd, toArray } from "@dbpath/utils";
 
 
 export const pgMeta = ( p: Pool, schema: string ): MetaDataFn => async (): Promise<any> => {
@@ -51,9 +51,21 @@ export const pgMeta = ( p: Pool, schema: string ): MetaDataFn => async (): Promi
         addNameAnd2 ( table2Fks ) ( fk.refTable, r.fkname, reverseFk ( r.tablename, fk ) );
       }
     )
+    const pks = await client.query ( `select tc.table_name, c.column_name, c.data_type
+                                      FROM information_schema.table_constraints tc
+                                               JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name)
+                                               JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema
+                                          AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
+                                      WHERE constraint_type = 'PRIMARY KEY'
+                                        and tc.table_schema = $1 `, [ schema ] )
+
+    const table2Pks: NameAnd<string[]> = {};//will have to be adjusted for composite keys
+    pks.rows.forEach ( r => {
+      table2Pks[ r.table_name ] = r.column_name;
+    } )
 
     let tableNamesAndMetaData: [ string, TableMetaData ][] = tableNames.map ( t => {
-      let tableMetadata: TableMetaData = { columns: table2Columns[ t ], fk: table2Fks[ t ] };
+      let tableMetadata: TableMetaData = { columns: table2Columns[ t ], fk: table2Fks[ t ], pk: toArray(table2Pks[ t ]) };
       return [ t.toString (), tableMetadata ]
     } );
     return { tables: deepSortNames ( fromEntries ( ...tableNamesAndMetaData ) ) };
