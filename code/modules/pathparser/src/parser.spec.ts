@@ -229,6 +229,10 @@ describe ( "PathValidator in parsePath", () => {
       validateTableName ( tableName: string, fullTableName: string ): string[] {
         remembered.push ( `vTable(${tableName},${fullTableName})` )
         return [];
+      },
+      useIdsOrSingleFkLinkOrError: ( fromTableName, toTableName, idEquals ) => {
+        remembered.push ( `useIdsOrSingleFkLinkOrError(${fromTableName},${toTableName}) ${idEquals}` )
+        return idEquals
       }
     }
     parsePath ( rem ) ( "driver!full.(id1=id2)mission.audit[f3,f4]" )

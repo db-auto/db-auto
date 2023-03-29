@@ -39,6 +39,8 @@ Options:
 Commands:
   mocks [tables...]            Create table sql for the tables
   envs                         Lists all the environments
+  newPath <path>               Uses new path parser ... doesn't do anything
+                               other than show syntax tree
   status                       Checks that the environments are accessible and
                                gives report
   env <env>                    Sets the current environment

@@ -1,6 +1,6 @@
 import { Summary } from "@dbpath/config";
-import { DatabaseMetaData, TableMetaData } from "./dal";
-import { mapEntries, mapObject, safeObject } from "@dbpath/utils";
+import { DatabaseMetaData, ForeignKeyMetaData, TableMetaData } from "./dal";
+import { ErrorsAnd, hasErrors, mapEntries, safeObject } from "@dbpath/utils";
 
 export interface TwoIds {
   fromId: string,
@@ -17,12 +17,17 @@ export interface PathValidator {
   validateTableName: ValidateTableNameFn,
   validateFields: ValidateFieldsFn,
   validateLink: ValidateLinkFn
+
+  useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): TwoIds[]
 }
 
 export const PathValidatorAlwaysOK: PathValidator = {
   validateTableName: (): string[] => [],
   validateFields: (): string[] => [],
-  validateLink: () => []
+  validateLink: () => [],
+  useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): TwoIds[] {
+    return idEquals;
+  }
 }
 
 function checkFullTableName ( m: DatabaseMetaData, tableName: string ) {
@@ -59,23 +64,33 @@ export const validateFields = ( summary: Summary, m: DatabaseMetaData ): Validat
   }
 }
 
-interface FkLinks {
-  fromTable: string,
-  fromId: string,
-  toTable: string,
-  toId: string
-}
 
-function validateLinksInFks ( fromTableName: string, fromTable: TableMetaData, toTableName: string, toTable: TableMetaData ): string[] {
+export function getSingleFkLink ( summary: Summary, m: DatabaseMetaData, fromTableName: string, toTableName: string ): ErrorsAnd<TwoIds> {
+  const fromTable = getTableMetaData ( summary, m, fromTableName )
+  const found: ForeignKeyMetaData[] = mapEntries ( safeObject ( fromTable.fk ), fk => fk ).filter ( table => table.refTable === toTableName );
   function error ( msg: string ): string[] {
     const nameToFkLinks = mapEntries ( safeObject ( fromTable.fk ), v => `  ${fromTableName}.(${v.column},${v.refColumn})${v.refTable}` )
     return [ msg + '. Valid links are ', ...nameToFkLinks ]
   }
-  const found = mapEntries ( safeObject ( fromTable.fk ), fk => fk.refTable ).filter ( table => table === toTableName )
   if ( found.length === 0 ) return error ( `No foreign key from ${fromTableName} to ${toTableName}` )
   if ( found.length > 1 ) return error ( `More than one foreign key from ${fromTableName} to ${toTableName}` )
-  return []
+  const result: TwoIds = { fromId: found[ 0 ].column, toId: found[ 0 ].refColumn }
+  return result;
+}
+/** This should not throw an exception if the validation says there is a link */
+export const useIdsOrSingleFkLinkOrError = ( summary: Summary, m: DatabaseMetaData ) => ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): TwoIds[] => {
+  if ( idEquals.length === 0 ) {
+    const found = getSingleFkLink ( summary, m, fromTableName, toTableName )
+    if ( hasErrors ( found ) ) throw Error ( `Single FK link not found\n${found}` )
+    return [ found ]
+  }
+  return idEquals
+};
 
+function validateLinksInFks ( summary: Summary, m: DatabaseMetaData, fromTableName: string, toTableName: string ): string[] {
+  const found = getSingleFkLink ( summary, m, fromTableName, toTableName )
+  if ( hasErrors ( found ) ) return found
+  return []
 }
 const notInError = ( tableName: string, fromTable: TableMetaData ) => ( fields: string[] ): string[] => {
   if ( fields.length === 0 ) return []
@@ -84,11 +99,21 @@ const notInError = ( tableName: string, fromTable: TableMetaData ) => ( fields: 
 };
 export const validateLinks = ( summary: Summary, m: DatabaseMetaData ): ValidateLinkFn => {
   return ( fromTableName, toTableName, idEquals ) => {
+    if ( idEquals.length === 0 ) return validateLinksInFks ( summary, m, fromTableName, toTableName )
+
     const fromTable: TableMetaData = getTableMetaData ( summary, m, fromTableName )
     const toTable = getTableMetaData ( summary, m, toTableName )
-    if ( idEquals.length === 0 ) return validateLinksInFks ( fromTableName, fromTable, toTableName, toTable )
     const notInFromTable = notInError ( fromTableName, fromTable ) ( idEquals.filter ( i => !fromTable.columns[ i.fromId ] ).map ( t => t.fromId ) )
     const notInToTable = notInError ( toTableName, toTable ) ( idEquals.filter ( i => !toTable.columns[ i.toId ] ).map ( t => t.toId ) )
     return notInFromTable.concat ( notInToTable )
   }
+}
+
+export function DalPathValidator ( summary: Summary, m: DatabaseMetaData ): PathValidator {
+  return {
+    validateTableName: validateTableName ( summary, m ),
+    validateFields: validateFields ( summary, m ),
+    validateLink: validateLinks ( summary, m ),
+    useIdsOrSingleFkLinkOrError: useIdsOrSingleFkLinkOrError ( summary, m )
+  };
 }

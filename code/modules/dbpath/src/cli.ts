@@ -7,6 +7,8 @@ import { findFileInParentsOrError } from "@dbpath/files";
 import { checkStatus, currentEnvironment, dalFor, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn } from "@dbpath/environments";
 import { prettyPrintPP, processPathString, tracePlan } from "./path";
 import Path from "path";
+import { parsePath } from "@dbpath/pathparser/dist/src/parser";
+import { DalPathValidator, sampleMeta, sampleSummary } from "@dbpath/dal";
 
 
 export const dbPathDir = '.dbpath';
@@ -96,6 +98,18 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
       console.log ( "Current environment is " + envAndNameOrErrors.envName )
       prettyPrintEnvironments ( config.environments ).forEach ( line => console.log ( line ) )
     } )
+
+  const newPath = program.command ( 'newPath' )
+    .description ( "Uses new path parser ... doesn't do anything other than show syntax tree" )
+    .arguments ( '<path>' )
+    .action ( ( path, command, options ) => {
+      const result = parsePath ( DalPathValidator ( sampleSummary, sampleMeta ) ) ( path )
+      if ( hasErrors ( result ) ) {
+        reportErrors ( result )
+        return
+      }
+      console.log ( JSON.stringify ( result, null, 2 ) )
+    } );
 
   const status = program.command ( 'status' ).description ( "Checks that the environments are accessible and gives report" )
     .action ( async ( command, options ) => {
