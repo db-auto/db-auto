@@ -9,8 +9,8 @@ import { prettyPrintPP, processPathString, tracePlan } from "./path";
 import Path from "path";
 
 
-const dbPathDir = '.dbpath';
-const configFileName = 'dbpath.config.json';
+export const dbPathDir = '.dbpath';
+export const configFileName = 'dbpath.config.json';
 export function makeConfig ( cwd: string, envVars: NameAnd<string> ): ErrorsAnd<CleanConfig> {
   return flatMapErrors ( findFileInParentsOrError ( cwd, dbPathDir ), dir =>
     flatMapErrors ( parseFile ( Path.join ( dbPathDir, configFileName ) ), config =>

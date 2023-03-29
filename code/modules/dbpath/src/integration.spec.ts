@@ -1,5 +1,9 @@
 import { executeDbAuto, testRoot } from "./integration.fixture";
+import { promises, writeFileSync } from "fs";
 import { readTestFile } from "@dbpath/files";
+import Path from "path";
+import { dbPathDir } from "./cli";
+import { stateFileName } from "@dbpath/environments";
 
 
 const mockTestDir = testRoot + '/simple';
@@ -24,6 +28,21 @@ describe ( "dbpath envs", () => {
     const expected = readTestFile ( mockTestDir, 'envs.expected.txt' );
     expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toEqual ( expected );
   } )
+} )
+
+describe ( "dbpath env", () => {
+  promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
+  it ( "should set the env and it should be visible in envs", async () => {
+    const expectedTestEnv = readTestFile ( mockTestDir, 'env.test.expected.txt' );
+    const expectedDevEnv = readTestFile ( mockTestDir, 'env.dev.expected.txt' );
+    expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toContain ( "Current environment is dev" ); //default
+    expect ( await executeDbAuto ( mockTestDir, `env test` ) ).toEqual ( expectedTestEnv );
+    expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toContain ( "Current environment is test" );
+    expect ( await executeDbAuto ( mockTestDir, `env dev` ) ).toEqual ( expectedDevEnv );
+    expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toContain ( "Current environment is dev" );
+    promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
+  } )
+
 } )
 
 describe ( "dbpath paths", () => {
@@ -56,16 +75,16 @@ describe ( "dbpath paths", () => {
       expect ( await executeDbAuto ( mockTestDir, `driver.mission --fullSql --page 2 --pageSize 3` ) ).toEqual ( expected );
     } )
 
-    it ("should dbpath driver.mission --count", async () => {
+    it ( "should dbpath driver.mission --count", async () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.mission.count.expected.txt' );
       expect ( await executeDbAuto ( mockTestDir, `driver.mission --count` ) ).toEqual ( expected );
 
-    })
-    it ("should dbpath driver.mission --distinct", async () => {
+    } )
+    it ( "should dbpath driver.mission --distinct", async () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.mission.distinct.expected.txt' );
       expect ( await executeDbAuto ( mockTestDir, `driver.mission --distinct --sql` ) ).toEqual ( expected );
 
-    })
+    } )
 
   } )
   describe ( "execution", () => {
@@ -133,16 +152,16 @@ describe ( "dbpath trace", () => {
   } )
 } )
 
-describe("scraping", () => {
-  it("should scrape", async () => {
-    const expected = readTestFile(mockTestDir, 'scrape.expected.txt');
-    expect(await executeDbAuto(mockTestDir, `scrape`)).toEqual(expected);
-  })
-})
+describe ( "scraping", () => {
+  it ( "should scrape", async () => {
+    const expected = readTestFile ( mockTestDir, 'scrape.expected.txt' );
+    expect ( await executeDbAuto ( mockTestDir, `scrape` ) ).toEqual ( expected );
+  } )
+} )
 
-describe("status", () =>{
-  it("should return status", async () => {
-    const expected = readTestFile(mockTestDir, 'status.expected.txt');
-    expect(await executeDbAuto(mockTestDir, `status`)).toEqual(expected);
-  })
-})
+describe ( "status", () => {
+  it ( "should return status", async () => {
+    const expected = readTestFile ( mockTestDir, 'status.expected.txt' );
+    expect ( await executeDbAuto ( mockTestDir, `status` ) ).toEqual ( expected );
+  } )
+} )

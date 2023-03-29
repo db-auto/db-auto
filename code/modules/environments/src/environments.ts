@@ -11,7 +11,7 @@ export interface CurrentEnvironment {
   currentEnvironment: string
 }
 
-const stateFileName = '.dbpath.state.json';
+export const stateFileName = 'dbpath.state.json';
 export function currentEnvName ( cwd: string, marker: string, env: string | undefined, cleanE: NameAnd<CleanEnvironment> ): ErrorsAnd<string> {
   if ( env ) return env
   const contents = loadFileInDirectory ( cwd, marker, stateFileName )
@@ -24,7 +24,7 @@ export function currentEnvName ( cwd: string, marker: string, env: string | unde
 export function saveEnvName ( cwd: string, marker: string, env: string ): ErrorsAnd<void> {
   const dir = findDirectoryHoldingFileOrError ( cwd, marker )
   if ( hasErrors ( dir ) ) return dir
-  const envFile = Path.join ( dir, stateFileName )
+  const envFile = Path.join ( dir,marker, stateFileName )
   try {
     fs.writeFileSync ( envFile, JSON.stringify ( { currentEnvironment: env } ) )
     return undefined
