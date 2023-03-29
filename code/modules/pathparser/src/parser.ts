@@ -1,8 +1,8 @@
 import { Token, tokenise } from "./tokeniser";
-import { ErrorsAnd } from "@dbpath/utils";
+import { errors, ErrorsAnd, hasErrors, Validator } from "@dbpath/utils";
 
 
-export type ValidateTableNameFn = ( tableName: string, fullTableName: string ) => string[]
+export type ValidateTableNameFn = ( tableName: string, fullTableName?: string ) => string[]
 export type ValidateFieldsFn = ( tableName: string, fields: string[] ) => string[]
 export type ValidateLinkFn = ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ) => string[]
 /** These will be called at suitable times during parsing
@@ -62,6 +62,10 @@ function mapParser<T, T1> ( c: ResultAndContext<T>, f: ( c: ParserContext, t: T 
   if ( c.error ) return c as any;
   let result = f ( c.context, c.result );
   return result;
+}
+
+function validateAndReturn<T> ( c: ParserContext, t: T, errors: string[] ): ResultAndContext<T> {
+  return errors.length ? liftError ( c, errors ) : lift ( c, t );
 }
 function lift<R> ( context: ParserContext, result: R ): ResultAndContext<R> {
   return { context, result }
@@ -138,9 +142,10 @@ export function parseTableName ( c: ParserContext ): ResultAndContext<TableAndFu
     if ( isNextChar ( c, '!' ) ) {
       return mapParser ( nextChar ( c, '!' ), ( c ) =>
         mapParser ( identifier ( 'full table name' ) ( c ), ( context, fullTableName ) =>
-          lift ( context, { table: tableName, fullTable: fullTableName } ) ) )
+          validateAndReturn ( context, { table: tableName, fullTable: fullTableName }, context.validator.validateTableName ( tableName, fullTableName ) )
+        ) )
     } else
-      return lift ( c, { table: tableName } )
+      return validateAndReturn ( c, { table: tableName }, c.validator.validateTableName ( tableName ) )
   } )
 }
 
@@ -148,11 +153,13 @@ export function parseTableName ( c: ParserContext ): ResultAndContext<TableAndFu
 export const parseTable = ( c: ParserContext ): ResultAndContext<RawTableResult> =>
   mapParser ( parseTableName ( c ), ( c, tableName ) =>
     mapParser ( parseBracketedCommaSeparated ( c, '[', ',', identifier ( 'field' ), ']' ), ( c, fields ) =>
-      lift ( c, { ...tableName, fields } ) ) );
+      validateAndReturn ( c, { ...tableName, fields }, c.validator.validateFields ( tableName.table, fields ) ) ) );
 
 export const parseTableAndNextLink = ( previousTable: RawTableResult | undefined, idEquals: TwoIds[] ): PathParser<RawLinkWithoutIdEqualsResult> => c =>
   mapParser<RawTableResult, RawLinkWithoutIdEqualsResult> ( parseTable ( c ), ( c, table ) => {
     let thisLink = { ...table, previousTable, idEquals };
+    const errors = c.validator.validateLink ( previousTable?.table, table.table, idEquals )
+    if ( errors.length > 0 ) return liftError ( c, errors )
     return isNextChar ( c, '.' )
       ? parseLink ( thisLink ) ( c )
       : lift ( c, thisLink );

@@ -1,4 +1,4 @@
-import { errorData, parseLink, parseTableAndLinks, ParserContext, parseTable, RawTableResult, parsePath, PathValidatorAlwaysOK } from "./parser";
+import { errorData, parseLink, parsePath, ParserContext, parseTable, PathValidator, PathValidatorAlwaysOK, RawTableResult, TwoIds } from "./parser";
 import { tokenise } from "./tokeniser";
 
 
@@ -210,5 +210,37 @@ describe ( "parsePath", () => {
         "Expected = unexpected character )"
       ] )
     } )
+  } )
+} )
+
+describe ( "PathValidator in parsePath", () => {
+  it ( "should be called", () => {
+    var remembered: string[] = []
+    const rem: PathValidator = {
+      validateFields ( tableName: string, fields: string[] ): string[] {
+        remembered.push ( `vFields(${tableName})[${fields}]` )
+        return [];
+      },
+      validateLink ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): string[] {
+        remembered.push ( `vLink(${fromTableName},${toTableName})[${idEquals.map ( i => `${i.fromId}=${i.toId}` )}]` )
+        return [];
+      },
+      validateTableName ( tableName: string, fullTableName: string ): string[] {
+        remembered.push ( `vTable(${tableName},${fullTableName})` )
+        return [];
+      }
+    }
+    parsePath ( rem ) ( "driver!full.(id1=id2)mission.audit[f3,f4]" )
+    expect ( remembered.sort () ).toEqual ( [
+      "vFields(audit)[f3,f4]",
+      "vFields(driver)[]",
+      "vFields(mission)[]",
+      "vLink(driver,mission)[id1=id2]",
+      "vLink(mission,audit)[]",
+      "vTable(audit,undefined)",
+      "vTable(driver,full)",
+      "vTable(mission,undefined)"
+    ] )
+
   } )
 } )
