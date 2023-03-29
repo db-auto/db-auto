@@ -1,4 +1,4 @@
-import { errorData, parseLink, ParserContext, parseTable, RawTableResult } from "./parser";
+import { errorData, parseLink, parseTableAndLinks, ParserContext, parseTable, RawTableResult, parsePath } from "./parser";
 import { tokenise } from "./tokeniser";
 
 
@@ -43,7 +43,7 @@ describe ( "parseTable", () => {
     expect ( pt ( "driver!drivertable,", 3 ) ).toEqual ( { table: "driver", "fullTable": "drivertable", fields: [] } )
   } )
   it ( "should parse driver[field1,field2]", () => {
-    expect ( pt ( "driver[field1]", 4) ).toEqual ( { table: "driver", fields: [ "field1" ] } )
+    expect ( pt ( "driver[field1]", 4 ) ).toEqual ( { table: "driver", fields: [ "field1" ] } )
     expect ( pt ( "driver[field1,field2]", 6 ) ).toEqual ( { table: "driver", fields: [ "field1", "field2" ] } )
   } )
   it ( "should parse drive!drivertable[field1,field2]", () => {
@@ -59,7 +59,7 @@ describe ( "parseTable", () => {
 
 describe ( "parseLink", () => {
   it ( "should parse .drive", () => {
-    expect ( pl ( ".driver", 2 ) ).toEqual ( { table: "driver", fields: [] , "idEquals": [],} )
+    expect ( pl ( ".driver", 2 ) ).toEqual ( { table: "driver", fields: [], "idEquals": [], } )
     expect ( pl ( ".driver,", 2 ) ).toEqual ( { table: "driver", fields: [], "idEquals": [], } )
   } )
   it ( "should parse .drive!name[f1,f2]", () => {
@@ -88,7 +88,7 @@ describe ( "parseLink", () => {
         "table": "mission"
       },
       "table": "audit"
-    })
+    } )
   } )
   it ( "should parse .(id1=id2)drive", () => {
     expect ( pl ( ".(id1=id2)drive", 7 ) ).toEqual ( {
@@ -100,7 +100,7 @@ describe ( "parseLink", () => {
         }
       ],
       "table": "drive"
-    })
+    } )
   } )
 
   it ( "should parse .drive!fullDrive.mission.audit", () => {
@@ -119,9 +119,9 @@ describe ( "parseLink", () => {
         "table": "mission"
       },
       "table": "audit"
-    })
+    } )
 
-  })
+  } )
   it ( "should parse .drive!fullDrive[f1,f2].(id1=id2)mission[f3].(id3=id4)audit", () => {
     expect ( pl ( ".drive!full[f1,f2].mission.audit", 13 ) ).toEqual ( {
       "fields": [],
@@ -140,5 +140,74 @@ describe ( "parseLink", () => {
       "idEquals": [],
     } )
   } )
+} )
 
+describe ( "parsePath", () => {
+  it ( "should parse a simple path", () => {
+    expect ( parsePath ( "driver" ) ).toEqual ( {
+      "fields": [],
+      "table": "driver"
+    } )
+  } )
+  it ( "should parse a complex path", () => {
+
+    expect ( parsePath ( "driver!full.(id1=id2)mission.audit[f3,f4]" ) ).toEqual ( {
+      "fields": [
+        "f3",
+        "f4"
+      ],
+      "idEquals": [
+        {
+          "fromId": "id1",
+          "toId": "id2"
+        }
+      ],
+      "previousTable": {
+        "fields": [],
+        "idEquals": [
+          {
+            "fromId": "id1",
+            "toId": "id2"
+          }
+        ],
+        "previousTable": {
+          "fields": [],
+          "fullTable": "full",
+          "table": "driver"
+        },
+        "table": "mission"
+      },
+      "table": "audit"
+    } )
+  } )
+  describe ( "error message", () => {
+    it ( "should process a()", () => {
+      expect ( parsePath ( "a()" ) ).toEqual ( [
+        "a()",
+        " ^",
+        "Expected '.'"
+      ] )
+    } )
+    it ( "should process a.()", () => {
+      expect ( parsePath ( "a.()" ) ).toEqual ( [
+        "a.()",
+        "   ^",
+        "Expected a 'from id'='to id' unexpected character )"
+      ] )
+    } )
+    it ( "should process a.[]", () => {
+      expect ( parsePath ( "a.[]" ) ).toEqual ( [
+        "a.[]",
+        "  ^",
+        "Expected a table name unexpected character ["
+      ] )
+    } )
+    it ( "should process a.(noequals)b", () => {
+      expect ( parsePath ( "a.(noequals)b" ) ).toEqual ( [
+        "a.(noequals)b",
+        "           ^",
+        "Expected = unexpected character )"
+      ] )
+    } )
+  } )
 } )

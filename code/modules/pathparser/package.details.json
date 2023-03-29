@@ -1,0 +1,15 @@
+{
+  "template":    "typescript",
+  "name":        "@dbpath/pathparser",
+  "description": "",
+  "packageJson": {
+    "dependencies":    {},
+    "devDependencies": {}
+  },
+  "links":       ["@dbpath/dal", "@dbpath/utils"],
+  "guards":      {
+    "compile": true,
+    "publish": true,
+    "test":    true
+  }
+}

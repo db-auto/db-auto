@@ -1,4 +1,5 @@
-import { Token } from "./tokeniser";
+import { Token, tokenise } from "./tokeniser";
+import { ErrorsAnd } from "@dbpath/utils";
 
 export interface RawTableResult {
   table: string
@@ -9,7 +10,6 @@ export interface RawLinkWithoutIdEqualsResult extends RawTableResult {
   previousLink?: RawLinkResult
 }
 export interface RawLinkResult extends RawLinkWithoutIdEqualsResult {
-
   idEquals: TwoIds[]
 };
 
@@ -52,7 +52,7 @@ function nextChar ( c: ParserContext, ch: string ): ResultAndContext<undefined> 
   var pos = c.pos;
   const tokens = c.tokens;
   let token = tokens[ pos++ ];
-  if ( token.type === 'char' && token.value === ch ) {
+  if ( token?.type === 'char' && token.value === ch ) {
     return { result: undefined, context: { ...c, pos } };
   } else {
     return { context: c, error: [ `Expected ${ch} ${gotForError ( c )}` ] };
@@ -103,9 +103,9 @@ export interface TwoIds {
   toId: string
 }
 export const parseIdEqualsId = ( c: ParserContext ): ResultAndContext<TwoIds> =>
-  mapParser ( identifier ( 'from id' ) ( c ), ( c, fromId ) =>
+  mapParser ( identifier ( "'from id'='to id'" ) ( c ), ( c, fromId ) =>
     mapParser ( nextChar ( c, '=' ), c =>
-      mapParser ( identifier ( 'to id' ) ( c ), ( c, toId ) =>
+      mapParser ( identifier ( "'to id'" ) ( c ), ( c, toId ) =>
         ({ context: c, result: { fromId, toId } }) ) ) );
 export function parseTableName ( c: ParserContext ): ResultAndContext<TableAndFullTableName> {
   return mapParser ( identifier ( 'table name' ) ( c ), ( c, tableName ) => {
@@ -138,10 +138,30 @@ export const parseLink = ( previousTable: RawTableResult | undefined ): PathPars
         ({ context: c, result: { ...link, idEquals } }) )
     ) )
 
-export const parsePath: PathParser<RawLinkResult> = c =>
-  mapParser ( parseTable ( c ), ( c, previousLink ) =>
-    parseLink ( previousLink ) ( c ) )
+export const parseTableAndLinks: PathParser<RawLinkResult | RawTableResult> = c =>
+  mapParser ( parseTable ( c ), ( c, previousLink ) => {
+    if ( isNextChar ( c, '.' ) )
+      return parseLink ( previousLink ) ( c );
+    else return { context: c, result: previousLink }
+  } )
 
+function errorMessage ( s: string, c: ParserContext, errors: string[] ) {
+  const posFromToken = c.tokens[ c.pos ]?.pos
+  const pos = posFromToken ? posFromToken : s.length
+  return [ s, '^'.padStart ( pos + 1 ), ...errors ]
+}
+
+export function parsePath ( s: string ): ErrorsAnd<RawLinkResult | RawTableResult> {
+  const tokens = tokenise ( s )
+  const errorTokens = tokens.filter ( t => t.type === 'error' )
+  if ( errorTokens.length > 0 ) return [ 'sort out tokeniser issues' ]
+  const c: ParserContext = { pos: 0, tokens }
+  const { context, error, result } = parseTableAndLinks ( c )
+  if ( error ) return errorMessage ( s, context, error );
+  if ( context.pos < tokens.length - 1 )
+    return errorMessage ( s, context, [ "Expected '.'" ] )
+  return result
+}
 
 export function errorData<R> ( pr: ResultAndContext<R>, s: string ) {
   let token = pr.context.tokens[ pr.context.pos ];
