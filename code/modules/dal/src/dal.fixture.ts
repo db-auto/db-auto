@@ -1,6 +1,12 @@
 import { DatabaseMetaData } from "./dal";
+import { Summary } from "@dbpath/config";
 
-export const  sampleMeta: DatabaseMetaData = {
+export const sampleSummary: Summary = {
+  tables: {
+    driver: { tableName: "drivertable" }
+  }
+}
+export const sampleMeta: DatabaseMetaData = {
   "tables": {
     "driver_aud": {
       "columns": {

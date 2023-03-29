@@ -1,25 +1,7 @@
 import { Token, tokenise } from "./tokeniser";
-import { errors, ErrorsAnd, hasErrors, Validator } from "@dbpath/utils";
+import { ErrorsAnd } from "@dbpath/utils";
+import { PathValidator, TwoIds } from "@dbpath/dal";
 
-
-export type ValidateTableNameFn = ( tableName: string, fullTableName?: string ) => string[]
-export type ValidateFieldsFn = ( tableName: string, fields: string[] ) => string[]
-export type ValidateLinkFn = ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ) => string[]
-/** These will be called at suitable times during parsing
- * The table name in driver!driver_table would be 'driver', so the valdiation has to handle summaries
- */
-
-export interface PathValidator {
-  validateTableName: ValidateTableNameFn,
-  validateFields: ValidateFieldsFn,
-  validateLink: ValidateLinkFn
-}
-
-export const PathValidatorAlwaysOK: PathValidator = {
-  validateTableName: (): string[] => [],
-  validateFields: (): string[] => [],
-  validateLink: () => []
-}
 
 export interface RawTableResult {
   table: string
@@ -128,10 +110,7 @@ export function parseBracketedCommaSeparated<R> ( c: ParserContext, open: string
   return lift ( c, [] )
 }
 
-export interface TwoIds {
-  fromId: string,
-  toId: string
-}
+
 export const parseIdEqualsId = ( c: ParserContext ): ResultAndContext<TwoIds> =>
   mapParser ( identifier ( "'from id'='to id'" ) ( c ), ( c, fromId ) =>
     mapParser ( nextChar ( c, '=' ), c =>

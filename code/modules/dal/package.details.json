@@ -1,15 +1,15 @@
 {
-  "template": "typescript",
-  "name": "@dbpath/dal",
+  "template":    "typescript",
+  "name":        "@dbpath/dal",
   "description": "",
   "packageJson": {
-    "dependencies": {},
+    "dependencies":    {},
     "devDependencies": {}
   },
-  "links": [],
-  "guards": {
+  "links":       ["@dbpath/config"],
+  "guards":      {
     "compile": true,
     "publish": true,
-    "test": false
+    "test":    true
   }
 }

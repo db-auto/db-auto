@@ -1,5 +1,6 @@
-import { errorData, parseLink, parsePath, ParserContext, parseTable, PathValidator, PathValidatorAlwaysOK, RawTableResult, TwoIds } from "./parser";
+import { errorData, parseLink, parsePath, ParserContext, parseTable, RawTableResult } from "./parser";
 import { tokenise } from "./tokeniser";
+import { PathValidator, PathValidatorAlwaysOK, TwoIds } from "@dbpath/dal";
 
 
 function makeContext ( s: string ): ParserContext {
