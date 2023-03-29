@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapObject, NameAnd, parseFile, reportErrors, toColumns } from "@dbpath/utils";
-import { CleanTable, findQueryParams, makePathSpec, prettyPrintTables } from "@dbpath/tables";
+import { CleanTable, findQueryParams, makePathSpec, pathToSql, prettyPrintTables } from "@dbpath/tables";
 import { makeCreateTableSqlForMock } from "@dbpath/mocks";
 import { cleanConfig, CleanConfig } from "./config";
 import { findFileInParentsOrError } from "@dbpath/files";
@@ -9,6 +9,7 @@ import { prettyPrintPP, processPathString, tracePlan } from "./path";
 import Path from "path";
 import { parsePath } from "@dbpath/pathparser";
 import { DalPathValidator, sampleMeta, sampleSummary } from "@dbpath/dal";
+import { PathItem } from "@dbpath/types";
 
 
 export const dbPathDir = '.dbpath';
@@ -109,6 +110,18 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
         return
       }
       console.log ( JSON.stringify ( result, null, 2 ) )
+    } );
+  const newSql = program.command ( 'newSql' )
+    .description ( "Uses new path parser ... doesn't do anything other than show sql" )
+    .arguments ( '<path>' )
+    .action ( ( path, command, options ) => {
+      const p: ErrorsAnd<PathItem> = parsePath ( DalPathValidator ( sampleSummary, sampleMeta ) ) ( path )
+      if ( hasErrors ( p ) ) {
+        reportErrors ( p )
+        return
+      }
+      const sql = pathToSql ( options, p )
+      sql.forEach ( line => console.log ( line ) )
     } );
 
   const status = program.command ( 'status' ).description ( "Checks that the environments are accessible and gives report" )

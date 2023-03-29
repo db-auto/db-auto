@@ -1,15 +1,15 @@
 {
   "template":    "typescript",
-  "name":        "@dbpath/pathparser",
+  "name":        "@dbpath/fixtures",
   "description": "",
   "packageJson": {
     "dependencies":    {},
     "devDependencies": {}
   },
-  "links":       ["@dbpath/types", "@dbpath/utils","@dbpath/fixtures"],
+  "links":       ["@dbpath/utils", "@dbpath/dal", "@dbpath/types"],
   "guards":      {
     "compile": true,
     "publish": true,
-    "test":    true
+    "test":    false
   }
 }

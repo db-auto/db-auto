@@ -1,7 +1,7 @@
 import { Token, tokenise } from "./tokeniser";
 import { ErrorsAnd } from "@dbpath/utils";
 import { PathValidator, TwoIds } from "@dbpath/dal";
-import { LinkInPath, PathItem, TableInPath } from "./path";
+import { LinkInPath, PathItem, TableInPath } from "@dbpath/types";
 
 export interface TableAndFullTableName {
   table: string
@@ -122,10 +122,10 @@ export const parseTable = ( context: ParserContext ): ResultAndContext<TableInPa
     mapParser ( parseBracketedCommaSeparated ( cEndOfTable, '[', ',', identifier ( 'field' ), ']' ), ( c, fields ) =>
       validateAndReturn ( cEndOfTable, c, { ...tableName, fields }, c.validator.validateFields ( tableName.table, fields ) ) ) );
 
-export const parseTableAndNextLink = ( previousTable: TableInPath | undefined, idEquals: TwoIds[] ): PathParser<LinkInPath> => context =>
+export const parseTableAndNextLink = ( previousLink: TableInPath | undefined, idEquals: TwoIds[] ): PathParser<LinkInPath> => context =>
   mapParser<TableInPath, LinkInPath> ( parseTable ( context ), ( c, table ) => {
-    let thisLink = { ...table, previousTable, idEquals };
-    const errors = c.validator.validateLink ( previousTable?.table, table.table, idEquals )
+    let thisLink = { ...table, previousLink, idEquals };
+    const errors = c.validator.validateLink ( previousLink?.table, table.table, idEquals )
     if ( errors.length > 0 ) return liftError ( context, errors )
     return isNextChar ( c, '.' )
       ? parseLink ( thisLink ) ( c )
@@ -134,8 +134,10 @@ export const parseTableAndNextLink = ( previousTable: TableInPath | undefined, i
 export const parseLink = ( previousTable: TableInPath | undefined ): PathParser<LinkInPath> =>
   c => mapParser ( nextChar ( c, '.' ), c =>
     mapParser ( parseBracketedCommaSeparated ( c, "(", ',', parseIdEqualsId, ')' ), ( c, idEquals ) =>
-      mapParser ( parseTableAndNextLink ( previousTable, idEquals ) ( c ), ( c, link ) =>
-        lift ( c, { ...link, idEquals } ) ) ) )
+      mapParser ( parseTableAndNextLink ( previousTable, idEquals ) ( c ), ( c, link ) => {
+        const realIdEquals = c.validator.useIdsOrSingleFkLinkOrError ( previousTable?.table, link.table, idEquals )
+        return lift ( c, { ...link, idEquals: realIdEquals } );
+      } ) ) )
 
 export const parseTableAndLinks: PathParser<PathItem> = c =>
   mapParser ( parseTable ( c ), ( c, previousLink ) => {

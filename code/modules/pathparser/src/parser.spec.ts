@@ -1,7 +1,9 @@
 import { errorData, parseLink, parsePath, ParserContext, parseTable } from "./parser";
 import { tokenise } from "./tokeniser";
 import { PathValidator, PathValidatorAlwaysOK, TwoIds } from "@dbpath/dal";
-import { TableInPath } from "./path";
+
+import { driverMissionAuditPath } from "@dbpath/fixtures";
+import { TableInPath } from "@dbpath/types";
 
 
 function makeContext ( s: string ): ParserContext {
@@ -66,32 +68,18 @@ describe ( "parseLink", () => {
     expect ( pl ( ".driver,", 2 ) ).toEqual ( { table: "driver", fields: [], "idEquals": [], } )
   } )
   it ( "should parse .drive!name[f1,f2]", () => {
-    const previousTable = pt ( "someTable", 1 )
-    expect ( pl ( ".driver!name[f1,f2]!!", 9, previousTable ) ).toEqual ( {
+    const previousLink = pt ( "someTable", 1 )
+    expect ( pl ( ".driver!name[f1,f2]!!", 9, previousLink ) ).toEqual ( {
       "fullTable": "name",
       "table": "driver",
       "fields": [ "f1", "f2" ],
-      previousTable,
+      previousLink,
       "idEquals": [],
     } )
   } )
 
   it ( "should parse .drive.mission.audit", () => {
-    expect ( pl ( ".drive.mission.audit", 6 ) ).toEqual ( {
-      "fields": [],
-      "idEquals": [],
-      "previousTable": {
-        "fields": [],
-        "idEquals": [],
-        "previousTable": {
-          "fields": [],
-          "idEquals": [],
-          "table": "drive"
-        },
-        "table": "mission"
-      },
-      "table": "audit"
-    } )
+    expect ( pl ( ".driver.mission.audit", 6 ) ).toEqual ( driverMissionAuditPath )
   } )
   it ( "should parse .(id1=id2)drive", () => {
     expect ( pl ( ".(id1=id2)drive", 7 ) ).toEqual ( {
@@ -110,10 +98,10 @@ describe ( "parseLink", () => {
     expect ( pl ( ".drive!fullDrive.mission.audit", 8 ) ).toEqual ( {
       "fields": [],
       "idEquals": [],
-      "previousTable": {
+      "previousLink": {
         "fields": [],
         "idEquals": [],
-        "previousTable": {
+        "previousLink": {
           "fields": [],
           "fullTable": "fullDrive",
           "idEquals": [],
@@ -128,9 +116,9 @@ describe ( "parseLink", () => {
   it ( "should parse .drive!fullDrive[f1,f2].(id1=id2)mission[f3].(id3=id4)audit", () => {
     expect ( pl ( ".drive!full[f1,f2].mission.audit", 13 ) ).toEqual ( {
       "fields": [],
-      "previousTable": {
+      "previousLink": {
         "fields": [],
-        "previousTable": {
+        "previousLink": {
           "fields": [ "f1", "f2" ],
           "fullTable": "full",
           "table": "drive",
@@ -165,7 +153,7 @@ describe ( "parsePath", () => {
           "toId": "id2"
         }
       ],
-      "previousTable": {
+      "previousLink": {
         "fields": [],
         "idEquals": [
           {
@@ -173,7 +161,7 @@ describe ( "parsePath", () => {
             "toId": "id2"
           }
         ],
-        "previousTable": {
+        "previousLink": {
           "fields": [],
           "fullTable": "full",
           "table": "driver"
@@ -232,12 +220,14 @@ describe ( "PathValidator in parsePath", () => {
         return [];
       },
       useIdsOrSingleFkLinkOrError: ( fromTableName, toTableName, idEquals ) => {
-        remembered.push ( `useIdsOrSingleFkLinkOrError(${fromTableName},${toTableName}) ${idEquals}` )
+        remembered.push ( `useIdsOrSingleFkLinkOrError(${fromTableName},${toTableName}) ${JSON.stringify ( idEquals )}` )
         return idEquals
       }
     }
     parsePath ( rem ) ( "driver!full.(id1=id2)mission.audit[f3,f4]" )
     expect ( remembered.sort () ).toEqual ( [
+      "useIdsOrSingleFkLinkOrError(driver,audit) [{\"fromId\":\"id1\",\"toId\":\"id2\"}]",
+      "useIdsOrSingleFkLinkOrError(mission,audit) []",
       "vFields(audit)[f3,f4]",
       "vFields(driver)[]",
       "vFields(mission)[]",

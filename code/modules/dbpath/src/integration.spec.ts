@@ -31,8 +31,8 @@ describe ( "dbpath envs", () => {
 } )
 
 describe ( "dbpath env", () => {
-  promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
   it ( "should set the env and it should be visible in envs", async () => {
+    await promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
     const expectedTestEnv = readTestFile ( mockTestDir, 'env.test.expected.txt' );
     const expectedDevEnv = readTestFile ( mockTestDir, 'env.dev.expected.txt' );
     expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toContain ( "Current environment is dev" ); //default
@@ -40,7 +40,7 @@ describe ( "dbpath env", () => {
     expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toContain ( "Current environment is test" );
     expect ( await executeDbAuto ( mockTestDir, `env dev` ) ).toEqual ( expectedDevEnv );
     expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toContain ( "Current environment is dev" );
-    promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
+    await promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
   } )
 
 } )
