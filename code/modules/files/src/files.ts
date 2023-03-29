@@ -17,6 +17,22 @@ export function findDirectoryHoldingFileOrError ( directory: string, file: strin
   if ( dir === undefined ) return [ `Cannot find ${file}. Started looking in ${directory}` ]
   return dir
 }
+export function loadFileInDirectory(cwd: string, marker: string, filename: string){
+  const dir = findDirectoryHoldingFileOrError ( cwd, marker )
+  if ( hasErrors ( dir ) ) return dir
+  const file = Path.join ( dir, filename )
+  try {
+    const contents = fs.readFileSync ( file ).toString ( 'utf-8' )
+    try {
+      return JSON.parse ( contents ).currentEnvironment
+    } catch ( e ) {
+      return [ `Error parsing ${file}: ${e.message}` ]
+    }
+  } catch ( e ) {
+    return [`Error reading ${file}: ${e.message}`]
+  }
+
+}
 
 export function findDirectoryHoldingFileOrThrow ( directory: string, file: string ): string {
   const dir = findDirectoryHoldingFileOrError ( directory, file )

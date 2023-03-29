@@ -1,6 +1,6 @@
 import { ColumnDefn, ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator } from "@dbpath/utils";
 import { postgresDal, postgresDalDialect, PostgresEnv, postgresEnvValidator } from "@dbpath/postgres";
-import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@dbpath/files";
+import { findDirectoryHoldingFileOrError, findFileInParentsOrError, loadFileInDirectory } from "@dbpath/files";
 import * as Path from "path";
 import * as fs from "fs";
 
@@ -11,26 +11,18 @@ export interface CurrentEnvironment {
   currentEnvironment: string
 }
 
-const stateFileName = '.db-auto.state.json';
-export function currentEnvName ( cwd: string, env: string | undefined ): ErrorsAnd<string> {
+const stateFileName = '.dbpath.state.json';
+export function currentEnvName ( cwd: string, marker: string, env: string | undefined, cleanE: NameAnd<CleanEnvironment> ): ErrorsAnd<string> {
   if ( env ) return env
-  const dir = findDirectoryHoldingFileOrError ( cwd, 'db-auto.json' )
-  if ( hasErrors ( dir ) ) return dir
-  const envFile = Path.join ( dir, stateFileName )
-  try {
-    const contents = fs.readFileSync ( envFile ).toString ( 'utf-8' )
-    try {
-      return JSON.parse ( contents ).currentEnvironment
-    } catch ( e ) {
-      return [ `Error parsing ${envFile}: ${e.message}` ]
-    }
-  } catch ( e ) {
-    return 'dev'
-  }
+  const contents = loadFileInDirectory ( cwd, marker, stateFileName )
+  if ( hasErrors ( contents ) ) return 'dev'
+  const foundEnv = contents.currentEnvironment
+  if ( cleanE[ foundEnv ] ) return foundEnv
+  return [ `Environment ${foundEnv} not found. Legal values are ${Object.keys ( cleanE ).sort ().join ( ', ' )}` ]
 }
 
-export function saveEnvName ( cwd: string, env: string ): ErrorsAnd<void> {
-  const dir = findDirectoryHoldingFileOrError ( cwd, 'db-auto.json' )
+export function saveEnvName ( cwd: string, marker: string, env: string ): ErrorsAnd<void> {
+  const dir = findDirectoryHoldingFileOrError ( cwd, marker )
   if ( hasErrors ( dir ) ) return dir
   const envFile = Path.join ( dir, stateFileName )
   try {
@@ -45,8 +37,8 @@ export interface EnvAndName {
   env: CleanEnvironment
   envName: string
 }
-export function currentEnvironment ( cwd: string, envs: NameAnd<CleanEnvironment>, env: string | undefined ): ErrorsAnd<EnvAndName> {
-  return mapErrors ( currentEnvName ( cwd, env ), ( envName ) => {
+export function currentEnvironment ( cwd: string, marker: string, envs: NameAnd<CleanEnvironment>, env: string | undefined ): ErrorsAnd<EnvAndName> {
+  return mapErrors ( currentEnvName ( cwd, marker, env, envs ), ( envName ) => {
     const env = envs[ envName ]
     if ( env ) return { env, envName }
     return [ `Environment ${envName} not found. Legal names are ${Object.keys ( envs ).sort ()}` ]

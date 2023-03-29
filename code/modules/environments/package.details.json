@@ -6,7 +6,7 @@
     "dependencies":    {},
     "devDependencies": {}
   },
-  "links":       ["@dbpath/utils", "@dbpath/postgres", "@dbpath/mysql", "@dbpath/oracle"],
+  "links":       ["@dbpath/utils","@dbpath/files", "@dbpath/postgres", "@dbpath/mysql", "@dbpath/oracle"],
   "guards":      {
     "compile": true,
     "publish": true,

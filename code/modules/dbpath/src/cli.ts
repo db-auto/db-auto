@@ -6,11 +6,14 @@ import { cleanConfig, CleanConfig } from "./config";
 import { findFileInParentsOrError } from "@dbpath/files";
 import { checkStatus, currentEnvironment, dalFor, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn } from "@dbpath/environments";
 import { prettyPrintPP, processPathString, tracePlan } from "./path";
+import Path from "path";
 
 
+const dbPathDir = '.dbpath';
+const configFileName = 'dbpath.config.json';
 export function makeConfig ( cwd: string, envVars: NameAnd<string> ): ErrorsAnd<CleanConfig> {
-  return flatMapErrors ( findFileInParentsOrError ( cwd, "db-auto.json" ), file =>
-    flatMapErrors ( parseFile ( file ), config =>
+  return flatMapErrors ( findFileInParentsOrError ( cwd, dbPathDir ), dir =>
+    flatMapErrors ( parseFile ( Path.join ( dbPathDir, configFileName ) ), config =>
       mapErrors ( config, cleanConfig ( envVars ) ) ) )
 }
 
@@ -45,7 +48,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     .version ( version )
     .action ( async ( path, id, options ) => {
       //TODO move sql dialect here..
-      const envAndNameOrErrors = currentEnvironment ( cwd, config.environments, options.env )
+      const envAndNameOrErrors = currentEnvironment ( cwd, dbPathDir, config.environments, options.env )
       if ( hasErrors ( envAndNameOrErrors ) ) {
         reportErrors ( envAndNameOrErrors )
         return;
@@ -85,7 +88,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
 
   const envs = program.command ( 'envs' ).description ( "Lists all the environments" )
     .action ( ( command, options ) => {
-      const envAndNameOrErrors = currentEnvironment ( cwd, config.environments, options.env )
+      const envAndNameOrErrors = currentEnvironment ( cwd, dbPathDir, config.environments, options.env )
       if ( hasErrors ( envAndNameOrErrors ) ) {
         reportErrors ( envAndNameOrErrors )
         return;
@@ -108,12 +111,12 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
         console.log ( `Environment ${env} is not defined` )
         process.exit ( 1 )
       }
-      saveEnvName ( cwd, env )
+      saveEnvName ( cwd, dbPathDir, env )
     } )
   const scrape = program.command ( 'scrape' ).description ( "Scrapes the database" )
     .option ( '-e, --env <env>', "override the default environment. Use 'db-auto envs' to see a list of names" )
     .action ( async ( command, options ) => {
-      const envAndNameOrErrors = currentEnvironment ( cwd, config.environments, options.env )
+      const envAndNameOrErrors = currentEnvironment ( cwd, dbPathDir, config.environments, options.env )
       if ( hasErrors ( envAndNameOrErrors ) ) {
         reportErrors ( envAndNameOrErrors )
         return;
