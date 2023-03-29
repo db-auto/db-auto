@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "@dbpath/utils": "0.2.3",
-    "@dbpath/types": "0.2.3"
+    "@dbpath/types": "0.2.3",
+    "@dbpath/fixtures": "0.2.3"
   },
   "devDependencies": {
     "typescript": "^4.0.5",
