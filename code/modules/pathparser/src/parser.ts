@@ -119,8 +119,9 @@ export const parseTable = ( context: ParserContext ): ResultAndContext<TableInPa
 
 export const parseTableAndNextLink = ( previousLink: TableInPath | undefined, idEquals: TwoIds[] ): PathParser<LinkInPath> => context =>
   mapParser<TableInPath, LinkInPath> ( parseTable ( context ), ( c, table ) => {
-    let thisLink = { ...table, previousLink, idEquals };
-    const errors = c.validator.validateLink ( previousLink?.table, table.table, idEquals )
+    const realIdEquals = c.validator.useIdsOrSingleFkLinkOrError ( previousLink?.table, table.table, idEquals )
+    let thisLink = { ...table, idEquals: realIdEquals, previousLink }
+    const errors = c.validator.validateLink ( previousLink?.table, table.table, realIdEquals )
     if ( errors.length > 0 ) return liftError ( context, errors )
     return isNextChar ( c, '.' )
       ? parseLink ( thisLink ) ( c )
@@ -129,10 +130,7 @@ export const parseTableAndNextLink = ( previousLink: TableInPath | undefined, id
 export const parseLink = ( previousTable: TableInPath | undefined ): PathParser<LinkInPath> =>
   c => mapParser ( nextChar ( c, '.' ), c =>
     mapParser ( parseBracketedCommaSeparated ( c, "(", ',', parseIdEqualsId, ')' ), ( c, idEquals ) =>
-      mapParser ( parseTableAndNextLink ( previousTable, idEquals ) ( c ), ( c, link ) => {
-        const realIdEquals = c.validator.useIdsOrSingleFkLinkOrError ( previousTable?.table, link.table, idEquals )
-        return lift ( c, { ...link, idEquals: realIdEquals } );
-      } ) ) )
+      parseTableAndNextLink ( previousTable, idEquals ) ( c ) ) )
 
 export const parseTableAndLinks: PathParser<PathItem> = c =>
   mapParser ( parseTable ( c ), ( c, previousLink ) => {

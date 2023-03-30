@@ -24,6 +24,7 @@ export interface PlanLink {
 export interface PathSpecForWheres {
   id?: string,
   table2Pk: NameAnd<HasPk>
+  wheres?: string[]
   queryParams?: NameAnd<string>,
 }
 export interface PathSpec extends PathSpecForWheres {
@@ -31,7 +32,6 @@ export interface PathSpec extends PathSpecForWheres {
   path: string[],
   id: string | undefined,
   queryParams: NameAnd<string>,
-  wheres: string[]
   limit?: number
 }
 

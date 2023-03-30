@@ -136,24 +136,10 @@ describe ( "parsePath", () => {
   it ( "should parse a complex path", () => {
 
     expect ( parsePath ( validator ) ( "driver.(id1=id2)mission.audit[f3,f4]" ) ).toEqual ( {
-      "fields": [
-        "f3",
-        "f4"
-      ],
-      "idEquals": [
-        {
-          "fromId": "id1",
-          "toId": "id2"
-        }
-      ],
+      "fields": [ "f3", "f4" ], "idEquals": [],
       "previousLink": {
         "fields": [],
-        "idEquals": [
-          {
-            "fromId": "id1",
-            "toId": "id2"
-          }
-        ],
+        "idEquals": [ { "fromId": "id1", "toId": "id2" } ],
         "previousLink": {
           "fields": [],
           "table": "drivertable"
@@ -225,7 +211,7 @@ describe ( "PathValidator in parsePath", () => {
       "actualTableName(audit)",
       "actualTableName(driver)",
       "actualTableName(mission)",
-      "useIdsOrSingleFkLinkOrError(driver,audit) [{\"fromId\":\"id1\",\"toId\":\"id2\"}]",
+      "useIdsOrSingleFkLinkOrError(driver,mission) [{\"fromId\":\"id1\",\"toId\":\"id2\"}]",
       "useIdsOrSingleFkLinkOrError(mission,audit) []",
       "vFields(audit)[f3,f4]",
       "vFields(driver)[]",

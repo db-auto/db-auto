@@ -1,8 +1,8 @@
 import { isLinkInPath, isTableInPath, PathItem, TableInPath } from "@dbpath/types";
-import { MergedSelectData, mergeSelectData, SelectData, sqlFor, SqlOptions } from "./sql";
+import { mergeSelectData, SelectData, sqlFor, SqlOptions } from "./sql";
 import { PathSpecForWheres, quoteIfNeeded } from "./query";
-import { flatMapEntries, NameAnd } from "@dbpath/utils";
-import { HasPk, NameAndType } from "@dbpath/dal";
+import { NameAndType } from "@dbpath/dal";
+import { safeArray } from "@dbpath/utils";
 
 
 export const mapOverPath = <T> ( p: PathItem, fn: ( p: PathItem ) => T ): T[] =>
@@ -18,13 +18,14 @@ export function pathToSelectData ( p: PathItem, pathSpecForWhere: PathSpecForWhe
   return parts.map ( ( p, i ) => {
     let alias = `T${i}`;
     let TableWheres = pathSpecForWhere.id && isTableInPath ( p ) ? makePkWhere ( pathSpecForWhere, p, alias ) : []
+    let pathWheres = isTableInPath ( p ) ? safeArray ( pathSpecForWhere.wheres ) : []
     let linkWheres = isLinkInPath ( p ) ? p.idEquals.map ( ( { fromId, toId } ) =>
       `T${i - 1}.${fromId} = ${alias}.${toId}` ) : [];
     const selectDataForTable: SelectData = {
       columns: p.fields.length > 0 ? p.fields : [ '*' ],
       table: p.table,
       alias,
-      where: [ ...linkWheres, ...TableWheres ]
+      where: [ ...linkWheres, ...TableWheres, ...pathWheres ]
     }
     return selectDataForTable
   } )
