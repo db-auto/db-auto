@@ -4,55 +4,10 @@
     "dev":  {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil", "comment": "don't store your passwords like this! This is just for tests"},
     "test": {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil"}
   },
-  "tables":       {
-    "driver":      {
-      "table":       "drivertable",
-      "primary":     {"name": "driverId", "type": "integer"},
-      "queries":     {
-        "name":        {"type": "string", "description": "driver name "},
-        "employeeNum": {"type": "string"}
-      },
-      "links":       {
-        "mission": {"type": "one-to-many", "idHereAndThere": "driverId"},
-        "audit":   {"type": "one-to-many", "table": "driver_aud", "idHere": "driverId", "idThere": "id"}
-      },
-      "dataColumns": {
-        "livesIn":     {"type": "string"},
-        "age":         {"type": "integer"},
-        "dateOfBirth": {"type": "date"},
-        "personalCar": {}
-      },
-      "views":       {
-        "all":   "*",
-        "short": ["driverId", "name"]
-      }
-    },
-    "driver_aud":  {
-      "primary":     {"name": "driverId", "type": "integer"},
-      "dataColumns": {"who": {}, "action": {}, "date": {}},
-      "views":       {
-        "all":   "*",
-        "short": ["driverId", "action", "date"]
-      }
-    },
-    "mission":     {
-      "primary": "id",
-      "queries": {"date": {"type": "date"}},
-      "links":   {
-        "driver":      {"type": "many-to-one", "idHereAndThere": "driverId"},
-        "mission_aud": {"type": "one-to-many", "idHereAndThere": "missionId"}
-      },
-      "views":   {
-        "all":   "*",
-        "short": ["id", "driverId"]
-      }
-    },
-    "mission_aud": {
-      "primary": {"name": "missionId", "type": "integer"},
-      "views":   {
-        "all":   "*",
-        "short": ["missionId", "action", "date"]
-      }
+  "summary":      {
+    "tables": {
+      "driver": {"tableName": "drivertable"},
+      "audit":  {"tableName": "driver_aud"}
     }
   }
 }

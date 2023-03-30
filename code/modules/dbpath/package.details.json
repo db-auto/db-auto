@@ -17,10 +17,9 @@
     "devDependencies": {}
   },
   "links":       [
-    "@dbpath/tables","@dbpath/pathparser",
+    "@dbpath/tables", "@dbpath/pathparser",
     "@dbpath/utils", "@dbpath/files",
-    "@dbpath/fixtures",
-    "@dbpath/mocks", "@dbpath/environments"
+    "@dbpath/fixtures", "@dbpath/environments"
   ],
   "guards":      {
     "compile": true,
