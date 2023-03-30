@@ -1,12 +1,9 @@
 import { Summary } from "@dbpath/config";
 import { DatabaseMetaData, ForeignKeyMetaData, TableMetaData } from "./dal";
 import { ErrorsAnd, hasErrors, mapEntries, safeObject } from "@dbpath/utils";
+import { TwoIds } from "@dbpath/types";
 
-export interface TwoIds {
-  fromId: string,
-  toId: string
-}
-export type ValidateTableNameFn = ( tableName: string, fullTableName?: string ) => string[]
+export type ValidateTableNameFn = ( tableName: string ) => string[]
 export type ValidateFieldsFn = ( tableName: string, fields: string[] ) => string[]
 export type ValidateLinkFn = ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ) => string[]
 /** These will be called at suitable times during parsing
@@ -19,6 +16,7 @@ export interface PathValidator {
   validateLink: ValidateLinkFn
 
   useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): TwoIds[]
+  actualTableName ( tableName: string ): string
 }
 
 export const PathValidatorAlwaysOK: PathValidator = {
@@ -27,7 +25,9 @@ export const PathValidatorAlwaysOK: PathValidator = {
   validateLink: () => [],
   useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): TwoIds[] {
     return idEquals;
-  }
+  },
+  actualTableName: t => t
+
 }
 
 function checkFullTableName ( m: DatabaseMetaData, tableName: string ) {
@@ -36,20 +36,20 @@ function checkFullTableName ( m: DatabaseMetaData, tableName: string ) {
     ? []
     : [ `Table ${tableName} is not known. Legal tables`, `  ${Object.keys ( m.tables ).sort ()}` ];
 }
-function theTableName ( summary: Summary, tableName: string, fullTableName: string ) {
+export function fullTableName ( summary: Summary, tableName: string ) {
   const foundInSummary = summary.tables[ tableName ]
-  const nameToCheck = fullTableName ? fullTableName : foundInSummary ? foundInSummary.tableName : tableName
+  const nameToCheck = foundInSummary ? foundInSummary.tableName : tableName
   return nameToCheck;
 }
 function getTableMetaData ( summary: Summary, m: DatabaseMetaData, tableName: string ) {
-  const nameToCheck = theTableName ( summary, tableName, undefined );
+  const nameToCheck = fullTableName ( summary, tableName );
   const foundInMeta = m.tables[ nameToCheck ]
   if ( !foundInMeta ) throw Error ( 'Should not happen - validate table name should have happened before this' )
   return foundInMeta
 }
 export const validateTableName = ( summary: Summary, m: DatabaseMetaData ): ValidateTableNameFn => {
-  return ( tableName, fullTableName ) => {
-    const nameToCheck = theTableName ( summary, tableName, fullTableName );
+  return ( tableName ) => {
+    const nameToCheck = fullTableName ( summary, tableName );
     return checkFullTableName ( m, nameToCheck );
   }
 }
@@ -114,6 +114,7 @@ export function DalPathValidator ( summary: Summary, m: DatabaseMetaData ): Path
     validateTableName: validateTableName ( summary, m ),
     validateFields: validateFields ( summary, m ),
     validateLink: validateLinks ( summary, m ),
-    useIdsOrSingleFkLinkOrError: useIdsOrSingleFkLinkOrError ( summary, m )
+    useIdsOrSingleFkLinkOrError: useIdsOrSingleFkLinkOrError ( summary, m ),
+    actualTableName: t => fullTableName ( summary, t )
   };
 }

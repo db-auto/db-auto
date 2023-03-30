@@ -1,6 +1,4 @@
-import { DatabaseMetaData } from "@dbpath/dal";
-
-export const sampleMeta: DatabaseMetaData = {
+export const sampleMeta = {
   "tables": {
     "driver_aud": {
       "columns": {

@@ -6,7 +6,7 @@
     "dependencies":    {},
     "devDependencies": {}
   },
-  "links":       ["@dbpath/utils", "@dbpath/dal", "@dbpath/types"],
+  "links":       ["@dbpath/utils",  "@dbpath/types"],
   "guards":      {
     "compile": true,
     "publish": true,

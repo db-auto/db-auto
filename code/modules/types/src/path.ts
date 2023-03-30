@@ -1,9 +1,10 @@
-import { TwoIds } from "@dbpath/dal";
-
+export interface TwoIds {
+  fromId: string,
+  toId: string
+}
 
 export interface TableInPath {
   table: string
-  fullTable?: string
   fields?: string[ ]
 }
 export interface LinkInPath extends TableInPath {

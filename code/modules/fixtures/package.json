@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@dbpath/utils": "0.2.4",
-    "@dbpath/dal": "0.2.4",
     "@dbpath/types": "0.2.4"
   },
   "devDependencies": {

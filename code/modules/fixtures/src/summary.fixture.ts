@@ -1,7 +1,7 @@
-import { Summary } from "@dbpath/config";
 
-export const sampleSummary: Summary = {
+
+export const sampleSummary = {
   tables: {
-    driver: { tableName: "drivertable" }
+    driver: { tableName: "DriverTable" }
   }
 }

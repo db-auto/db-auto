@@ -6,7 +6,7 @@
     "dependencies":    {},
     "devDependencies": {}
   },
-  "links":       ["@dbpath/config"],
+  "links":       ["@dbpath/config","@dbpath/fixtures"],
   "guards":      {
     "compile": true,
     "publish": true,

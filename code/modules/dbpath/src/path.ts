@@ -1,8 +1,9 @@
-import { ErrorsAnd, flatMap, hasErrors, mapErrors, NameAnd } from "@dbpath/utils";
+import { ErrorsAnd, flatMap, hasErrors, mapErrors, mapErrorsK, NameAnd } from "@dbpath/utils";
 import { buildPlan, CleanTable, mergeSelectData, PathSpec, pathToSelectData, Plan, selectData, SelectData, sqlFor, SqlOptions } from "@dbpath/tables";
 import { dalFor, EnvAndName } from "@dbpath/environments";
-import { DalPathValidator, DalResult, DalResultDisplayOptions, prettyPrintDalResult, sampleMeta, sampleSummary } from "@dbpath/dal";
+import { DalPathValidator, DalResult, DalResultDisplayOptions, prettyPrintDalResult, useDal } from "@dbpath/dal";
 import { parsePath } from "@dbpath/pathparser";
+import { sampleMeta, sampleSummary } from "@dbpath/fixtures";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -67,14 +68,11 @@ export async function processPathString ( envAndName: EnvAndName, tables: NameAn
   const optionsModifiedForLimits = showSql && !fullSql ? { ...options, limitBy: undefined } : options
   const sql = sqlFor ( optionsModifiedForLimits ) ( mergeSelectData ( data ) );
   if ( showSql || fullSql ) return ({ type: 'sql', sql, envName })
-  const dal = dalFor ( env )
-  try {
-    const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
-    return result
-  } finally {
-    dal.close ()
-  }
-
+  mapErrorsK ( dalFor ( env ), dal =>
+    useDal ( dal, async dal => {
+      const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
+      return result
+    } ) )
 }
 export async function processPathString2 ( envAndName: EnvAndName, tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<ErrorsAnd<PP>> {
   const path = pathSpec.path
@@ -90,14 +88,10 @@ export async function processPathString2 ( envAndName: EnvAndName, tables: NameA
   const optionsModifiedForLimits = showSql && !fullSql ? { ...options, limitBy: undefined } : options
   const sql = sqlFor ( optionsModifiedForLimits ) ( mergeSelectData ( data ) );
   if ( showSql || fullSql ) return ({ type: 'sql', sql, envName })
-  const dal = dalFor ( env )
-  try {
+  return mapErrorsK ( dalFor ( env ), async dal => {
     const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
     return result
-  } finally {
-    dal.close ()
-  }
-
+  } )
 }
 
 export function prettyPrintPP ( options: DalResultDisplayOptions, showSql: boolean, pp: PP ): string[] {

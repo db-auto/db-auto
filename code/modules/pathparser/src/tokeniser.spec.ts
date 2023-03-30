@@ -29,7 +29,6 @@ describe ( 'tokeniserNext', function () {
       expect ( nt ( "]asd", 1 ) ).toEqual ( { type: 'char', value: ']', pos: 6 } );
       expect ( nt ( "(asd", 1 ) ).toEqual ( { type: 'char', value: '(', pos: 6 } );
       expect ( nt ( ")asd", 1 ) ).toEqual ( { type: 'char', value: ')', pos: 6 } );
-      expect ( nt ( "!asd", 1 ) ).toEqual ( { type: 'char', value: '!', pos: 6 } );
 
 
     }
@@ -40,7 +39,6 @@ describe ( 'tokeniserNext', function () {
     expect ( nt ( "hello,world", 5 ) ).toEqual ( { type: 'string', value: 'hello', pos: 6 } );
     expect ( nt ( "hello]world", 5 ) ).toEqual ( { type: 'string', value: 'hello', pos: 6 } );
     expect ( nt ( "hello[world", 5 ) ).toEqual ( { type: 'string', value: 'hello', pos: 6 } );
-    expect ( nt ( "hello!world", 5 ) ).toEqual ( { type: 'string', value: 'hello', pos: 6 } );
     expect ( nt ( "hello.world", 5 ) ).toEqual ( { type: 'string', value: 'hello', pos: 6 } );
   } )
   it ( "should escape strings", () => {
@@ -52,7 +50,6 @@ describe ( 'tokeniserNext', function () {
     const txt = "`hello[,](,)!world";
     expect ( nt ( txt + "rest", txt.length + 4 ) ).toEqual ( { type: 'error', value: 'Unterminated string', pos: 6 } )
     expect ( nt ( txt, txt.length ) ).toEqual ( { type: 'error', value: 'Unterminated string', pos: 6 } )
-
   } )
 
 } );

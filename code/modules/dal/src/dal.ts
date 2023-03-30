@@ -59,3 +59,11 @@ export interface ReadDal {
 export interface Dal extends ReadDal, WriteDal, MetaDal {
   close ();
 }
+
+export function useDal<T>( dal: Dal , fn: (d: Dal) => T):T {
+  try {
+    return fn ( dal )
+  } finally {
+    dal.close ()
+  }
+}

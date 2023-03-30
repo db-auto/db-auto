@@ -2,8 +2,7 @@ import { LinkInPath, TableInPath } from "@dbpath/types";
 
 export const driverPath: TableInPath = {
   "fields": [],
-  "fullTable": "full",
-  "table": "driver"
+  "table": "DriverTable"
 }
 
 export const driverMissionAuditPath: LinkInPath = {
@@ -15,7 +14,7 @@ export const driverMissionAuditPath: LinkInPath = {
     "previousLink": {
       "fields": [],
       "idEquals": [],
-      "table": "driver"
+      "table": "DriverTable"
     },
     "table": "mission"
   },
@@ -30,8 +29,7 @@ export const driverMissionAuditWithFieldsAndLinksPath: LinkInPath = {
     "idEquals": [ { "fromId": "id1", "toId": "id2" } ],
     "previousLink": {
       "fields": [],
-      "fullTable": "full",
-      "table": "driver"
+      "table": "DriverTable"
     },
     "table": "mission"
   },

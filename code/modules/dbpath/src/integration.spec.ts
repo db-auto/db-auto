@@ -1,9 +1,8 @@
 import { executeDbAuto, testRoot } from "./integration.fixture";
-import { promises, writeFileSync } from "fs";
+import { promises } from "fs";
 import { readTestFile } from "@dbpath/files";
 import Path from "path";
-import { dbPathDir } from "./cli";
-import { stateFileName } from "@dbpath/environments";
+import { dbPathDir, stateFileName } from "@dbpath/environments";
 
 
 const mockTestDir = testRoot + '/simple';

@@ -25,6 +25,7 @@
     "@dbpath/pathparser": "0.2.4",
     "@dbpath/utils": "0.2.4",
     "@dbpath/files": "0.2.4",
+    "@dbpath/fixtures": "0.2.4",
     "@dbpath/mocks": "0.2.4",
     "@dbpath/environments": "0.2.4"
   },

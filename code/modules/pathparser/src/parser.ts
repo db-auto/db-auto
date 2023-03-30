@@ -1,7 +1,7 @@
 import { Token, tokenise } from "./tokeniser";
 import { ErrorsAnd } from "@dbpath/utils";
-import { PathValidator, TwoIds } from "@dbpath/dal";
-import { LinkInPath, PathItem, TableInPath } from "@dbpath/types";
+import { PathValidator } from "@dbpath/dal";
+import { LinkInPath, PathItem, TableInPath, TwoIds } from "@dbpath/types";
 
 export interface TableAndFullTableName {
   table: string
@@ -106,13 +106,8 @@ export const parseIdEqualsId = ( c: ParserContext ): ResultAndContext<TwoIds> =>
         lift ( c, { fromId, toId } ) ) ) );
 export function parseTableName ( context: ParserContext ): ResultAndContext<TableAndFullTableName> {
   return mapParser ( identifier ( 'table name' ) ( context ), ( c, tableName ) => {
-    if ( isNextChar ( c, '!' ) ) {
-      return mapParser ( nextChar ( c, '!' ), ( c ) =>
-        mapParser ( identifier ( 'full table name' ) ( c ), ( c, fullTableName ) =>
-          validateAndReturn ( context, c, { table: tableName, fullTable: fullTableName }, context.validator.validateTableName ( tableName, fullTableName ) )
-        ) )
-    } else
-      return validateAndReturn ( context, c, { table: tableName }, c.validator.validateTableName ( tableName ) )
+    const table = context.validator.actualTableName ( tableName );
+    return validateAndReturn ( context, c, { table }, c.validator.validateTableName ( table ) )
   } )
 }
 

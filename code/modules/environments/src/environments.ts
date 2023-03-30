@@ -1,8 +1,11 @@
 import { ColumnDefn, ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator } from "@dbpath/utils";
 import { postgresDal, postgresDalDialect, PostgresEnv, postgresEnvValidator } from "@dbpath/postgres";
-import { findDirectoryHoldingFileOrError, findFileInParentsOrError, loadFileInDirectory } from "@dbpath/files";
+import { findDirectoryHoldingFileOrError, loadFileInDirectory } from "@dbpath/files";
 import * as Path from "path";
 import * as fs from "fs";
+import { Dal } from "@dbpath/dal";
+
+export const dbPathDir = '.dbpath';
 
 
 export type Environment = PostgresEnv
@@ -24,7 +27,7 @@ export function currentEnvName ( cwd: string, marker: string, env: string | unde
 export function saveEnvName ( cwd: string, marker: string, env: string ): ErrorsAnd<void> {
   const dir = findDirectoryHoldingFileOrError ( cwd, marker )
   if ( hasErrors ( dir ) ) return dir
-  const envFile = Path.join ( dir,marker, stateFileName )
+  const envFile = Path.join ( dir, marker, stateFileName )
   try {
     fs.writeFileSync ( envFile, JSON.stringify ( { currentEnvironment: env } ) )
     return undefined
@@ -44,6 +47,27 @@ export function currentEnvironment ( cwd: string, marker: string, envs: NameAnd<
     return [ `Environment ${envName} not found. Legal names are ${Object.keys ( envs ).sort ()}` ]
   } );
 }
+export interface DalAndEnv extends EnvAndName {
+  dal: Dal
+}
+export function dalFromCurrentEnvironment ( cwd: string, envs: NameAnd<CleanEnvironment>, specifiedEnv: string | undefined ): ErrorsAnd<DalAndEnv> {
+  const envAndNameOrErrors = currentEnvironment ( cwd, dbPathDir, envs, specifiedEnv )
+  if ( hasErrors ( envAndNameOrErrors ) ) return envAndNameOrErrors
+  const { env, envName } = envAndNameOrErrors
+  return mapErrors ( dalFor ( env ), dal => ({ dal, ...envAndNameOrErrors }) )
+}
+
+export async function useDalAndEnv<T> ( cwd: string, envs: NameAnd<CleanEnvironment>, specifiedEnv: string | undefined, fn: ( dalAndEnv: DalAndEnv ) => Promise<ErrorsAnd<T>> ): Promise<ErrorsAnd<T>> {
+  const errorsOrDal: ErrorsAnd<DalAndEnv> = dalFromCurrentEnvironment ( cwd, envs, specifiedEnv )
+  if ( hasErrors ( errorsOrDal ) ) return errorsOrDal
+  try {
+    return await fn ( errorsOrDal )
+  } finally {
+    errorsOrDal.dal.close ()
+  }
+}
+
+
 export interface CleanEnvironment extends Required<Environment> {
   name: string
 }
@@ -75,7 +99,7 @@ export function sqlDialect ( type: string ) {
   if ( type === 'postgres' ) return postgresDalDialect
   throw new Error ( `Unknown environment type ${type}. Currently on postgres is supported. ${JSON.stringify ( type )}` )
 }
-export function dalFor ( env: Environment ) {
+export function dalFor ( env: Environment ): ErrorsAnd<Dal> {
   if ( env.type === 'postgres' ) return postgresDal ( env )
   throw new Error ( `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify ( env )}` )
 }
@@ -88,6 +112,7 @@ export interface EnvStatus {
 //TODO do in parallel
 export async function envIsUp ( env: CleanEnvironment ): Promise<boolean> {
   let dal = dalFor ( env );
+  if ( hasErrors ( dal ) ) return false
   try {
     const dialect = sqlDialect ( env.type );
     await dal.query ( dialect.safeQuery );
