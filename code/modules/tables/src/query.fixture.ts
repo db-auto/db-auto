@@ -6,7 +6,7 @@ let string;
 export const tables: NameAnd<Table> = {
 // export const tables = {
   "driver": {
-    "table": "DriverTable",
+    "table": "drivertable",
     "primary": { "name": "id", "type": "integer" },
     "queries": {
       "name": { "type": "string", "description": "driver name " },

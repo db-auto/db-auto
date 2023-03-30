@@ -1,7 +1,8 @@
 import { processPathString, SqlPP } from "./path";
 import { buildPlan, clean, makePathSpec, mergeSelectData, PathSpec, selectData, sqlFor } from "@dbpath/tables";
-import { mapErrors } from "@dbpath/utils";
+import { mapErrors, safeArray } from "@dbpath/utils";
 import { cleanEnv, EnvAndName } from "@dbpath/environments";
+import { sampleMeta } from "@dbpath/fixtures";
 
 const envAndName: EnvAndName = { env: cleanEnv.dev, envName: 'dev' };
 describe ( 'processPath', () => {
@@ -19,12 +20,12 @@ describe ( 'processPath', () => {
     } )
     it ( 'should handle driver.notfound.', async () => {
       expect ( await processPathString ( envAndName, clean, makePathSpec ( 'driver.notfound' ), {} ) ).toEqual ( [
-        "Cannot find link notfound in table DriverTable for path [driver]. Available links are: audit,mission"
+        "Cannot find link notfound in table drivertable for path [driver]. Available links are: audit,mission"
       ] )
     } )
     it ( 'should handle driver.notfound.?', async () => {
       expect ( await processPathString ( envAndName, clean, makePathSpec ( 'driver.notfound.?' ), {} ) ).toEqual ( [
-        "Cannot find link notfound in table DriverTable for path [driver]. Available links are: audit,mission",
+        "Cannot find link notfound in table drivertable for path [driver]. Available links are: audit,mission",
       ] )
     } )
     it ( 'should handle driver.mission.notfound.?', async () => {
@@ -98,7 +99,7 @@ describe ( 'processPath', () => {
       const { actual, expected } = await forPlan ( "driver.mission" )
       expect ( actual ).toEqual ( expected )
       expect ( expected.data ).toEqual ( [
-        { "alias": "T0", "columns": [ "*" ], "table": "DriverTable", "where": [] },
+        { "alias": "T0", "columns": [ "*" ], "table": "drivertable", "where": [] },
         { "alias": "T1", "columns": [ "*" ], "table": "mission", "where": [ "T0.driverId = T1.driverId" ] }
       ] )
     } )
@@ -112,6 +113,7 @@ describe ( 'processPath', () => {
       const expected: SqlPP = { type: 'sql', sql, envName: 'dev' }
       return { actual, expected }
     }
+
     it ( "should handle driver", async () => {
       const { actual, expected } = await forSql ( makePathSpec ( "driver" ) )
       expect ( actual ).toEqual ( expected )
@@ -121,31 +123,40 @@ describe ( 'processPath', () => {
       expect ( actual ).toEqual ( expected )
       expect ( expected.sql ).toEqual ( [
         "select T0.*, T1.*",
-        "   from DriverTable T0, mission T1 where T0.driverId = T1.driverId"
+        "   from drivertable T0, mission T1 where T0.driverId = T1.driverId"
+      ] )
+    } )
+    it ( "should handle driver.mission with ids specified", async () => {
+      //where replacing these clean up the pkquery
+      const { actual, expected } = await forSql ( makePathSpec ( "driver.mission", sampleMeta.tables, "1" ) )
+      expect ( actual ).toEqual ( expected )
+      expect ( expected.sql ).toEqual ( [
+        "select T0.*, T1.*",
+        "   from drivertable T0, mission T1 where T0.id=1 and T0.driverId = T1.driverId"
       ] )
     } )
     it ( "should handle driver.mission with a query param and where", async () => {
-      const { actual, expected } = await forSql ( makePathSpec ( "driver.mission", undefined, {}, [ "w1" ] ) )
+      const { actual, expected } = await forSql ( makePathSpec ( "driver.mission", sampleMeta.tables, undefined, {}, [ "w1" ] ) )
       expect ( actual ).toEqual ( expected )
       expect ( expected.sql ).toEqual ( [
         "select T0.*, T1.*",
-        "   from DriverTable T0, mission T1 where w1 and T0.driverId = T1.driverId"
+        "   from drivertable T0, mission T1 where w1 and T0.driverId = T1.driverId"
       ] )
     } )
     it ( "should handle driver.mission with a query param and wheres", async () => {
-      const { actual, expected } = await forSql ( makePathSpec ( "driver.mission", undefined, {}, [ "w1", "w2" ] ) )
+      const { actual, expected } = await forSql ( makePathSpec ( "driver.mission", sampleMeta.tables, undefined, {}, [ "w1", "w2" ] ) )
       expect ( actual ).toEqual ( expected )
       expect ( expected.sql ).toEqual ( [
         "select T0.*, T1.*",
-        "   from DriverTable T0, mission T1 where w1 and w2 and T0.driverId = T1.driverId"
+        "   from drivertable T0, mission T1 where w1 and w2 and T0.driverId = T1.driverId"
       ] )
     } )
     it ( "should handle driver.mission with a query param and wheres and a queryparam in driver and mission", async () => {
-      const { actual, expected } = await forSql ( makePathSpec ( "driver.mission", undefined, { employeeNum: "123", "date": "thedate" }, [ "w1", "w2" ] ) )
+      const { actual, expected } = await forSql ( makePathSpec ( "driver.mission", sampleMeta.tables, undefined, { employeeNum: "123", "date": "thedate" }, [ "w1", "w2" ] ) )
       expect ( actual ).toEqual ( expected )
       expect ( expected.sql ).toEqual ( [
         "select T0.*, T1.*",
-        "   from DriverTable T0, mission T1 where w1 and w2 and T0.employeeNum='123' and T1.date='thedate' and T0.driverId = T1.driverId"
+        "   from drivertable T0, mission T1 where w1 and w2 and T0.employeeNum='123' and T1.date='thedate' and T0.driverId = T1.driverId"
       ] )
     } )
   } )

@@ -1,5 +1,5 @@
-import { Plan } from "./query";
-import { flatMap, toArray } from "@dbpath/utils";
+import { Plan, quoteIfNeeded } from "./query";
+import { flatMap, NameAnd, toArray } from "@dbpath/utils";
 import { idHere, idThere } from "./tables";
 
 

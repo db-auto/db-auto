@@ -38,11 +38,11 @@ Show the sql instead of executing it. FullSql includes the paging sql (which can
 ```shell
  dbpath driver 123 -s            
 # select T0.*
-#    from DriverTable T0 where T0.driverId=123
+#    from drivertable T0 where T0.driverId=123
 
 dbpath driver 123 --fullSql
 # select T0.*
-#    from DriverTable T0 where T0.driverId=123
+#    from drivertable T0 where T0.driverId=123
 # LIMIT 15 OFFSET 0
 
 ```

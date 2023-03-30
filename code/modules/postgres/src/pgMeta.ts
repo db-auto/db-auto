@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import { ColumnMetaData, ForeignKeyMetaData, MetaDataFn, TableMetaData } from "@dbpath/dal";
+import { ColumnMetaData, ForeignKeyMetaData, MetaDataFn, NameAndType, TableMetaData } from "@dbpath/dal";
 import { addNameAnd2, deepSortNames, fromEntries, NameAnd, toArray } from "@dbpath/utils";
 
 
@@ -59,13 +59,13 @@ export const pgMeta = ( p: Pool, schema: string ): MetaDataFn => async (): Promi
                                       WHERE constraint_type = 'PRIMARY KEY'
                                         and tc.table_schema = $1 `, [ schema ] )
 
-    const table2Pks: NameAnd<string[]> = {};//will have to be adjusted for composite keys
+    const table2Pks: NameAnd<NameAndType[]> = {};//will have to be adjusted for composite keys
     pks.rows.forEach ( r => {
-      table2Pks[ r.table_name ] = r.column_name;
+      table2Pks[ r.table_name ] = [ { name: r.column_name, type: r.data_type } ];
     } )
 
     let tableNamesAndMetaData: [ string, TableMetaData ][] = tableNames.map ( t => {
-      let tableMetadata: TableMetaData = { columns: table2Columns[ t ], fk: table2Fks[ t ], pk: toArray(table2Pks[ t ]) };
+      let tableMetadata: TableMetaData = { columns: table2Columns[ t ], fk: table2Fks[ t ], pk: toArray ( table2Pks[ t ] ) };
       return [ t.toString (), tableMetadata ]
     } );
     return { tables: deepSortNames ( fromEntries ( ...tableNamesAndMetaData ) ) };

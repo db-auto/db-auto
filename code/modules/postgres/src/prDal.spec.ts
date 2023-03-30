@@ -20,7 +20,7 @@ describe ( 'pgDal', () => {
     await dal.update ( "create table if not exists mission (id int, driverId int, mission text)" )
     await dal.update ( "create table if not exists driver_aud (id int,who text, what text)" )
     await dal.update ( "create table if not exists mission_aud (id int, who text, what text)" )
-    await dal.update ( `alter table driverTable
+    await dal.update ( `alter table drivertable
         add constraint pk_driver primary key (driverId);` );
     await dal.update ( `alter table mission
         add constraint pk_mission primary key (id);` );

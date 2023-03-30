@@ -41,16 +41,16 @@ describe ( "parseTable", () => {
     return error
   }
   it ( "should parse drive", () => {
-    expect ( pt ( "driver", 1 ) ).toEqual ( { table: "DriverTable", fields: [] } )
-    expect ( pt ( "driver.", 1 ) ).toEqual ( { table: "DriverTable", fields: [] } )
+    expect ( pt ( "driver", 1 ) ).toEqual ( { table: "drivertable", fields: [] } )
+    expect ( pt ( "driver.", 1 ) ).toEqual ( { table: "drivertable", fields: [] } )
   } )
   it ( "should parse mission", () => {
     expect ( pt ( "mission", 1 ) ).toEqual ( { table: "mission", fields: [] } )
     expect ( pt ( "mission.", 1 ) ).toEqual ( { table: "mission", fields: [] } )
   } )
   it ( "should parse driver[field1,field2]", () => {
-    expect ( pt ( "driver[field1]", 4 ) ).toEqual ( { table: "DriverTable", fields: [ "field1" ] } )
-    expect ( pt ( "driver[field1,field2]", 6 ) ).toEqual ( { table: "DriverTable", fields: [ "field1", "field2" ] } )
+    expect ( pt ( "driver[field1]", 4 ) ).toEqual ( { table: "drivertable", fields: [ "field1" ] } )
+    expect ( pt ( "driver[field1,field2]", 6 ) ).toEqual ( { table: "drivertable", fields: [ "field1", "field2" ] } )
   } )
   it ( "should report nice error messages", () => {
     expect ( ptError ( "driver[", 7 ) ).toEqual ( [ "Expected a field but got to end" ] );
@@ -60,13 +60,13 @@ describe ( "parseTable", () => {
 
 describe ( "parseLink", () => {
   it ( "should parse .{table}}", () => {
-    expect ( pl ( ".driver", 2 ) ).toEqual ( { table: "DriverTable", fields: [], "idEquals": [], } )
+    expect ( pl ( ".driver", 2 ) ).toEqual ( { table: "drivertable", fields: [], "idEquals": [], } )
     expect ( pl ( ".mission,", 2 ) ).toEqual ( { table: "mission", fields: [], "idEquals": [], } )
   } )
   it ( "should parse .driver[f1,f2]", () => {
     const previousLink = pt ( "someTable", 1 )
     expect ( pl ( ".driver[f1,f2]", 7, previousLink ) ).toEqual ( {
-      "table": "DriverTable",
+      "table": "drivertable",
       "fields": [ "f1", "f2" ],
       previousLink,
       "idEquals": [],
@@ -85,7 +85,7 @@ describe ( "parseLink", () => {
           "toId": "id2"
         }
       ],
-      "table": "DriverTable"
+      "table": "drivertable"
     } )
   } )
 
@@ -99,11 +99,11 @@ describe ( "parseLink", () => {
         "previousLink": {
           "fields": [],
           "idEquals": [],
-          "table": "DriverTable"
+          "table": "drivertable"
         },
         "table": "mission"
       },
-      "table": "audit"
+      "table": "driver_aud"
     } )
 
   } )
@@ -114,13 +114,13 @@ describe ( "parseLink", () => {
         "fields": [],
         "previousLink": {
           "fields": [ "f1", "f2" ],
-          "table": "DriverTable",
+          "table": "drivertable",
           "idEquals": [],
         },
         "table": "mission",
         "idEquals": [],
       },
-      "table": "audit",
+      "table": "driver_aud",
       "idEquals": [],
     } )
   } )
@@ -156,11 +156,11 @@ describe ( "parsePath", () => {
         ],
         "previousLink": {
           "fields": [],
-          "table": "DriverTable"
+          "table": "drivertable"
         },
         "table": "mission"
       },
-      "table": "audit"
+      "table": "driver_aud"
     } )
   } )
   describe ( "error message", () => {

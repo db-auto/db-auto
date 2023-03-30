@@ -64,7 +64,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
 
       if ( page < 1 ) throw new Error ( "Page must be greater than 0" )
       const where = fullOptions.where ? fullOptions.where : []
-      let pathSpec = makePathSpec ( path, id, fullOptions, where );
+      let pathSpec = makePathSpec ( path, sampleMeta.tables, id, fullOptions, where );
       if ( fullOptions.trace ) {
         const pps = await tracePlan ( envAndNameOrErrors, config.tables, pathSpec, fullOptions )
         pps.forEach ( line => console.log ( line ) )
@@ -100,30 +100,6 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
       console.log ( "Current environment is " + envAndNameOrErrors.envName )
       prettyPrintEnvironments ( config.environments ).forEach ( line => console.log ( line ) )
     } )
-
-  const newPath = program.command ( 'newPath' )
-    .description ( "Uses new path parser ... doesn't do anything other than show syntax tree" )
-    .arguments ( '<path>' )
-    .action ( ( path, command, options ) => {
-      const result = parsePath ( DalPathValidator ( sampleSummary, sampleMeta ) ) ( path )
-      if ( hasErrors ( result ) ) {
-        reportErrors ( result )
-        return
-      }
-      console.log ( JSON.stringify ( result, null, 2 ) )
-    } );
-  const newSql = program.command ( 'newSql' )
-    .description ( "Uses new path parser ... doesn't do anything other than show sql" )
-    .arguments ( '<path>' )
-    .action ( ( path, command, options ) => {
-      const p: ErrorsAnd<PathItem> = parsePath ( DalPathValidator ( sampleSummary, sampleMeta ) ) ( path )
-      if ( hasErrors ( p ) ) {
-        reportErrors ( p )
-        return
-      }
-      const sql = pathToSql ( options, p )
-      sql.forEach ( line => console.log ( line ) )
-    } );
 
   const metadataShow = program.command ( 'metadata-show' )
     .description ( 'Shows the metadata in an environment' )

@@ -47,7 +47,10 @@ Scraping dev
         }
       },
       "pk": [
-        "driverid"
+        {
+          "name": "driverid",
+          "type": "integer"
+        }
       ]
     },
     "mission": {
@@ -77,7 +80,10 @@ Scraping dev
         }
       },
       "pk": [
-        "id"
+        {
+          "name": "id",
+          "type": "integer"
+        }
       ]
     },
     "mission_aud": {

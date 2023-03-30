@@ -47,7 +47,7 @@ describe ( "cleanTable", () => {
         "employeeNum": { "type": "string" },
         "name": { "description": "driver name ", "type": "string" }
       },
-      "table": "DriverTable",
+      "table": "drivertable",
       "views": { "all": "*", "short": [ "id", "name" ] }
     } )
   } )

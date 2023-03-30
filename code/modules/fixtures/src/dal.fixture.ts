@@ -31,7 +31,7 @@ export const sampleMeta = {
           "type": "text"
         }
       },
-      pk: [ "driverid" ],
+      pk: [ { name: "driverid", type: "integer" } ],
       "fk": {
         "fk_driver_aud_driver": {
           "column": "driverid",
@@ -48,7 +48,7 @@ export const sampleMeta = {
       }
     },
     "mission": {
-      pk: [ "id" ],
+      pk: [ { name: "id", type: "integer" } ],
       "columns": {
         "driverid": {
           "type": "integer"

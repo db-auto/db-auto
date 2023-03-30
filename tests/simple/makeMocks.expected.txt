@@ -1,5 +1,5 @@
 {
-  "driver": "CREATE TABLE DriverTable ( driverId integer,livesIn string,age integer,dateOfBirth date,personalCar string );",
+  "driver": "CREATE TABLE drivertable ( driverId integer,livesIn string,age integer,dateOfBirth date,personalCar string );",
   "driver_aud": "CREATE TABLE driver_aud ( driverId integer,who string,action string,date string );",
   "mission": "CREATE TABLE mission ( missionId number );",
   "mission_aud": "CREATE TABLE mission_aud ( missionId integer );"

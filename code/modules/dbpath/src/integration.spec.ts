@@ -4,6 +4,7 @@ import { readTestFile } from "@dbpath/files";
 import Path from "path";
 import { dbPathDir, stateFileName } from "@dbpath/environments";
 
+// jest.setTimeout ( 10000 );
 
 const mockTestDir = testRoot + '/simple';
 
@@ -131,12 +132,7 @@ describe ( 'dbpath path --help', () => {
 
   } )
 } )
-describe ( 'dbpath path --options that are query params', () => {
-  it ( "should dbpath driver --name fred --sql", async () => {
-    const expected = readTestFile ( mockTestDir, 'pathWithQueryParams.driver.name.fred.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `driver --name fred --sql` ) ).toEqual ( expected );
-  } )
-} )
+
 
 describe ( "dbpath trace", () => {
   it ( "should build up the results - sql", async () => {

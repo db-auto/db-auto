@@ -24,9 +24,16 @@ export interface ForeignKeyMetaData {
   refColumn: string
   raw: string
 }
-export interface TableMetaData {
+export interface NameAndType {
+  name: string,
+  type: string
+}
+export interface HasPk{
+  pk: NameAndType[]
+
+}
+export interface TableMetaData extends HasPk{
   columns: NameAnd<ColumnMetaData>
-  pk: string[]
   fk: NameAnd<ForeignKeyMetaData>
 }
 export interface DatabaseMetaData {
@@ -60,7 +67,7 @@ export interface Dal extends ReadDal, WriteDal, MetaDal {
   close ();
 }
 
-export function useDal<T>( dal: Dal , fn: (d: Dal) => T):T {
+export function useDal<T> ( dal: Dal, fn: ( d: Dal ) => T ): T {
   try {
     return fn ( dal )
   } finally {

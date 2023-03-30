@@ -1,6 +1,7 @@
 import { ErrorsAnd, flatMapEntries, hasErrors, NameAnd, safeArray, safeObject } from "@dbpath/utils";
 import { Link } from "./tables";
 import { CleanTable } from "./clean";
+import { HasPk, NameAndType } from "@dbpath/dal";
 
 export interface DbAutoQuery {
   path: string[],
@@ -21,9 +22,9 @@ export interface PlanLink {
 }
 
 export interface PathSpecForWheres {
-  id: string | undefined,
-  queryParams: NameAnd<string>,
-
+  id?: string,
+  table2Pk: NameAnd<HasPk>
+  queryParams?: NameAnd<string>,
 }
 export interface PathSpec extends PathSpecForWheres {
   rawPath: string,
@@ -34,17 +35,18 @@ export interface PathSpec extends PathSpecForWheres {
   limit?: number
 }
 
-export function makePathSpec ( path: string, id?: string, queryParams?: NameAnd<string>, wheres?: string[] ): PathSpec {
+export function makePathSpec ( path: string, table2Pk?: NameAnd<HasPk>, id?: string, queryParams?: NameAnd<string>, wheres?: string[] ): PathSpec {
   return {
     rawPath: path,
     path: path.split ( '.' ).filter ( p => p !== '' ),
     id,
+    table2Pk,
     queryParams: safeObject ( queryParams ),
     wheres: safeArray ( wheres )
   }
 }
-function quoteIfNeeded ( type: string, s: string ): string {
-  return type === 'string' || type.includes ( 'char' ) || type.includes ( 'date' ) || type.includes ( 'time' ) ? `'${s}'` : s;
+export function quoteIfNeeded ( type: string, s: string ): string {
+  return type === 'string' || type.includes ( 'char' ) || type.includes ( 'text' ) || type.includes ( 'date' ) || type.includes ( 'time' ) ? `'${s}'` : s;
 }
 
 function makeWhere ( pathSpecForWheres: PathSpecForWheres, alias: string, table: CleanTable ) {

@@ -32,7 +32,7 @@ function findLinks ( tables: NameAnd<CleanTable>, rawPath: string, path: string[
   let withoutQuery = path.slice ( 0, -1 );
 
   if ( withoutQuery.length === 0 ) return { links: Object.keys ( tables ), type: 'links' }
-  const planOrErrors: string[] | Plan = buildPlan ( tables, { rawPath, path: withoutQuery, wheres: [], queryParams: {}, id: undefined } )
+  const planOrErrors: string[] | Plan = buildPlan ( tables, { rawPath, table2Pk: {}, path: withoutQuery, wheres: [], queryParams: {}, id: undefined } )
   if ( hasErrors ( planOrErrors ) ) return planOrErrors
   return { links: Object.keys ( planOrErrors.table.links ), type: 'links' }
 }
@@ -82,15 +82,17 @@ export async function processPathString2 ( envAndName: EnvAndName, tables: NameA
   if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( tables, pathSpec.rawPath, path )
   let plan = parsePath ( DalPathValidator ( sampleSummary, sampleMeta ) ) ( pathSpec.rawPath );
   if ( hasErrors ( plan ) ) return plan
-  const data = pathToSelectData ( plan )
+  const data = pathToSelectData ( plan, pathSpec )
   const { plan: showPlan, sql: showSql, fullSql } = options
   if ( showPlan ) return { type: 'selectData', data }
   const optionsModifiedForLimits = showSql && !fullSql ? { ...options, limitBy: undefined } : options
   const sql = sqlFor ( optionsModifiedForLimits ) ( mergeSelectData ( data ) );
   if ( showSql || fullSql ) return ({ type: 'sql', sql, envName })
   return mapErrorsK ( dalFor ( env ), async dal => {
-    const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
-    return result
+    return useDal ( dal, async d => {
+      const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
+      return result
+    } )
   } )
 }
 

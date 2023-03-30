@@ -6,7 +6,7 @@
   },
   "tables":       {
     "driver":      {
-      "table":       "DriverTable",
+      "table":       "drivertable",
       "primary":     {"name": "driverId", "type": "integer"},
       "queries":     {
         "name":        {"type": "string", "description": "driver name "},

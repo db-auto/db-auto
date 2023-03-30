@@ -1,48 +1,43 @@
 Usage: db-auto <command> [options]
 
 Arguments:
-  path                         the list of table names joined by a . For
-                               example driver.mission.mission_aud
-  id                           the id of the primary key in the first table in
-                               the path
+  path                    the list of table names joined by a . For example
+                          driver.mission.mission_aud
+  id                      the id of the primary key in the first table in the
+                          path
 
 Options:
-   --plan                      show the plan instead of executing (default:
-                               false)
-  -s, --sql                    show the sql instead of executing (default:
-                               false)
-  -e, --env <env>              override the default environment. Use 'db-auto
-                               envs' to see a list of names
-  --fullSql                    normally the show sql doesn't include limits.
-                               This shows them (default: false)
-  -c, --count                  returns the count of the items in the table
-                               (default: false)
-  -d, --distinct               only return distinct values (default: false)
-  --page <page>                which page of the results should be returned
-  --pageSize <pageSize>        Changes the page of the returned results
-                               (default: 15)
-  -t, --trace                  trace the results (default: false)
-  -j, --json                   Sql output as json instead of columns (default:
-                               false)
-  --onelinejson                Sql output as 'one json per line for the row'
-                               instead of columns (default: false)
-  --notitles                   Sql output as columns doesn't have titles
-                               (default: false)
-  -w, --where [where...]       a where clause added to the query. There is no
-                               syntax checking (default: [])
-  -V, --version                output the version number
-  --name <name>                driver name
-  --employeeNum <employeeNum>
-  --date <date>
-  -h, --help                   display help for command
+   --plan                 show the plan instead of executing (default: false)
+  -s, --sql               show the sql instead of executing (default: false)
+  -e, --env <env>         override the default environment. Use 'db-auto envs'
+                          to see a list of names
+  --fullSql               normally the show sql doesn't include limits. This
+                          shows them (default: false)
+  -c, --count             returns the count of the items in the table (default:
+                          false)
+  -d, --distinct          only return distinct values (default: false)
+  --page <page>           which page of the results should be returned
+  --pageSize <pageSize>   Changes the page of the returned results (default:
+                          15)
+  -t, --trace             trace the results (default: false)
+  -j, --json              Sql output as json instead of columns (default:
+                          false)
+  --onelinejson           Sql output as 'one json per line for the row' instead
+                          of columns (default: false)
+  --notitles              Sql output as columns doesn't have titles (default:
+                          false)
+  -w, --where [where...]  a where clause added to the query. There is no syntax
+                          checking (default: [])
+  -V, --version           output the version number
+  -h, --help              display help for command
 
 Commands:
-  mocks [tables...]            Create table sql for the tables
-  envs                         Lists all the environments
-  newPath <path>               Uses new path parser ... doesn't do anything
-                               other than show syntax tree
-  status                       Checks that the environments are accessible and
-                               gives report
-  env <env>                    Sets the current environment
-  scrape [options]             Scrapes the database
-  tables                       Lists the known tables
+  mocks [tables...]       Create table sql for the tables
+  envs                    Lists all the environments
+  metadata-show [env]     Shows the metadata in an environment
+  metadata-refresh [env]  Fetches the metadata from an environment
+  status                  Checks that the environments are accessible and gives
+                          report
+  env <env>               Sets the current environment
+  scrape [options]        Scrapes the database
+  tables                  Lists the known tables

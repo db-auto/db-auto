@@ -6,7 +6,6 @@ describe ( "validators", () => {
   describe ( "tableNameValidator", () => {
     it ( "should accept tables that are valid", () => {
       expect ( validateTableName ( sampleSummary, sampleMeta ) ( "driver" ) ).toEqual ( [] )
-      expect ( validateTableName ( sampleSummary, sampleMeta ) ( "driver" ) ).toEqual ( [] )
       expect ( validateTableName ( sampleSummary, sampleMeta ) ( "drivertable" ) ).toEqual ( [] )
       expect ( validateTableName ( sampleSummary, sampleMeta ) ( "mission" ) ).toEqual ( [] )
     } )

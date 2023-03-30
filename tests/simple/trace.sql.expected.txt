@@ -1,17 +1,17 @@
 Environment: dev
 driver
 select T0.*
-   from DriverTable T0
+   from drivertable T0
 
 driver.mission
 select T0.*, T1.*
-   from DriverTable T0, mission T1 where T0.driverId = T1.driverId
+   from drivertable T0, mission T1 where T0.driverId = T1.driverId
 
 driver.mission.driver
 select T0.*, T1.*, T2.*
-   from DriverTable T0, mission T1, DriverTable T2 where T0.driverId = T1.driverId and T1.driverId = T2.driverId
+   from drivertable T0, mission T1, drivertable T2 where T0.driverId = T1.driverId and T1.driverId = T2.driverId
 
 driver.mission.driver.audit
 select T0.*, T1.*, T2.*, T3.*
-   from DriverTable T0, mission T1, DriverTable T2, driver_aud T3 where T0.driverId = T1.driverId and T1.driverId = T2.driverId and T2.driverId = T3.id
+   from drivertable T0, mission T1, drivertable T2, driver_aud T3 where T0.driverId = T1.driverId and T1.driverId = T2.driverId and T2.driverId = T3.id
 
