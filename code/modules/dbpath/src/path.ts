@@ -1,9 +1,11 @@
 import { ErrorsAnd, flatMap, hasErrors, mapErrors, mapErrorsK, NameAnd } from "@dbpath/utils";
 import { buildPlan, CleanTable, mergeSelectData, PathSpec, pathToSelectData, Plan, selectData, SelectData, sqlFor, SqlOptions } from "@dbpath/tables";
 import { dalFor, EnvAndName } from "@dbpath/environments";
-import { DalPathValidator, DalResult, DalResultDisplayOptions, prettyPrintDalResult, useDal } from "@dbpath/dal";
+import { DalPathValidator, DalResult, DalResultDisplayOptions, DatabaseMetaData, ForeignKeyMetaData, fullTableName, PathValidator, PathValidatorAlwaysOK, prettyPrintDalResult, TableMetaData, useDal } from "@dbpath/dal";
 import { parsePath } from "@dbpath/pathparser";
 import { sampleMeta, sampleSummary } from "@dbpath/fixtures";
+import { Summary } from "@dbpath/config";
+import { isLinkInPath } from "@dbpath/types";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -37,16 +39,26 @@ function findLinks ( tables: NameAnd<CleanTable>, rawPath: string, path: string[
   return { links: Object.keys ( planOrErrors.table.links ), type: 'links' }
 }
 
-const filterLinkPP = ( lookfor: string ) => ( l: LinksPP ): LinksPP => {
-  let links = l.links.filter ( l => l.startsWith ( lookfor ) );
+const filterLinkPP = ( lookfor: string ) => ( raw: string[] ): LinksPP => {
+  let links = raw.filter ( l => l.startsWith ( lookfor ) );
   return ({ type: 'links', links });
 };
 
-function processQueryPP ( tables: NameAnd<CleanTable>, rawPath: string, parts: string[] ): ErrorsAnd<LinksPP> {
-  let lastPart = parts[ parts.length - 1 ];
-  return mapErrors ( findLinks ( tables, rawPath, parts ), filterLinkPP ( lastPart.substring ( 0, lastPart.length - 1 ) ) )
-}
+function processQueryPP ( summary: Summary, tableMD: NameAnd<TableMetaData>, rawPath: string ): ErrorsAnd<LinksPP> {
+  const pathValidator: PathValidator = {
+    ...PathValidatorAlwaysOK, actualTableName: t => fullTableName ( summary, t )
+  };
 
+  return mapErrors ( parsePath ( pathValidator ) ( rawPath ), lastTable => {
+    const query = lastTable.table.slice ( 0, -1 )
+    const prevTable = isLinkInPath ( lastTable ) ? lastTable.previousLink : undefined
+    if ( prevTable === undefined ) return filterLinkPP ( query ) ( Object.keys ( tableMD ).sort () )
+    const tableMeta = tableMD[ prevTable.table ]
+    if ( tableMeta === undefined ) return [ `Don't recognise table ${prevTable.table}` ]
+    const fkTables: ForeignKeyMetaData[] = Object.values ( tableMeta.fk ).filter ( fk => fk.refTable.startsWith ( query ) )
+    return { type: 'links', links: fkTables.map ( fk => `(${fk.column}=${fk.refColumn})${fk.refTable}` ) };
+  } )
+}
 
 interface ProcessPathOptions extends DalResultDisplayOptions, SqlOptions {
   plan?: boolean,
@@ -54,33 +66,16 @@ interface ProcessPathOptions extends DalResultDisplayOptions, SqlOptions {
   fullSql?: boolean
 
 }
-export async function processPathString ( envAndName: EnvAndName, tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<ErrorsAnd<PP>> {
+
+
+export async function processPathString ( envAndName: EnvAndName, summary: Summary, meta: DatabaseMetaData, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<ErrorsAnd<PP>> {
   const path = pathSpec.path
   const { env, envName } = envAndName
   if ( path.length === 0 ) return [ 'Path must have at least one part' ]
   const lastPart = path[ path.length - 1 ]
-  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( tables, pathSpec.rawPath, path )
-  let plan = buildPlan ( tables, pathSpec );
-  if ( hasErrors ( plan ) ) return plan
-  const data = selectData ( "all" ) ( plan )
-  const { plan: showPlan, sql: showSql, fullSql } = options
-  if ( showPlan ) return { type: 'selectData', data }
-  const optionsModifiedForLimits = showSql && !fullSql ? { ...options, limitBy: undefined } : options
-  const sql = sqlFor ( optionsModifiedForLimits ) ( mergeSelectData ( data ) );
-  if ( showSql || fullSql ) return ({ type: 'sql', sql, envName })
-  mapErrorsK ( dalFor ( env ), dal =>
-    useDal ( dal, async dal => {
-      const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
-      return result
-    } ) )
-}
-export async function processPathString2 ( envAndName: EnvAndName, tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<ErrorsAnd<PP>> {
-  const path = pathSpec.path
-  const { env, envName } = envAndName
-  if ( path.length === 0 ) return [ 'Path must have at least one part' ]
-  const lastPart = path[ path.length - 1 ]
-  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( tables, pathSpec.rawPath, path )
-  let plan = parsePath ( DalPathValidator ( sampleSummary, sampleMeta ) ) ( pathSpec.rawPath );
+  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( summary, meta.tables, pathSpec.rawPath )
+  let validator = DalPathValidator ( sampleSummary, sampleMeta );
+  let plan = parsePath ( validator ) ( pathSpec.rawPath );
   if ( hasErrors ( plan ) ) return plan
   const data = pathToSelectData ( plan, pathSpec )
   const { plan: showPlan, sql: showSql, fullSql } = options
@@ -116,11 +111,11 @@ export function makeTracePlanSpecs ( pathSpec: PathSpec ): PathSpec[] {
   }
   return result;
 }
-export async function tracePlan ( env: EnvAndName, tables: NameAnd<CleanTable>, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<string[]> {
+export async function tracePlan ( env: EnvAndName, summary: Summary, meta: DatabaseMetaData, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<string[]> {
   const result: PP[] = []
   const specs = makeTracePlanSpecs ( pathSpec )
   for ( let i = 0; i < specs.length; i++ ) {
-    const pp = await processPathString2 ( env, tables, specs[ i ], options )
+    const pp = await processPathString ( env, summary, meta, specs[ i ], options )
     if ( hasErrors ( pp ) ) return pp
     result.push ( pp )
   }

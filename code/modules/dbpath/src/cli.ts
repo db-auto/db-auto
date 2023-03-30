@@ -1,15 +1,11 @@
 import { Command } from "commander";
-import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapObject, NameAnd, parseFile, reportErrors, toColumns } from "@dbpath/utils";
-import { CleanTable, makePathSpec, pathToSql, prettyPrintTables } from "@dbpath/tables";
-import { makeCreateTableSqlForMock } from "@dbpath/mocks";
+import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, NameAnd, parseFile, reportErrors, toColumns } from "@dbpath/utils";
+import { makePathSpec } from "@dbpath/tables";
 import { cleanConfig, CleanConfig } from "./config";
 import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@dbpath/files";
 import { checkStatus, currentEnvironment, dbPathDir, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn, useDalAndEnv } from "@dbpath/environments";
-import { prettyPrintPP, processPathString2, tracePlan } from "./path";
+import { prettyPrintPP, processPathString, tracePlan } from "./path";
 import Path from "path";
-import { parsePath } from "@dbpath/pathparser";
-import { DalPathValidator, } from "@dbpath/dal";
-import { PathItem } from "@dbpath/types";
 import * as fs from "fs";
 import { sampleMeta, sampleSummary } from "@dbpath/fixtures";
 
@@ -17,7 +13,7 @@ import { sampleMeta, sampleSummary } from "@dbpath/fixtures";
 export const configFileName = 'dbpath.config.json';
 export function makeConfig ( cwd: string, envVars: NameAnd<string> ): ErrorsAnd<CleanConfig> {
   return flatMapErrors ( findFileInParentsOrError ( cwd, dbPathDir ), dir =>
-    flatMapErrors ( parseFile ( Path.join ( dbPathDir, configFileName ) ), config =>
+    flatMapErrors ( parseFile ( Path.join ( dir, configFileName ) ), config =>
       mapErrors ( config, cleanConfig ( envVars ) ) ) )
 }
 
@@ -66,11 +62,11 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
       const where = fullOptions.where ? fullOptions.where : []
       let pathSpec = makePathSpec ( path, sampleMeta.tables, id, fullOptions, where );
       if ( fullOptions.trace ) {
-        const pps = await tracePlan ( envAndNameOrErrors, config.tables, pathSpec, fullOptions )
+        const pps = await tracePlan ( envAndNameOrErrors, sampleSummary, sampleMeta, pathSpec, fullOptions )
         pps.forEach ( line => console.log ( line ) )
         return
       }
-      const errorsOrresult = await processPathString2 ( envAndNameOrErrors, config.tables, pathSpec, fullOptions );
+      const errorsOrresult = await processPathString ( envAndNameOrErrors, sampleSummary, sampleMeta, pathSpec, fullOptions );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return
@@ -79,18 +75,26 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     } )
   // findQueryParams ( config.tables ).forEach ( param => program.option ( '--' + param.name + " <" + param.name + ">", param.description ) )
 
-
-  const mock = program
-    .command ( 'mocks' )
-    .description ( "Create table sql for the tables" )
-    .arguments ( '[tables...]' )
-    .action ( ( tables, command, options ) => {
-      const theTables: NameAnd<CleanTable> = config.tables
-      var rest = mapObject ( theTables, table => makeCreateTableSqlForMock ( table ) )
-      console.log ( JSON.stringify ( rest, null, 2 ) )
+  const admin = program.command ( 'admin' ).description ( 'commands for viewing and manipulating the configuration of dbpath' )
+  const status = admin.command ( 'status' ).description ( "Checks that the environments are accessible and gives report" )
+    .action ( async ( command, options ) => {
+      const status: NameAnd<EnvStatus> = await checkStatus ( config.environments )
+      toColumns ( statusColDefn ) ( Object.values ( status ) ).forEach ( line => console.log ( line ) )
+      // console.log ( JSON.stringify ( status, null, 2 ) )
     } )
 
-  const envs = program.command ( 'envs' ).description ( "Lists all the environments" )
+  const env = admin.command ( 'env' ).description ( "Sets the current environment" )
+    .arguments ( '<env>' )
+    .action ( ( env, command, options ) => {
+      const check = config.environments[ env ]
+      if ( !check ) {
+        console.log ( `Environment ${env} is not defined` )
+        process.exit ( 1 )
+      }
+      saveEnvName ( cwd, dbPathDir, env )
+    } )
+
+  const envs = admin.command ( 'envs' ).description ( "Lists all the environments" )
     .action ( ( command, options ) => {
       const envAndNameOrErrors = currentEnvironment ( cwd, dbPathDir, config.environments, options.env )
       if ( hasErrors ( envAndNameOrErrors ) ) {
@@ -101,17 +105,20 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
       prettyPrintEnvironments ( config.environments ).forEach ( line => console.log ( line ) )
     } )
 
-  const metadataShow = program.command ( 'metadata-show' )
-    .description ( 'Shows the metadata in an environment' )
+  const metadata = program.command ( 'metadata' ).description ( 'commands for viewing and storing metadata' )
+
+  const metadataShow = metadata.command ( 'show' )
+    .description ( 'Reads the metadata in an environment and displays it' )
     .argument ( '[env]', 'The environment' )
     .action ( async ( envArg, command, options ) => {
-      const errors = await useDalAndEnv ( cwd, config.environments, envArg, dalAndEnv => {
-        console.log ( JSON.stringify ( dalAndEnv.dal.metaData (), null, 2 ) )
+      const errors = await useDalAndEnv ( cwd, config.environments, envArg, async dalAndEnv => {
+        console.log ( JSON.stringify ( await dalAndEnv.dal.metaData (), null, 2 ) )
         return null
       } )
       if ( hasErrors ( errors ) ) reportErrors ( errors )
     } )
-  const metadataRefresh = program.command ( 'metadata-refresh' )
+
+  const metadataRefresh = metadata.command ( 'refresh' )
     .description ( 'Fetches the metadata from an environment' )
     .argument ( '[env]', 'The environment' )
     .action ( async ( envArg, command, options ) => {
@@ -129,40 +136,6 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
         console.log ( 'errors' )
         reportErrors ( errors )
       }
-    } )
-
-  const status = program.command ( 'status' ).description ( "Checks that the environments are accessible and gives report" )
-    .action ( async ( command, options ) => {
-      const status: NameAnd<EnvStatus> = await checkStatus ( config.environments )
-      toColumns ( statusColDefn ) ( Object.values ( status ) ).forEach ( line => console.log ( line ) )
-      // console.log ( JSON.stringify ( status, null, 2 ) )
-    } )
-  const env = program.command ( 'env' ).description ( "Sets the current environment" )
-    .arguments ( '<env>' )
-    .action ( ( env, command, options ) => {
-      const check = config.environments[ env ]
-      if ( !check ) {
-        console.log ( `Environment ${env} is not defined` )
-        process.exit ( 1 )
-      }
-      saveEnvName ( cwd, dbPathDir, env )
-    } )
-  const scrape = program.command ( 'scrape' ).description ( "Scrapes the database" )
-    .option ( '-e, --env <env>', "override the default environment. Use 'db-auto envs' to see a list of names" )
-    .action ( async ( command, options ) => {
-      const errors = await useDalAndEnv ( cwd, config.environments, options.env, async ( { dal, envName } ) => {
-        console.log ( "Scraping " + envName )
-        console.log ( JSON.stringify ( await dal.metaData (), null, 2 ) )
-      } )
-      if ( hasErrors ( errors ) ) {
-        reportErrors ( errors )
-        return;
-      }
-    } )
-
-  const tables = program.command ( 'tables' ).description ( "Lists the known tables" )
-    .action ( ( command, options ) => {
-      prettyPrintTables ( config.tables ).forEach ( line => console.log ( line ) )
     } )
 
 

@@ -305,6 +305,13 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
+"@dbpath/mocks@0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@dbpath/mocks/-/mocks-0.2.4.tgz#f5efbc3ae755e7f6eaae5d6edc94f1d5cff7b6e7"
+  integrity sha512-Fn+0bRB44xHdEdJ4IY6ElHveG/sOnWocCw4TZVy56lVlcqJzvfgxjXjk2eVQkltlnrgXI2ToM64D6rg4BdC2vw==
+  dependencies:
+    "@dbpath/tables" "0.2.4"
+
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"

@@ -32,12 +32,6 @@ Options:
   -h, --help              display help for command
 
 Commands:
-  mocks [tables...]       Create table sql for the tables
-  envs                    Lists all the environments
-  metadata-show [env]     Shows the metadata in an environment
-  metadata-refresh [env]  Fetches the metadata from an environment
-  status                  Checks that the environments are accessible and gives
-                          report
-  env <env>               Sets the current environment
-  scrape [options]        Scrapes the database
-  tables                  Lists the known tables
+  admin                   commands for viewing and manipulating the
+                          configuration of dbpath
+  metadata                commands for viewing and storing metadata

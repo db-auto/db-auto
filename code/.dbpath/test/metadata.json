@@ -46,7 +46,10 @@
         }
       },
       "pk": [
-        "driverid"
+        {
+          "name": "driverid",
+          "type": "integer"
+        }
       ]
     },
     "mission": {
@@ -76,7 +79,10 @@
         }
       },
       "pk": [
-        "id"
+        {
+          "name": "id",
+          "type": "integer"
+        }
       ]
     },
     "mission_aud": {

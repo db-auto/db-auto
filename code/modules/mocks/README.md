@@ -1,3 +1,0 @@
-Allows for the creation of mock tables for testing purposes.
-
-I am not sure if we will keep this... 

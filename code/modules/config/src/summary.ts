@@ -1,4 +1,4 @@
-import { NameAnd } from "@dbpath/utils";
+import { composeNameAndValidators, NameAnd, NameAndValidator, validateChild, validateChildString, validateNameAnd } from "@dbpath/utils";
 
 interface TableSummary {
   tableName?: string
@@ -6,3 +6,10 @@ interface TableSummary {
 export interface Summary {
   tables: NameAnd<TableSummary>
 }
+
+export const tableSummaryValidator: NameAndValidator<TableSummary> = composeNameAndValidators (
+  validateChildString ( 'tableName', true ),
+);
+
+export const summaryValidator: NameAndValidator<Summary> = composeNameAndValidators<Summary> (
+  validateChild ( 'tables', validateNameAnd ( tableSummaryValidator ), true ) )

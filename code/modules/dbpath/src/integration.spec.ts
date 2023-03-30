@@ -9,24 +9,11 @@ import { dbPathDir, stateFileName } from "@dbpath/environments";
 const mockTestDir = testRoot + '/simple';
 
 const inCi = process.env[ 'CI' ] === 'true'
-describe ( "db-auto  makeMocks", () => {
-  it ( "should make mocks", async () => {
-    const expected = readTestFile ( mockTestDir, 'makeMocks.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `mocks` ) ).toEqual ( expected );
-  } );
-} )
-
-describe ( "dbpath tables", () => {
-  it ( "should display tables", async () => {
-    const expected = readTestFile ( mockTestDir, 'tables.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `tables` ) ).toEqual ( expected );
-  } )
-} )
 
 describe ( "dbpath envs", () => {
   it ( "should display the envs", async () => {
     const expected = readTestFile ( mockTestDir, 'envs.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toEqual ( expected );
+    expect ( await executeDbAuto ( mockTestDir, `admin envs` ) ).toEqual ( expected );
   } )
 } )
 
@@ -35,11 +22,11 @@ describe ( "dbpath env", () => {
     await promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
     const expectedTestEnv = readTestFile ( mockTestDir, 'env.test.expected.txt' );
     const expectedDevEnv = readTestFile ( mockTestDir, 'env.dev.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toContain ( "Current environment is dev" ); //default
-    expect ( await executeDbAuto ( mockTestDir, `env test` ) ).toEqual ( expectedTestEnv );
-    expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toContain ( "Current environment is test" );
-    expect ( await executeDbAuto ( mockTestDir, `env dev` ) ).toEqual ( expectedDevEnv );
-    expect ( await executeDbAuto ( mockTestDir, `envs` ) ).toContain ( "Current environment is dev" );
+    expect ( await executeDbAuto ( mockTestDir, `admin envs` ) ).toContain ( "Current environment is dev" ); //default
+    expect ( await executeDbAuto ( mockTestDir, `admin env test` ) ).toEqual ( expectedTestEnv );
+    expect ( await executeDbAuto ( mockTestDir, `admin envs` ) ).toContain ( "Current environment is test" );
+    expect ( await executeDbAuto ( mockTestDir, `admin env dev` ) ).toEqual ( expectedDevEnv );
+    expect ( await executeDbAuto ( mockTestDir, `admin envs` ) ).toContain ( "Current environment is dev" );
     await promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
   } )
 
@@ -55,6 +42,10 @@ describe ( "dbpath paths", () => {
     it ( "should dbpath driver.?", async () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.query.expected.txt' );
       expect ( await executeDbAuto ( mockTestDir, `driver.?` ) ).toEqual ( expected );
+    } )
+    it ( "should dbpath driver.m?", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.driver.mquery.expected.txt' );
+      expect ( await executeDbAuto ( mockTestDir, `driver.m?` ) ).toEqual ( expected );
     } )
     it ( "should dbpath driver.mission.?", async () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.mission.query.expected.txt' );
@@ -126,7 +117,7 @@ describe ( 'dbpath path id', () => {
 } )
 
 describe ( 'dbpath path --help', () => {
-  it ( "should include the queries as options", async () => {
+  it ( "should have a --help", async () => {
     const expected = readTestFile ( mockTestDir, 'help.expected.txt' );
     expect ( await executeDbAuto ( mockTestDir, `--help` ) ).toEqual ( expected );
 
@@ -150,13 +141,13 @@ describe ( "dbpath trace", () => {
 describe ( "scraping", () => {
   it ( "should scrape", async () => {
     const expected = readTestFile ( mockTestDir, 'scrape.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `scrape` ) ).toEqual ( expected );
+    expect ( await executeDbAuto ( mockTestDir, `metadata show` ) ).toEqual ( expected );
   } )
 } )
 
 describe ( "status", () => {
   it ( "should return status", async () => {
     const expected = readTestFile ( mockTestDir, 'status.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `status` ) ).toEqual ( expected );
+    expect ( await executeDbAuto ( mockTestDir, `admin status` ) ).toEqual ( expected );
   } )
 } )
