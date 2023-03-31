@@ -7,6 +7,11 @@ export interface Summary {
   tables: NameAnd<TableSummary>
 }
 
+export function cleanSummary ( summary: Summary ): Summary {
+  return summary?.tables ? summary : { tables: {} };
+}
+
+
 export const tableSummaryValidator: NameAndValidator<TableSummary> = composeNameAndValidators (
   validateChildString ( 'tableName', true ),
 );

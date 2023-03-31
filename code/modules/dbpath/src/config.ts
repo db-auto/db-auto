@@ -1,6 +1,6 @@
 import { composeNameAndValidators, NameAnd, NameAndValidator, validateChild, validateChildDefined, validateNameAnd } from "@dbpath/utils";
 import { CleanEnvironment, cleanEnvironment, Environment, environmentValidator } from "@dbpath/environments";
-import { Summary, summaryValidator } from "@dbpath/config";
+import { cleanSummary, Summary, summaryValidator } from "@dbpath/config";
 
 export interface Config {
   environments: NameAnd<Environment>,
@@ -8,14 +8,18 @@ export interface Config {
 }
 export interface CleanConfig {
   environments: NameAnd<CleanEnvironment>,
+  summary: Summary
 
 }
 
 
-export const cleanConfig = ( envVars: NameAnd<string> ) => ( config: Config ): CleanConfig => ({
-  environments: cleanEnvironment ( envVars, config.environments ),
-
-});
+export const cleanConfig = ( envVars: NameAnd<string> ) => ( config: Config ): CleanConfig => {
+  let result = {
+    environments: cleanEnvironment ( envVars, config.environments ),
+    summary: cleanSummary ( config.summary )
+  };
+  return result;
+};
 
 export const envValidator: NameAndValidator<Config> = composeNameAndValidators (
   validateChildDefined ( 'environments' ),

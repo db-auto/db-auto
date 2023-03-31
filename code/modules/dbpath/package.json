@@ -25,7 +25,6 @@
     "@dbpath/pathparser": "0.2.8",
     "@dbpath/utils": "0.2.8",
     "@dbpath/files": "0.2.8",
-    "@dbpath/fixtures": "0.2.8",
     "@dbpath/environments": "0.2.8"
   },
   "devDependencies": {

@@ -41,7 +41,7 @@ describe ( "dbpath paths", () => {
     } )
     it ( "should dbpath driver.?", async () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.query.expected.txt' );
-      expect ( await executeDbAuto ( mockTestDir, `driver.?` ) ).toEqual ( expected );
+      expect ( await executeDbAuto ( mockTestDir, `driver.?` ) ). toEqual ( expected );
     } )
     it ( "should dbpath driver.m?", async () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.mquery.expected.txt' );

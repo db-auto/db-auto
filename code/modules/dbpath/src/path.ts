@@ -3,7 +3,6 @@ import { mergeSelectData, PathSpec, pathToSelectData, SelectData, sqlFor, SqlOpt
 import { dalFor, EnvAndName } from "@dbpath/environments";
 import { DalPathValidator, DalResult, DalResultDisplayOptions, DatabaseMetaData, ForeignKeyMetaData, fullTableName, PathValidator, PathValidatorAlwaysOK, prettyPrintDalResult, TableMetaData, useDal } from "@dbpath/dal";
 import { parsePath } from "@dbpath/pathparser";
-import { sampleMeta, sampleSummary } from "@dbpath/fixtures";
 import { Summary } from "@dbpath/config";
 import { isLinkInPath } from "@dbpath/types";
 
@@ -28,7 +27,6 @@ export interface ResPP {
   res: DalResult
 }
 type PP = SelectDataPP | LinksPP | SqlPP | ResPP
-
 
 
 const filterLinkPP = ( lookfor: string ) => ( raw: string[] ): LinksPP => {
@@ -66,7 +64,7 @@ export async function processPathString ( envAndName: EnvAndName, summary: Summa
   if ( path.length === 0 ) return [ 'Path must have at least one part' ]
   const lastPart = path[ path.length - 1 ]
   if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( summary, meta.tables, pathSpec.rawPath )
-  let validator = DalPathValidator ( sampleSummary, sampleMeta );
+  let validator = DalPathValidator ( summary, meta );
   let plan = parsePath ( validator ) ( pathSpec.rawPath );
   if ( hasErrors ( plan ) ) return plan
   const data = pathToSelectData ( plan, pathSpec )

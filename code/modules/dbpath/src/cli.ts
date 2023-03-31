@@ -7,7 +7,7 @@ import { checkStatus, currentEnvironment, dbPathDir, EnvStatus, prettyPrintEnvir
 import { prettyPrintPP, processPathString, tracePlan } from "./path";
 import Path from "path";
 import * as fs from "fs";
-import { sampleMeta, sampleSummary } from "@dbpath/fixtures";
+
 import { loadMetadata, saveMetadata } from "./metadataFile";
 
 
@@ -54,6 +54,14 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
         reportErrors ( envAndNameOrErrors )
         return;
       }
+      const meta = await loadMetadata ( cwd, envAndNameOrErrors.envName )
+      if ( hasErrors ( meta ) ) {
+        console.log ( 'Cannot load metadata for environment ' + envAndNameOrErrors.envName )
+        console.log ( 'Try running db-auto refresh' )
+        reportErrors ( meta )
+        return
+      }
+
       const { env, envName } = envAndNameOrErrors
       const dialect = sqlDialect ( env.type );
       const page = options.page ? parseInt ( options.page ) : 1
@@ -61,13 +69,13 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
 
       if ( page < 1 ) throw new Error ( "Page must be greater than 0" )
       const where = fullOptions.where ? fullOptions.where : []
-      let pathSpec = makePathSpec ( path, sampleMeta.tables, id, fullOptions, where );
+      let pathSpec = makePathSpec ( path, meta.tables, id, fullOptions, where );
       if ( fullOptions.trace ) {
-        const pps = await tracePlan ( envAndNameOrErrors, sampleSummary, sampleMeta, pathSpec, fullOptions )
+        const pps = await tracePlan ( envAndNameOrErrors, config.summary, meta, pathSpec, fullOptions )
         pps.forEach ( line => console.log ( line ) )
         return
       }
-      const errorsOrresult = await processPathString ( envAndNameOrErrors, sampleSummary, sampleMeta, pathSpec, fullOptions );
+      const errorsOrresult = await processPathString ( envAndNameOrErrors, config.summary, meta, pathSpec, fullOptions );
       if ( hasErrors ( errorsOrresult ) ) {
         reportErrors ( errorsOrresult );
         return

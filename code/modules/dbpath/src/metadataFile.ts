@@ -24,6 +24,6 @@ export function saveMetadata ( cwd: string, envName: string, meta: DatabaseMetaD
   } )
 }
 
-export const loadMetadata = ( cwd: string, envName: string ) =>
+export const loadMetadata = ( cwd: string, envName: string ): Promise<DatabaseMetaData> =>
   loadFileInDirectory ( cwd, 'metadata', Path.join ( dbPathDir, envName ), metadataFileName );
 

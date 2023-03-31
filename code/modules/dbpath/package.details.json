@@ -19,7 +19,7 @@
   "links":       [
     "@dbpath/tables", "@dbpath/pathparser",
     "@dbpath/utils", "@dbpath/files",
-    "@dbpath/fixtures", "@dbpath/environments"
+    "@dbpath/environments"
   ],
   "guards":      {
     "compile": true,
