@@ -74,7 +74,6 @@ describe ( "dbpath paths", () => {
     it ( "should dbpath driver.mission --distinct", async () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.mission.distinct.expected.txt' );
       expect ( await executeDbAuto ( mockTestDir, `driver.mission --distinct --sql` ) ).toEqual ( expected );
-
     } )
 
   } )
@@ -104,8 +103,13 @@ describe ( "dbpath paths", () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.audit.expected.oneline.json' );
       expect ( await executeDbAuto ( mockTestDir, `driver.audit --onelinejson` ) ).toEqual ( expected );
     } )
-
   } )
+  describe("exceptions", () => {
+    it ("should handle a missing fk", async () => {
+      const expected = readTestFile ( mockTestDir, 'path.driver.mission_aud.missingfk.expected.txt' );
+      expect ( await executeDbAuto ( mockTestDir, `driver.mission_aud` ) ).toEqual ( expected );
+    })
+  })
 } )
 
 describe ( 'dbpath path id', () => {

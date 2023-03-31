@@ -70,7 +70,7 @@ export function getSingleFkLink ( summary: Summary, m: DatabaseMetaData, fromTab
   const found: ForeignKeyMetaData[] = mapEntries ( safeObject ( fromTable.fk ), fk => fk ).filter ( table => table.refTable === toTableName );
   function error ( msg: string ): string[] {
     const nameToFkLinks = mapEntries ( safeObject ( fromTable.fk ), v => `  ${fromTableName}.(${v.column},${v.refColumn})${v.refTable}` )
-    return [ msg + '. Valid links are ', ...nameToFkLinks ]
+    return [ msg + '. Valid links are', ...nameToFkLinks ]
   }
   if ( found.length === 0 ) return error ( `No foreign key from ${fromTableName} to ${toTableName}` )
   if ( found.length > 1 ) return error ( `More than one foreign key from ${fromTableName} to ${toTableName}` )
