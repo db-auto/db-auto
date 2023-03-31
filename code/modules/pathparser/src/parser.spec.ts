@@ -76,6 +76,23 @@ describe ( "parseLink", () => {
   it ( "should parse .drive.mission.audit", () => {
     expect ( pl ( ".driver.mission.audit", 6 ) ).toEqual ( driverMissionAuditPath )
   } )
+  it ( "should handle just an id in the id=id part", () => {
+    expect ( pl ( ".driver.(driver)mission", 7 ) ).toEqual ( {
+      "fields": [],
+      "idEquals": [
+        {
+          "fromId": "driver",
+          "toId": "driver"
+        }
+      ],
+      "previousLink": {
+        "fields": [],
+        "idEquals": [],
+        "table": "drivertable"
+      },
+      "table": "mission"
+    } )
+  } )
   it ( "should parse .(id1=id2)drive", () => {
     expect ( pl ( ".(id1=id2)driver", 7 ) ).toEqual ( {
       "fields": [],
@@ -172,11 +189,12 @@ describe ( "parsePath", () => {
       ] )
     } )
     it ( "should process a.(noequals)b", () => {
-      expect ( parsePath ( validator ) ( "a.(noequals)b" ) ).toEqual ( [
-        "a.(noequals)b",
-        "           ^",
-        "Expected = unexpected character )"
-      ] )
+      expect ( parsePath ( validator ) ( "a.(noequals)b" ) ).toEqual ( {
+        "fields": [],
+        "idEquals": [ { "fromId": "noequals", "toId": "noequals" } ],
+        "previousLink": { "fields": [], "table": "a" },
+        "table": "b"
+      } )
     } )
   } )
 } )

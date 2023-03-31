@@ -2,6 +2,6 @@
 driver.mission_aud
        ^
 Single FK link not found
-No foreign key from drivertable to mission_aud. Valid links are
-  drivertable.(driverid,id)driver_aud
-  drivertable.(driverid,driverid)mission
+No foreign key from drivertable to mission_aud. Valid links from drivertable are
+drivertable.(driverid=id)driver_aud
+drivertable.(driverid)mission

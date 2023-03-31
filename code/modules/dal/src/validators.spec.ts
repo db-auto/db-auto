@@ -44,17 +44,17 @@ describe ( "validators", () => {
     } )
     it ( "should reject links that do not follow a fk driver to driver", () => {
       expect ( validateLinks ( sampleSummary, sampleMeta ) ( "driver", "driver", [] ) ).toEqual ( [
-        "No foreign key from driver to driver. Valid links are ",
-        "  driver.(driverid,id)driver_aud",
-        "  driver.(driverid,driverid)mission"
-      ] )
+        "No foreign key from driver to driver. Valid links from driver are",
+        "driver.(driverid=id)driver_aud",
+        "driver.(driverid)mission"
+      ])
     } )
     it ( "should reject links that do not follow a fk driver to mission_aud", () => {
       expect ( validateLinks ( sampleSummary, sampleMeta ) ( "driver", "mission_aud", [] ) ).toEqual ( [
-        "No foreign key from driver to mission_aud. Valid links are ",
-        "  driver.(driverid,id)driver_aud",
-        "  driver.(driverid,driverid)mission"
-      ] )
+        "No foreign key from driver to mission_aud. Valid links from driver are",
+        "driver.(driverid=id)driver_aud",
+        "driver.(driverid)mission"
+      ])
     } )
   } )
 } )

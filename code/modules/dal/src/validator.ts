@@ -69,8 +69,10 @@ export function getSingleFkLink ( summary: Summary, m: DatabaseMetaData, fromTab
   const fromTable = getTableMetaData ( summary, m, fromTableName )
   const found: ForeignKeyMetaData[] = mapEntries ( safeObject ( fromTable.fk ), fk => fk ).filter ( table => table.refTable === toTableName );
   function error ( msg: string ): string[] {
-    const nameToFkLinks = mapEntries ( safeObject ( fromTable.fk ), v => `  ${fromTableName}.(${v.column},${v.refColumn})${v.refTable}` )
-    return [ msg + '. Valid links are', ...nameToFkLinks ]
+    const nameToFkLinks = mapEntries ( safeObject ( fromTable.fk ), v => v.column === v.refColumn
+      ? `${fromTableName}.(${v.column})${v.refTable}`
+      : `${fromTableName}.(${v.column}=${v.refColumn})${v.refTable}` )
+    return [ msg + `. Valid links from ${fromTableName} are`, ...nameToFkLinks ]
   }
   if ( found.length === 0 ) return error ( `No foreign key from ${fromTableName} to ${toTableName}` )
   if ( found.length > 1 ) return error ( `More than one foreign key from ${fromTableName} to ${toTableName}` )

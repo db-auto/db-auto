@@ -100,10 +100,14 @@ export function parseBracketedCommaSeparated<R> ( c: ParserContext, open: string
 
 
 export const parseIdEqualsId = ( c: ParserContext ): ResultAndContext<TwoIds> =>
-  mapParser ( identifier ( "'from id'='to id'" ) ( c ), ( c, fromId ) =>
-    mapParser ( nextChar ( c, '=' ), c =>
-      mapParser ( identifier ( "'to id'" ) ( c ), ( c, toId ) =>
-        lift ( c, { fromId, toId } ) ) ) );
+  mapParser ( identifier ( "'from id'='to id'" ) ( c ), ( c, fromId ) => {
+    if ( isNextChar ( c, '=' ) )
+      return mapParser ( nextChar ( c, '=' ), c =>
+        mapParser ( identifier ( "'to id'" ) ( c ), ( c, toId ) =>
+          lift ( c, { fromId, toId } ) ) );
+    else
+      return lift ( c, { fromId, toId: fromId } )
+  } );
 export function parseTableName ( context: ParserContext ): ResultAndContext<TableAndFullTableName> {
   return mapParser ( identifier ( 'table name' ) ( context ), ( c, tableName ) => {
     const table = context.validator.actualTableName ( tableName );
