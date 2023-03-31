@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/mysql",
   "description": "",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "mysql2": "3.2.0",
-    "@dbpath/utils": "0.2.7",
-    "@dbpath/dal": "0.2.7"
+    "@dbpath/utils": "0.2.8",
+    "@dbpath/dal": "0.2.8"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

@@ -8,6 +8,7 @@ import { prettyPrintPP, processPathString, tracePlan } from "./path";
 import Path from "path";
 import * as fs from "fs";
 import { sampleMeta, sampleSummary } from "@dbpath/fixtures";
+import { loadMetadata, saveMetadata } from "./metadataFile";
 
 
 export const configFileName = 'dbpath.config.json';
@@ -107,35 +108,37 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
 
   const metadata = program.command ( 'metadata' ).description ( 'commands for viewing and storing metadata' )
 
-  const metadataShow = metadata.command ( 'show' )
-    .description ( 'Reads the metadata in an environment and displays it' )
+  const metadataLive = metadata.command ( 'live' )
+    .description ( 'Gets the metadata from the database and just displays it' )
     .argument ( '[env]', 'The environment' )
     .action ( async ( envArg, command, options ) => {
-      const errors = await useDalAndEnv ( cwd, config.environments, envArg, async dalAndEnv => {
+      reportErrors ( await useDalAndEnv ( cwd, config.environments, envArg, async dalAndEnv => {
         console.log ( JSON.stringify ( await dalAndEnv.dal.metaData (), null, 2 ) )
-        return null
-      } )
-      if ( hasErrors ( errors ) ) reportErrors ( errors )
+        return null;
+      } ) )
+    } )
+  const metadataShow = metadata.command ( 'show' )
+    .description ( 'Displays the stored metadata for the environment' )
+    .argument ( '[env]', 'The environment' )
+    .action ( async ( envArg, command, options ) => {
+      reportErrors ( mapErrors ( await currentEnvironment ( cwd, dbPathDir, config.environments, options.env ), envAndNameOrErrors =>
+        console.log ( JSON.stringify ( loadMetadata ( cwd, envAndNameOrErrors.envName ), null, 2 ) )
+      ) )
     } )
 
   const metadataRefresh = metadata.command ( 'refresh' )
     .description ( 'Fetches the metadata from an environment' )
     .argument ( '[env]', 'The environment' )
-    .action ( async ( envArg, command, options ) => {
-      const errors = await useDalAndEnv ( cwd, config.environments, envArg, async ( { dal, envName } ) => {
-        return mapErrors ( findDirectoryHoldingFileOrError ( cwd, dbPathDir ), async dir => {
-          let directory = Path.join ( dir, dbPathDir, envName );
-          let filename = Path.join ( directory, 'metadata.json' );
-          fs.mkdirSync ( directory, { recursive: true } )
-          fs.writeFileSync ( filename, JSON.stringify ( await dal.metaData (), null, 2 ) );
-          console.log ( 'written to', filename )
-          return null
-        } )
-      } )
-      if ( hasErrors ( errors ) ) {
-        console.log ( 'errors' )
-        reportErrors ( errors )
-      }
+    .action ( async ( envArg, command, options ) =>
+      useDalAndEnv ( cwd, config.environments, envArg, async ( { dal, envName } ) =>
+        saveMetadata ( cwd, envName, await dal.metaData () ) ) );
+
+  const metadataStatus = metadata.command ( 'status' )
+    .description ( 'Shows which environments have metadata recorded' )
+    .action ( async ( command, options ) => {
+      reportErrors ( Object.keys ( config.environments ).map ( env =>
+        mapErrors ( findDirectoryHoldingFileOrError ( cwd, dbPathDir ), dir =>
+          console.log ( env.padEnd ( 12 ), fs.existsSync ( Path.join ( dir, dbPathDir, env, 'metadata.json' ) ) ) ) ) );
     } )
 
 

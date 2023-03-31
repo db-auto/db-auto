@@ -17,7 +17,7 @@ export interface CurrentEnvironment {
 export const stateFileName = 'dbpath.state.json';
 export function currentEnvName ( cwd: string, marker: string, env: string | undefined, cleanE: NameAnd<CleanEnvironment> ): ErrorsAnd<string> {
   if ( env ) return env
-  const contents = loadFileInDirectory ( cwd, marker, stateFileName )
+  const contents = loadFileInDirectory ( cwd, 'environments', marker, stateFileName )
   if ( hasErrors ( contents ) ) return 'dev'
   const foundEnv = contents.currentEnvironment
   if ( cleanE[ foundEnv ] ) return foundEnv

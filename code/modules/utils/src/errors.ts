@@ -11,8 +11,8 @@ export function mapArrayOfErrorsAnd<T, T1> ( ts: ErrorsAnd<T>[], fn: ( ts: T[] )
   return fn ( allResults )
 }
 
-export function reportErrors ( e: string[] ): string[] {
-  e.forEach ( e => console.error ( e ) )
+export function reportErrors<T> ( e: ErrorsAnd<T> ): ErrorsAnd<T> {
+  if ( hasErrors ( e ) ) e.forEach ( e => console.error ( e ) )
   return e
 }
 export function hasErrors<T> ( t: ErrorsAnd<T> ): t is string[] {
@@ -28,6 +28,7 @@ export function value<T> ( t: ErrorsAnd<T> ): T | undefined {
 export function mapErrors<T, T1> ( t: ErrorsAnd<T>, fn: ( t: T ) => ErrorsAnd<T1> ): ErrorsAnd<T1> {
   return hasErrors ( t ) ? t : fn ( t )
 }
+
 export function mapAndforEachErrorFn<T, Acc, T1> ( ts: T[], mapFn: ( t: T ) => ErrorsAnd<T1>, forEach: ( t1: T1, index: number ) => Acc ): ErrorsAnd<void> {
   const raw = ts.map ( mapFn )
   const errors = allErrorsIn ( raw )

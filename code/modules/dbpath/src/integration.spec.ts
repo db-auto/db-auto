@@ -141,7 +141,7 @@ describe ( "dbpath trace", () => {
 describe ( "scraping", () => {
   it ( "should scrape", async () => {
     const expected = readTestFile ( mockTestDir, 'scrape.expected.txt' );
-    expect ( await executeDbAuto ( mockTestDir, `metadata show` ) ).toEqual ( expected );
+    expect ( await executeDbAuto ( mockTestDir, `metadata live` ) ).toEqual ( expected );
   } )
 } )
 
