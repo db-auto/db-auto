@@ -48,7 +48,7 @@ export interface MetaDal {
 export interface DalRow extends NameAnd<any> {
 
 }
-interface DalColMeta {
+export interface DalColMeta {
   name: string
 }
 export interface DalMeta {

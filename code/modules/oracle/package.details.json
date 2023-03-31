@@ -4,9 +4,9 @@
   "description": "",
   "packageJson": {
     "dependencies":    {"oracledb": "^5.5.0"},
-    "devDependencies": {}
+    "devDependencies": {"@types/oracledb": "^5.2.4"}
   },
-  "links":       ["@dbpath/utils","@dbpath/dal"],
+  "links":       ["@dbpath/utils", "@dbpath/dal"],
   "guards":      {
     "compile": true,
     "publish": true,

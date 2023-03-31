@@ -18,6 +18,20 @@ export function reportErrors<T> ( e: ErrorsAnd<T> ): ErrorsAnd<T> {
 export function hasErrors<T> ( t: ErrorsAnd<T> ): t is string[] {
   return Array.isArray ( t )
 }
+export function ignoreError<T>(t: () => T){
+  try {
+    return t()
+  } catch (e) {
+    return undefined
+  }
+}
+export async function ignoreErrorK<T>(t: () => Promise<T>){
+  try {
+    return await t()
+  } catch (e) {
+    return undefined
+  }
+}
 export function errors<T> ( t: ErrorsAnd<T> ): string[] {
   return hasErrors ( t ) ? t : []
 }
