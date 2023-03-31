@@ -1,7 +1,7 @@
 import { Summary } from "@dbpath/config";
 import { DatabaseMetaData, ForeignKeyMetaData, TableMetaData } from "./dal";
 import { ErrorsAnd, hasErrors, mapEntries, safeObject } from "@dbpath/utils";
-import { TwoIds } from "@dbpath/types";
+import { TwoIds, TwoIdsArray } from "@dbpath/types";
 
 export type ValidateTableNameFn = ( tableName: string ) => string[]
 export type ValidateFieldsFn = ( tableName: string, fields: string[] ) => string[]
@@ -15,7 +15,7 @@ export interface PathValidator {
   validateFields: ValidateFieldsFn,
   validateLink: ValidateLinkFn
 
-  useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): TwoIds[]
+  useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): ErrorsAnd<TwoIdsArray>
   actualTableName ( tableName: string ): string
 }
 
@@ -23,8 +23,8 @@ export const PathValidatorAlwaysOK: PathValidator = {
   validateTableName: (): string[] => [],
   validateFields: (): string[] => [],
   validateLink: () => [],
-  useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): TwoIds[] {
-    return idEquals;
+  useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): ErrorsAnd<TwoIdsArray> {
+    return { twoIds: idEquals };
   },
   actualTableName: t => t
 
@@ -78,14 +78,15 @@ export function getSingleFkLink ( summary: Summary, m: DatabaseMetaData, fromTab
   return result;
 }
 /** This should not throw an exception if the validation says there is a link */
-export const useIdsOrSingleFkLinkOrError = ( summary: Summary, m: DatabaseMetaData ) => ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): TwoIds[] => {
+export const useIdsOrSingleFkLinkOrError = ( summary: Summary, m: DatabaseMetaData ) => ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): ErrorsAnd<TwoIdsArray> => {
   if ( idEquals.length === 0 ) {
     const found = getSingleFkLink ( summary, m, fromTableName, toTableName )
-    if ( hasErrors ( found ) ) throw Error ( `Single FK link not found\n${found}` )
-    return [ found ]
+    if ( hasErrors ( found ) ) return [ `Single FK link not found`, ...found ]
+    return { twoIds: [ found ] }
   }
-  return idEquals
-};
+  return { twoIds: idEquals }
+}
+
 
 function validateLinksInFks ( summary: Summary, m: DatabaseMetaData, fromTableName: string, toTableName: string ): string[] {
   const found = getSingleFkLink ( summary, m, fromTableName, toTableName )

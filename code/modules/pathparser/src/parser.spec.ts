@@ -199,7 +199,7 @@ describe ( "PathValidator in parsePath", () => {
       },
       useIdsOrSingleFkLinkOrError: ( fromTableName, toTableName, idEquals ) => {
         remembered.push ( `useIdsOrSingleFkLinkOrError(${fromTableName},${toTableName}) ${JSON.stringify ( idEquals )}` )
-        return idEquals
+        return { twoIds: idEquals }
       },
       actualTableName ( tableName: string ): string {
         remembered.push ( `actualTableName(${tableName})` )

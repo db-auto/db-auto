@@ -1,5 +1,5 @@
 import { Token, tokenise } from "./tokeniser";
-import { ErrorsAnd } from "@dbpath/utils";
+import { ErrorsAnd, hasErrors } from "@dbpath/utils";
 import { PathValidator } from "@dbpath/dal";
 import { LinkInPath, PathItem, TableInPath, TwoIds } from "@dbpath/types";
 
@@ -120,8 +120,9 @@ export const parseTable = ( context: ParserContext ): ResultAndContext<TableInPa
 export const parseTableAndNextLink = ( previousLink: TableInPath | undefined, idEquals: TwoIds[] ): PathParser<LinkInPath> => context =>
   mapParser<TableInPath, LinkInPath> ( parseTable ( context ), ( c, table ) => {
     const realIdEquals = c.validator.useIdsOrSingleFkLinkOrError ( previousLink?.table, table.table, idEquals )
-    let thisLink = { ...table, idEquals: realIdEquals, previousLink }
-    const errors = c.validator.validateLink ( previousLink?.table, table.table, realIdEquals )
+    if ( hasErrors ( realIdEquals ) ) return liftError ( context, realIdEquals ) as any
+    let thisLink = { ...table, idEquals: realIdEquals.twoIds, previousLink }
+    const errors = c.validator.validateLink ( previousLink?.table, table.table, realIdEquals.twoIds )
     if ( errors.length > 0 ) return liftError ( context, errors )
     return isNextChar ( c, '.' )
       ? parseLink ( thisLink ) ( c )

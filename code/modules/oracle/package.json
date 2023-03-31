@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/oracle",
   "description": "",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "oracledb": "^5.5.0",
-    "@dbpath/utils": "0.2.9",
-    "@dbpath/dal": "0.2.9"
+    "@dbpath/utils": "0.2.10",
+    "@dbpath/dal": "0.2.10"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

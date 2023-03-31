@@ -3,6 +3,10 @@ export interface TwoIds {
   toId: string
 }
 
+export interface TwoIdsArray {
+twoIds: TwoIds[]
+}
+
 export interface TableInPath {
   table: string
   fields?: string[ ]
