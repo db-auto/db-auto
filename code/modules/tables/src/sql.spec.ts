@@ -1,5 +1,5 @@
 import { driverMissionAuditWithFieldsAndLinksPath, driverPath, sampleMeta } from "@dbpath/fixtures";
-import { mapOverPath, pathToSelectData, pathToSql } from "./sql2";
+import { mapOverPath, pathToSelectData, pathToSql } from "./sql";
 
 
 describe ( "mapOverPath", () => {

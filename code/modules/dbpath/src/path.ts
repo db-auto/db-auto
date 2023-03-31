@@ -1,5 +1,5 @@
 import { ErrorsAnd, flatMap, hasErrors, mapErrors, mapErrorsK, NameAnd } from "@dbpath/utils";
-import { buildPlan, CleanTable, mergeSelectData, PathSpec, pathToSelectData, Plan, selectData, SelectData, sqlFor, SqlOptions } from "@dbpath/tables";
+import { mergeSelectData, PathSpec, pathToSelectData, SelectData, sqlFor, SqlOptions } from "@dbpath/tables";
 import { dalFor, EnvAndName } from "@dbpath/environments";
 import { DalPathValidator, DalResult, DalResultDisplayOptions, DatabaseMetaData, ForeignKeyMetaData, fullTableName, PathValidator, PathValidatorAlwaysOK, prettyPrintDalResult, TableMetaData, useDal } from "@dbpath/dal";
 import { parsePath } from "@dbpath/pathparser";
@@ -30,14 +30,6 @@ export interface ResPP {
 type PP = SelectDataPP | LinksPP | SqlPP | ResPP
 
 
-function findLinks ( tables: NameAnd<CleanTable>, rawPath: string, path: string[] ): ErrorsAnd<LinksPP> {
-  let withoutQuery = path.slice ( 0, -1 );
-
-  if ( withoutQuery.length === 0 ) return { links: Object.keys ( tables ), type: 'links' }
-  const planOrErrors: string[] | Plan = buildPlan ( tables, { rawPath, table2Pk: {}, path: withoutQuery, wheres: [], queryParams: {}, id: undefined } )
-  if ( hasErrors ( planOrErrors ) ) return planOrErrors
-  return { links: Object.keys ( planOrErrors.table.links ), type: 'links' }
-}
 
 const filterLinkPP = ( lookfor: string ) => ( raw: string[] ): LinksPP => {
   let links = raw.filter ( l => l.startsWith ( lookfor ) );

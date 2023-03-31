@@ -1,66 +1,41 @@
-import { Plan, quoteIfNeeded } from "./query";
-import { flatMap, NameAnd, toArray } from "@dbpath/utils";
-import { idHere, idThere } from "./tables";
+import { isLinkInPath, isTableInPath, PathItem, TableInPath } from "@dbpath/types";
+import { mergeSelectData, SelectData, sqlFor, SqlOptions } from "./selectData";
+import { PathSpecForWheres, quoteIfNeeded } from "./pathSpec";
+import { NameAndType } from "@dbpath/dal";
+import { safeArray } from "@dbpath/utils";
 
 
-export interface SelectData {
-  table: string,
-  alias: string,
-  columns: string[],
-  where: string[],
+export const mapOverPath = <T> ( p: PathItem, fn: ( p: PathItem ) => T ): T[] =>
+  isLinkInPath ( p ) ? [ ...mapOverPath ( p.previousLink, fn ), fn ( p ) ] : [ fn ( p ) ];
+
+
+function makePkWhere ( pathSpecForWhere: PathSpecForWheres, p: TableInPath, alias: string ) {
+  const pks: NameAndType[] = pathSpecForWhere.table2Pk[ p.table ].pk
+  return pks.map ( pk => `${alias}.${pk.name}=${quoteIfNeeded ( pk.type, pathSpecForWhere.id )}` );
+}
+export function pathToSelectData ( p: PathItem, pathSpecForWhere: PathSpecForWheres ): SelectData[] {
+  const parts: PathItem[] = mapOverPath ( p, p => p );
+  return parts.map ( ( p, i ) => {
+    let alias = `T${i}`;
+    let TableWheres = pathSpecForWhere.id && isTableInPath ( p ) ? makePkWhere ( pathSpecForWhere, p, alias ) : []
+    let pathWheres = isTableInPath ( p ) ? safeArray ( pathSpecForWhere.wheres ) : []
+    let linkWheres = isLinkInPath ( p ) ? p.idEquals.map ( ( { fromId, toId } ) =>
+      `T${i - 1}.${fromId} = ${alias}.${toId}` ) : [];
+    const selectDataForTable: SelectData = {
+      columns: p.fields.length > 0 ? p.fields : [ '*' ],
+      table: p.table,
+      alias,
+      where: [ ...linkWheres, ...TableWheres, ...pathWheres ]
+    }
+    return selectDataForTable
+  } )
 }
 
-export function whereFor ( plan: Plan ): string[] {
-  let planLink = plan.linkToPrevious;
-  if ( planLink === undefined ) return plan.where;
-  const link = planLink.link
-  const previousTable = planLink.linkTo
 
-  return [ ...plan.where, `${previousTable.alias}.${idHere ( link )} = ${plan.alias}.${idThere ( link )}` ]
+function pathToMergedData ( p: PathItem, pathSpec: PathSpecForWheres ) {
+  return mergeSelectData ( pathToSelectData ( p, pathSpec ) );
 }
-export function selectDataForOne ( plan: Plan, view: string ): SelectData {
-  return {
-    alias: plan.alias,
-    table: plan.table.table,
-    columns: toArray ( plan.table?.views?.[ view ] ),
-    where: whereFor ( plan )
-  }
+export function pathToSql ( sqlOptions: SqlOptions, p: PathItem, pathSpec: PathSpecForWheres ): string[] {
+  return sqlFor ( sqlOptions ) ( pathToMergedData ( p, pathSpec ) )
 }
 
-
-export const selectData = ( view: string ) => ( plan: Plan, ): SelectData[] => {
-  const nextData = plan.linkToPrevious ? selectData ( view ) ( plan.linkToPrevious.linkTo ) : []
-  return [ ...nextData, selectDataForOne ( plan, view ) ]
-};
-
-export interface MergedSelectData {
-  tables: { table: string, alias: string }[]
-  columns: { alias: string, column: string }[],
-  where: string[]
-}
-export function mergeSelectData ( selectData: SelectData[] ): MergedSelectData {
-  const tables = selectData.map ( s => ({ table: s.table, alias: s.alias }) )
-  const columns = flatMap ( selectData, s => s.columns.map ( c => ({ alias: s.alias, column: c }) ) )
-  const where = flatMap ( selectData, s => s.where ).filter ( w => w !== undefined )
-  return { tables, columns, where }
-
-}
-
-export interface SqlOptions {
-  page?: number,
-  pageSize?: number,
-  distinct?: boolean,
-  count?: boolean,
-  limitBy?: ( pageNum: number, pageSize: number, s: string[] ) => string[]
-}
-
-export const sqlFor = ( s: SqlOptions ) => ( m: MergedSelectData ): string[] => {
-  const { page, pageSize, distinct, count, limitBy } = s;
-  const distinctClause = distinct ? 'distinct ' : '';
-  const columns = count ? 'count(1)' : m.columns.map ( c => `${c.alias}.${c.column}` ).join ( ', ' )
-  const tables = m.tables.map ( t => `${t.table} ${t.alias}` ).join ( ', ' )
-  const where = m.where.length > 0 ? `where ${m.where.join ( ' and ' )}` : ''
-  let result = [ `select ${distinctClause}${columns}`, `   from ${tables} ${where}`.trimRight () ];
-  if ( limitBy && page !== undefined && pageSize !== undefined ) return limitBy ( page, pageSize, result )
-  return result
-};
