@@ -10,9 +10,6 @@ export const dbPathDir = '.dbpath';
 
 export type Environment = PostgresEnv
 
-export interface CurrentEnvironment {
-  currentEnvironment: string
-}
 
 export const stateFileName = 'dbpath.state.json';
 export function currentEnvName ( cwd: string, marker: string, env: string | undefined, cleanE: NameAnd<CleanEnvironment> ): ErrorsAnd<string> {
@@ -50,15 +47,15 @@ export function currentEnvironment ( cwd: string, marker: string, envs: NameAnd<
 export interface DalAndEnv extends EnvAndName {
   dal: Dal
 }
-export function dalFromCurrentEnvironment ( cwd: string, envs: NameAnd<CleanEnvironment>, specifiedEnv: string | undefined ): ErrorsAnd<DalAndEnv> {
+export async function dalFromCurrentEnvironment ( cwd: string, envs: NameAnd<CleanEnvironment>, specifiedEnv: string | undefined ): Promise<ErrorsAnd<DalAndEnv>> {
   const envAndNameOrErrors = currentEnvironment ( cwd, dbPathDir, envs, specifiedEnv )
   if ( hasErrors ( envAndNameOrErrors ) ) return envAndNameOrErrors
   const { env, envName } = envAndNameOrErrors
-  return mapErrors ( dalFor ( env ), dal => ({ dal, ...envAndNameOrErrors }) )
+  return mapErrors ( await dalFor ( env ), dal => ({ dal, ...envAndNameOrErrors }) )
 }
 
 export async function useDalAndEnv<T> ( cwd: string, envs: NameAnd<CleanEnvironment>, specifiedEnv: string | undefined, fn: ( dalAndEnv: DalAndEnv ) => Promise<ErrorsAnd<T>> ): Promise<ErrorsAnd<T>> {
-  const errorsOrDal: ErrorsAnd<DalAndEnv> = dalFromCurrentEnvironment ( cwd, envs, specifiedEnv )
+  const errorsOrDal: ErrorsAnd<DalAndEnv> = await dalFromCurrentEnvironment ( cwd, envs, specifiedEnv )
   if ( hasErrors ( errorsOrDal ) ) return errorsOrDal
   try {
     return await fn ( errorsOrDal )
@@ -99,7 +96,7 @@ export function sqlDialect ( type: string ) {
   if ( type === 'postgres' ) return postgresDalDialect
   throw new Error ( `Unknown environment type ${type}. Currently on postgres is supported. ${JSON.stringify ( type )}` )
 }
-export function dalFor ( env: Environment ): ErrorsAnd<Dal> {
+export async function dalFor ( env: Environment ): Promise<ErrorsAnd<Dal>> {
   if ( env.type === 'postgres' ) return postgresDal ( env )
   throw new Error ( `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify ( env )}` )
 }
@@ -111,7 +108,7 @@ export interface EnvStatus {
 }
 //TODO do in parallel
 export async function envIsUp ( env: CleanEnvironment ): Promise<boolean> {
-  let dal = dalFor ( env );
+  let dal = await dalFor ( env );
   if ( hasErrors ( dal ) ) return false
   try {
     const dialect = sqlDialect ( env.type );

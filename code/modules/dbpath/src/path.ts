@@ -73,7 +73,7 @@ export async function processPathString ( envAndName: EnvAndName, summary: Summa
   const optionsModifiedForLimits = showSql && !fullSql ? { ...options, limitBy: undefined } : options
   const sql = sqlFor ( optionsModifiedForLimits ) ( mergeSelectData ( data ) );
   if ( showSql || fullSql ) return ({ type: 'sql', sql, envName })
-  return mapErrorsK ( dalFor ( env ), async dal => {
+  return mapErrorsK ( await dalFor ( env ), async dal => {
     return useDal ( dal, async d => {
       const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
       return result

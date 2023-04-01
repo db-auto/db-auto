@@ -4,12 +4,15 @@ import { readTestFile } from "@dbpath/files";
 import Path from "path";
 import { dbPathDir, stateFileName } from "@dbpath/environments";
 
+
 // jest.setTimeout ( 10000 );
 
 const mockTestDir = testRoot + '/simple';
 
 const inCi = process.env[ 'CI' ] === 'true'
-
+beforeEach ( async () => {
+  await promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
+} )
 describe ( "dbpath envs", () => {
   it ( "should display the envs", async () => {
     const expected = readTestFile ( mockTestDir, 'envs.expected.txt' );
@@ -41,7 +44,7 @@ describe ( "dbpath paths", () => {
     } )
     it ( "should dbpath driver.?", async () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.query.expected.txt' );
-      expect ( await executeDbAuto ( mockTestDir, `driver.?` ) ). toEqual ( expected );
+      expect ( await executeDbAuto ( mockTestDir, `driver.?` ) ).toEqual ( expected );
     } )
     it ( "should dbpath driver.m?", async () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.mquery.expected.txt' );
@@ -104,12 +107,12 @@ describe ( "dbpath paths", () => {
       expect ( await executeDbAuto ( mockTestDir, `driver.audit --onelinejson` ) ).toEqual ( expected );
     } )
   } )
-  describe("exceptions", () => {
-    it ("should handle a missing fk", async () => {
+  describe ( "exceptions", () => {
+    it ( "should handle a missing fk", async () => {
       const expected = readTestFile ( mockTestDir, 'path.driver.mission_aud.missingfk.expected.txt' );
       expect ( await executeDbAuto ( mockTestDir, `driver.mission_aud` ) ).toEqual ( expected );
-    })
-  })
+    } )
+  } )
 } )
 
 describe ( 'dbpath path id', () => {
