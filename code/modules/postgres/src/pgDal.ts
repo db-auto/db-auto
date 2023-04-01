@@ -58,6 +58,7 @@ export const postgresEnvValidator: NameAndValidator<PostgresEnv> = composeNameAn
   validateChildValue ( 'type', 'postgres' ),
   validateChildString ( 'username', true ),
   validateChildString ( 'password', true ),
+  validateChildString ( 'schema' ),
   validateChildNumber ( 'port' ),
   validateChildString ( 'host' ),
   validateChildString ( 'database' )

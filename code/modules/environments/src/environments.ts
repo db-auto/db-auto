@@ -4,12 +4,12 @@ import { findDirectoryHoldingFileOrError, loadFileInDirectory } from "@dbpath/fi
 import * as Path from "path";
 import * as fs from "fs";
 import { CommonEnvironment, Dal } from "@dbpath/dal";
-import { oracleDal, oracleDalDialect, OracleEnv } from "@dbpath/oracle";
+import { oracleDal, oracleDalDialect, OracleEnv, oracleEnvValidator } from "@dbpath/oracle";
 
 export const dbPathDir = '.dbpath';
 
 
-export type Environment = PostgresEnv
+export type Environment = PostgresEnv | OracleEnv
 
 
 export const stateFileName = 'dbpath.state.json';
@@ -89,8 +89,9 @@ export function cleanEnvironment ( envVars: NameAnd<string>, env: NameAnd<Enviro
 }
 
 export const environmentValidator: NameAndValidator<Environment> = name => env => {
-  if ( env.type === 'postgres' ) return postgresEnvValidator ( name ) ( env )
-  return [ `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify ( env )}` ]
+  if ( env.type === 'postgres' ) return postgresEnvValidator ( name ) ( env as PostgresEnv )
+  if ( env.type === 'oracle' ) return oracleEnvValidator ( name ) ( env as OracleEnv )
+  return [ `Unknown environment type ${env.type}. Currently only postgres and oracle are supported. ${JSON.stringify ( env )}` ]
 }
 
 

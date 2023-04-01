@@ -2,7 +2,7 @@ import { Dal, DalColMeta, DalDialect, DalMeta, DalQueryFn, DalRow, DalUpdateFn, 
 
 import { OracleEnv } from "./oracleEnv";
 import { Connection, Result } from "oracledb";
-import { deepSort, flatMap, fromEntries, makeIntoNameAnd, makeIntoNameAndList, mapEntries, NameAnd, safeArray } from "@dbpath/utils";
+import { composeNameAndValidators, deepSort, flatMap, fromEntries, makeIntoNameAnd, makeIntoNameAndList, mapEntries, NameAnd, NameAndValidator, safeArray, validateChildNumber, validateChildString, validateChildValue } from "@dbpath/utils";
 
 const oracledb = require ( 'oracledb' );
 
@@ -148,3 +148,11 @@ export async function oracleDal ( env: OracleEnv ): Promise<Dal> {
     metaData: () => oracleMeta ( connection, env.schema )
   }
 }
+
+export const oracleEnvValidator: NameAndValidator<OracleEnv> = composeNameAndValidators<OracleEnv> (
+  validateChildValue ( 'type', 'oracle' ),
+  validateChildString ( 'username', true ),
+  validateChildString ( 'password', true ),
+  validateChildString ( 'schema' ),
+  validateChildString ( 'connection' ),
+)
