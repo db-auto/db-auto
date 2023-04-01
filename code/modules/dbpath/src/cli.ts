@@ -171,10 +171,10 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
   return program;
 }
 
-export function processProgram ( program: Command, args: string[] ): void {
+export function processProgram ( program: Command, args: string[] ): Promise<Command> {
   if ( args.length == 2 ) {
     program.outputHelp ();
     process.exit ( 0 );
   }
-  program.parseAsync ( args );
+  return program.parseAsync ( args );
 }
