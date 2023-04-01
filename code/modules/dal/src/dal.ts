@@ -2,6 +2,8 @@ import { NameAnd } from "@dbpath/utils";
 
 export interface CommonEnvironment {
   type: string,
+
+  schema?: string,
   username?: string,
   password?: string
 }

@@ -1,0 +1,32 @@
+{
+  "comment": {
+    "passwords": [
+      "should not be stored here. You can specify them if you have to, but it's better to use environment variables.",
+      "    use  DBPATH_<environment name>_PASSWORD"
+    ]
+  },
+  "environments": {
+    "samplepostgressThatWontWorkForYou": {
+      "type": "postgres",
+      "host": "localhost",
+      "port": 5432,
+      "database": "postgres",
+      "schema": "public",
+      "username": "phil"
+    },
+    "sampleoracleThatWontWorkForYou": {
+      "type": "oracle",
+      "connection": "localhost/xepdb1",
+      "schema": "PHIL",
+      "username": "phil"
+    }
+  },
+  "summary": {
+    "comment": "You can give short or meaningful names to tables and views here",
+    "tables": {
+      "sampleShortName": {
+        "tableName": "Put here the full name"
+      }
+    }
+  }
+}

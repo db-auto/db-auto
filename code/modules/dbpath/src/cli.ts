@@ -9,6 +9,7 @@ import Path from "path";
 import * as fs from "fs";
 
 import { loadMetadata, saveMetadata } from "./metadataFile";
+import { initConfig } from "./init";
 
 
 export const configFileName = 'dbpath.config.json';
@@ -86,7 +87,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
 
   const admin = program.command ( 'admin' ).description ( 'commands for viewing and manipulating the configuration of dbpath' )
   const status = admin.command ( 'status' ).description ( "Checks that the environments are accessible and gives report" )
-    .action ( async ( command, options ) => {
+    .action ( async ( options, command ) => {
       const status: NameAnd<EnvStatus> = await checkStatus ( config.environments )
       toColumns ( statusColDefn ) ( Object.values ( status ) ).forEach ( line => console.log ( line ) )
       // console.log ( JSON.stringify ( status, null, 2 ) )
@@ -94,7 +95,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
 
   const env = admin.command ( 'env' ).description ( "Sets the current environment" )
     .arguments ( '<env>' )
-    .action ( ( env, command, options ) => {
+    .action ( ( env, options, command ) => {
       const check = config.environments[ env ]
       if ( !check ) {
         console.log ( `Environment ${env} is not defined` )
@@ -103,8 +104,20 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
       saveEnvName ( cwd, dbPathDir, env )
     } )
 
+
+  const init = admin.command ( 'init' ).description ( "Initialises the dbpath configuration: Warning this is destructive!" )
+    .option ( '--force', 'If set to true then it will overwrite the existing configuration even if it exists' )
+    .action ( async ( options, command ) => {
+      if ( hasErrors ( config ) || options.force ) {
+        mapErrors ( reportErrors ( initConfig ( cwd ) ), filename => {
+          console.log ( `Initialised config in ${filename}.` )
+          console.log ( `You need to edit it to set up the database access information` )
+        } )
+      } else console.log ( 'Not going to initialise because it already exists. Use --force to override' )
+    } )
+
   const envs = admin.command ( 'envs' ).description ( "Lists all the environments" )
-    .action ( ( command, options ) => {
+    .action ( ( options, command ) => {
       const envAndNameOrErrors = currentEnvironment ( cwd, dbPathDir, config.environments, options.env )
       if ( hasErrors ( envAndNameOrErrors ) ) {
         reportErrors ( envAndNameOrErrors )
@@ -119,7 +132,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
   const metadataLive = metadata.command ( 'live' )
     .description ( 'Gets the metadata from the database and just displays it' )
     .argument ( '[env]', 'The environment' )
-    .action ( async ( envArg, command, options ) => {
+    .action ( async ( envArg, options, command ) => {
       reportErrors ( await useDalAndEnv ( cwd, config.environments, envArg, async dalAndEnv => {
         console.log ( JSON.stringify ( await dalAndEnv.dal.metaData (), null, 2 ) )
         return null;
@@ -128,7 +141,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
   const metadataShow = metadata.command ( 'show' )
     .description ( 'Displays the stored metadata for the environment' )
     .argument ( '[env]', 'The environment' )
-    .action ( async ( envArg, command, options ) => {
+    .action ( async ( envArg, options, command ) => {
       reportErrors ( await mapErrorsK ( await currentEnvironment ( cwd, dbPathDir, config.environments, envArg ), async envAndNameOrErrors => {
           let errorsOrData = await loadMetadata ( cwd, envAndNameOrErrors.envName );
           if ( hasErrors ( errorsOrData ) ) return [ `Cannot display stored meta data for ${envAndNameOrErrors.envName}. Perhaps you need to dbpath metadata refresh ${envAndNameOrErrors.envName}.  Reason is`, ...errorsOrData ];
@@ -140,14 +153,15 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
   const metadataRefresh = metadata.command ( 'refresh' )
     .description ( 'Fetches the metadata from an environment' )
     .argument ( '[env]', 'The environment' )
-    .action ( async ( envArg, command, options ) =>
+    .action ( async ( envArg, options, command ) =>
       reportErrors ( await useDalAndEnv ( cwd, config.environments, envArg, async ( { dal, envName } ) => {
         let meta = await dal.metaData ();
-        return saveMetadata ( cwd, envName, meta );} ) ) );
+        return saveMetadata ( cwd, envName, meta );
+      } ) ) );
 
   const metadataStatus = metadata.command ( 'status' )
     .description ( 'Shows which environments have metadata recorded' )
-    .action ( async ( command, options ) => {
+    .action ( async ( options, command ) => {
       reportErrors ( Object.keys ( config.environments ).map ( env =>
         mapErrors ( findDirectoryHoldingFileOrError ( cwd, dbPathDir ), dir =>
           console.log ( env.padEnd ( 12 ), fs.existsSync ( Path.join ( dir, dbPathDir, env, 'metadata.json' ) ) ) ) ) );

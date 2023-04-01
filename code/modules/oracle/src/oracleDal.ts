@@ -2,7 +2,7 @@ import { Dal, DalColMeta, DalDialect, DalMeta, DalQueryFn, DalRow, DalUpdateFn, 
 
 import { OracleEnv } from "./oracleEnv";
 import { Connection, Result } from "oracledb";
-import { flatMap, fromEntries, makeIntoNameAnd, makeIntoNameAndList, mapEntries, NameAnd, safeArray } from "@dbpath/utils";
+import { deepSort, flatMap, fromEntries, makeIntoNameAnd, makeIntoNameAndList, mapEntries, NameAnd, safeArray } from "@dbpath/utils";
 
 const oracledb = require ( 'oracledb' );
 
@@ -129,12 +129,12 @@ async function oracleMeta ( connection: Connection, schema: string ): Promise<Da
   // console.log ( 'pkRaw', pkRaw )
   // console.log ( 'fkRaw', fkRaw )
   // console.log ( 'pks', pks )
-  const result = makeIntoNameAnd ( tables, t => t,
+  const result = deepSort(makeIntoNameAnd ( tables, t => t,
     t => ({
       columns: makeIntoNameAnd ( columns[ t ], c => c.name, c => ({ ...c, name: undefined }) ),
       pk: safeArray ( pks[ t ] ),
       fk: makeIntoNameAnd ( fkRaw.filter ( f => f.table === t ), f => f.name, fk => ({ ...fk, name: undefined, table: undefined }) )
-    }) )
+    }) ))
 
 
   return { tables: result as any }

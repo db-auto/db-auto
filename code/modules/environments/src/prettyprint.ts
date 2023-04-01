@@ -1,4 +1,4 @@
-import { ColumnDefn, NameAnd, toColumns } from "@dbpath/utils";
+import { ColumnDefn, NameAnd, safeToString, toColumns } from "@dbpath/utils";
 import { CleanEnvironment, EnvStatus, mapEnv } from "./environments";
 
 
@@ -8,7 +8,7 @@ export const envColumnData: NameAnd<ColumnDefn<CleanEnvironment>> = {
   "Host": { dataFn: ( t: CleanEnvironment ) => mapEnv ( t, e => e.host, e => '' ) },
   "Port": { dataFn: ( t: CleanEnvironment ) => mapEnv ( t, e => e.port === undefined ? '' : e.port.toString (), e => '' ) },
   "Database": { dataFn: ( t: CleanEnvironment ) => mapEnv ( t, e => e.database, e => '' ) },
-  "Schema": { dataFn: ( t: CleanEnvironment ) => mapEnv ( t, e => e.database, e => '' ) },
+  "Schema": { dataFn: ( t: CleanEnvironment ) => safeToString ( t.schema ) },
   "UserName": { dataFn: ( t: CleanEnvironment ) => t.username },
   "Connection": { dataFn: ( t: CleanEnvironment ) => mapEnv ( t, e => '', e => e.connection ) },
 
@@ -21,7 +21,7 @@ export const statusColDefn: NameAnd<ColumnDefn<EnvStatus>> = {
   "Host": { dataFn: ( t: EnvStatus ) => mapEnv ( t.env, e => e.host, e => '' ) },
   "Port": { dataFn: ( t: EnvStatus ) => mapEnv ( t.env, e => e.port === undefined ? '' : e.port.toString (), e => '' ) },
   "Database": { dataFn: ( t: EnvStatus ) => mapEnv ( t.env, e => e.database, e => '' ) },
-  "Schema": { dataFn: ( t: EnvStatus ) => mapEnv ( t.env, e => e.database, e => '' ) },
+  "Schema": { dataFn: ( t: EnvStatus ) => safeToString ( t.env.schema ) },
   "UserName": { dataFn: ( t: EnvStatus ) => t.env.username },
   "Connection": { dataFn: ( t: EnvStatus ) => mapEnv ( t.env, e => '', e => e.connection ) },
 

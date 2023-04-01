@@ -82,6 +82,7 @@ export function cleanEnvironment ( envVars: NameAnd<string>, env: NameAnd<Enviro
   return mapObject ( env, ( env, envName ) => ({
     name: envName,
     ...env,
+    schema: env.schema,
     username: orDefault ( envName, envVars, env.username, 'username' ),
     password: orDefault ( envName, envVars, env.password, 'password' ),
   }) )

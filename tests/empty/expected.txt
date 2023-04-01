@@ -1,0 +1,4 @@
+
+Cannot find .dbpath. Started looking in C:\git\dbpath\tests\empty
+You need to run 'dbpath admin init' which will initialise the config file
+After that you need to tell dbpath about your databases by editing the config file. Instructions are given if you run 'dbpath admin init'

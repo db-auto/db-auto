@@ -1,0 +1,2 @@
+Initialised config in C:\git\dbpath\tests\simple\.dbpath\dbpath.config.json.
+You need to edit it to set up the database access information

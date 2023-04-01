@@ -1,15 +1,17 @@
-import { executeDbAuto, testRoot } from "./integration.fixture";
+import { executeDbAuto, inCi, testRoot } from "./integration.fixture";
 import fs, { promises } from "fs";
 import { readTestFile } from "@dbpath/files";
 import Path from "path";
 import { dbPathDir, stateFileName } from "@dbpath/environments";
+import { defaultConfig } from "./init";
+import { cleanLineEndings } from "@dbpath/utils";
 
 
 // jest.setTimeout ( 10000 );
 
 const mockTestDir = testRoot + '/simple';
 
-const inCi = process.env[ 'CI' ] === 'true'
+
 beforeEach ( async () => {
   const p = ( s: string ) => Path.join ( mockTestDir, dbPathDir, s )
   const sp = ( s: string ) => Path.join ( mockTestDir, 'start', s )
@@ -191,7 +193,7 @@ describe ( "metadata", () => {
     expect ( await executeDbAuto ( mockTestDir, "metadata show" ) ).toEqual ( expected );
   } )
   it ( "should dbpath metadata refresh then show for postgres", async () => {
-    await promises.rm ( Path.join ( mockTestDir, dbPathDir, 'dev' ), { force: true , recursive: true} )
+    await promises.rm ( Path.join ( mockTestDir, dbPathDir, 'dev' ), { force: true, recursive: true } )
     const expectedRefresh = readTestFile ( mockTestDir, "metadata.refresh.postgres.expected.txt" );
     const expectedShow = readTestFile ( mockTestDir, "metadata.refreshThenShow.postgres.expected.txt" );
     expect ( await executeDbAuto ( mockTestDir, "metadata refresh" ) ).toEqual ( expectedRefresh );
@@ -208,4 +210,19 @@ describe ( "metadata", () => {
     expect ( fs.existsSync ( Path.join ( mockTestDir, dbPathDir, 'oracle' ) ) ).toBe ( true )
   } )
 
+} )
+
+describe ( "admin init", () => {
+  it ( "should give a warning if the dbpath is not empty", async () => {
+    const expected = readTestFile ( mockTestDir, "admin.init.notempty.expected.txt" );
+    expect ( await executeDbAuto ( mockTestDir, "admin init" ) ).toEqual ( expected );
+    expect ( readTestFile ( mockTestDir, ".dbpath/dbpath.config.json" ) ).toEqual ( readTestFile ( mockTestDir, "start/dbpath.config.json" ) )
+  } )
+
+  it ( "should init if --force is specified", async () => {
+    const expected = readTestFile ( mockTestDir, "admin.init.forced.expected.txt" );
+    const expectedDbInit = readTestFile ( mockTestDir, "admin.init.dbconfig.expected.txt" );
+    expect ( await executeDbAuto ( mockTestDir, "admin init --force" ) ).toEqual ( expected );
+    expect ( readTestFile ( mockTestDir, ".dbpath/dbpath.config.json" ) ).toEqual ( expectedDbInit )
+  } )
 } )

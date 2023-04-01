@@ -102,7 +102,7 @@ describe ( 'oracleDal', () => {
     const dal = await oracleDal ( env );
     try {
       const res: DatabaseMetaData = await dal.metaData ();
-      const actual=JSON.stringify(deepSort(res),null,2  )
+      const actual=JSON.stringify(res,null,2  )
         .replace(/number/g, 'integer')
         .replace(/varchar2/g, 'text')
       expect ( actual ).toEqual ( JSON.stringify(deepSort(sampleMeta),null,2) )

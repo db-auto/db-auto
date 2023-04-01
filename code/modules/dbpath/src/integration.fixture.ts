@@ -6,7 +6,7 @@ import cp from "child_process";
 import Path from "path";
 import { cleanLineEndings } from "@dbpath/utils";
 
-
+export const inCi = process.env[ 'CI' ] === 'true'
 export const codeRootDir = findDirectoryHoldingFileOrThrow ( process.cwd (), "laoban.json" );
 export const testRoot = path.resolve ( codeRootDir, '..', 'tests' );
 export const codePath = Path.resolve ( codeRootDir, "modules/dbpath/dist/index.js" )
