@@ -6,9 +6,6 @@ import { readTestFile } from "@dbpath/files";
 
 const mockTestDir = testRoot + '/empty';
 
-beforeEach ( async () => {
-  const p = ( s: string ) => Path.join ( mockTestDir, dbPathDir, s )
-} )
 const expected = readTestFile ( mockTestDir, 'expected.txt' );
 describe ( "the behaviour of dbpath when it is misconfigured", () => {
 

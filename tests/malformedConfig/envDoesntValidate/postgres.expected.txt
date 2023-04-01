@@ -1,0 +1,7 @@
+
+Errors loading environment details
+postgres.schema is undefined
+postgres.port is undefined
+postgres.host is undefined
+postgres.database is undefined
+You need to edit the config file before you can use this environment

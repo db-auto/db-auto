@@ -1,0 +1,14 @@
+{
+  "environments": {
+    "postgres":    {"type": "postgres"},
+    "oracle": {"type": "oracle"},
+    "unknown": {"type": "unknown"},
+    "empty":  {}
+  },
+  "summary":      {
+    "tables": {
+      "driver": {"tableName": "drivertable"},
+      "audit":  {"tableName": "driver_aud"}
+    }
+  }
+}

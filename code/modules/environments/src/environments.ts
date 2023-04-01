@@ -1,4 +1,4 @@
-import { ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator } from "@dbpath/utils";
+import { ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator, validate } from "@dbpath/utils";
 import { postgresDal, postgresDalDialect, PostgresEnv, postgresEnvValidator } from "@dbpath/postgres";
 import { findDirectoryHoldingFileOrError, loadFileInDirectory } from "@dbpath/files";
 import * as Path from "path";
@@ -41,7 +41,11 @@ export interface EnvAndName {
 export function currentEnvironment ( cwd: string, marker: string, envs: NameAnd<CleanEnvironment>, env: string | undefined ): ErrorsAnd<EnvAndName> {
   return mapErrors ( currentEnvName ( cwd, marker, env, envs ), ( envName ) => {
     const env = envs[ envName ]
-    if ( env ) return { env, envName }
+    if ( env ) {
+      const errors = environmentValidator ( envName ) ( env as any )
+      if ( errors.length > 0 ) return [ `Errors loading environment details`, ...errors, 'You need to edit the config file before you can use this environment' ]
+      return { env, envName }
+    }
     return [ `Environment ${envName} not found. Legal names are ${Object.keys ( envs ).sort ()}` ]
   } );
 }

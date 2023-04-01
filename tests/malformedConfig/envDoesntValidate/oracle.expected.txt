@@ -1,0 +1,5 @@
+
+Errors loading environment details
+oracle.schema is undefined
+oracle.connection is undefined
+You need to edit the config file before you can use this environment

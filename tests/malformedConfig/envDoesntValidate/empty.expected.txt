@@ -1,0 +1,4 @@
+
+Errors loading environment details
+Unknown environment type undefined. Currently only postgres and oracle are supported. {"name":"empty","username":"","password":""}
+You need to edit the config file before you can use this environment
