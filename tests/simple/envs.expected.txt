@@ -1,4 +1,4 @@
 Current environment is dev
-Environment Type     Host      Port Database UserName
-dev         postgres localhost 5432 postgres phil
-test        postgres localhost 5432 postgres phil
+Environment Type     Host      Port Database Schema   UserName Connection
+dev         postgres localhost 5432 postgres postgres phil
+oracle      oracle                                    phil     localhost/xepdb1

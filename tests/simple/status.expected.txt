@@ -1,3 +1,3 @@
-Environment Type     Host      Port Database UserName Up
-dev         postgres localhost 5432 postgres phil     true
-test        postgres localhost 5432 postgres phil     true
+Environment Up   Type     Host      Port Database Schema   UserName Connection
+dev         true postgres localhost 5432 postgres postgres phil
+oracle      true oracle                                    phil     localhost/xepdb1

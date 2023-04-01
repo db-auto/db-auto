@@ -19,7 +19,6 @@ export const oracleDalQuery = ( connection: Connection ): DalQueryFn =>
       while ( (row = await rs.getRow ()) ) {
         rows.push ( fromEntries<any> ( ...mapEntries<any, any> ( row, ( t, name ) => [ name.toLowerCase (), t ] ) ) )
       }
-      console.log ( sql, params, rows )
     } catch ( e ) {
       console.log ( e )
       throw e;

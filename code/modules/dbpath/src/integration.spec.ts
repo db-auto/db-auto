@@ -23,11 +23,11 @@ describe ( "dbpath envs", () => {
 describe ( "dbpath env", () => {
   it ( "should set the env and it should be visible in envs", async () => {
     await promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
-    const expectedTestEnv = readTestFile ( mockTestDir, 'env.test.expected.txt' );
+    const expectedOracleEnv = readTestFile ( mockTestDir, 'env.oracle.expected.txt' );
     const expectedDevEnv = readTestFile ( mockTestDir, 'env.dev.expected.txt' );
     expect ( await executeDbAuto ( mockTestDir, `admin envs` ) ).toContain ( "Current environment is dev" ); //default
-    expect ( await executeDbAuto ( mockTestDir, `admin env test` ) ).toEqual ( expectedTestEnv );
-    expect ( await executeDbAuto ( mockTestDir, `admin envs` ) ).toContain ( "Current environment is test" );
+    expect ( await executeDbAuto ( mockTestDir, `admin env oracle` ) ).toEqual ( expectedOracleEnv );
+    expect ( await executeDbAuto ( mockTestDir, `admin envs` ) ).toContain ( "Current environment is oracle" );
     expect ( await executeDbAuto ( mockTestDir, `admin env dev` ) ).toEqual ( expectedDevEnv );
     expect ( await executeDbAuto ( mockTestDir, `admin envs` ) ).toContain ( "Current environment is dev" );
     await promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
@@ -141,6 +141,13 @@ describe ( "dbpath trace", () => {
   it ( "should build up the results - execution", async () => {
     if ( inCi ) return
     const expected = readTestFile ( mockTestDir, 'trace.execution.expected.txt' );
+    expect ( await executeDbAuto ( mockTestDir, `driver.mission.driver.audit -t` ) ).toEqual ( expected );
+  } )
+
+  it ( "should build up the results - execution with oracle", async () => {
+    if ( inCi ) return
+    await executeDbAuto ( mockTestDir, `admin env oracle` )
+    const expected = readTestFile ( mockTestDir, 'trace.execution.oracle.expected.txt' );
     expect ( await executeDbAuto ( mockTestDir, `driver.mission.driver.audit -t` ) ).toEqual ( expected );
   } )
 } )

@@ -1,9 +1,10 @@
-import { ColumnDefn, ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator } from "@dbpath/utils";
+import { ErrorsAnd, hasErrors, mapErrors, mapObject, NameAnd, NameAndValidator } from "@dbpath/utils";
 import { postgresDal, postgresDalDialect, PostgresEnv, postgresEnvValidator } from "@dbpath/postgres";
 import { findDirectoryHoldingFileOrError, loadFileInDirectory } from "@dbpath/files";
 import * as Path from "path";
 import * as fs from "fs";
-import { Dal } from "@dbpath/dal";
+import { CommonEnvironment, Dal } from "@dbpath/dal";
+import { oracleDal, oracleDalDialect, OracleEnv } from "@dbpath/oracle";
 
 export const dbPathDir = '.dbpath';
 
@@ -65,7 +66,7 @@ export async function useDalAndEnv<T> ( cwd: string, envs: NameAnd<CleanEnvironm
 }
 
 
-export interface CleanEnvironment extends Required<Environment> {
+export interface CleanEnvironment extends Required<CommonEnvironment> {
   name: string
 }
 
@@ -94,10 +95,12 @@ export const environmentValidator: NameAndValidator<Environment> = name => env =
 
 export function sqlDialect ( type: string ) {
   if ( type === 'postgres' ) return postgresDalDialect
+  if ( type === 'oracle' ) return oracleDalDialect
   throw new Error ( `Unknown environment type ${type}. Currently on postgres is supported. ${JSON.stringify ( type )}` )
 }
-export async function dalFor ( env: Environment ): Promise<ErrorsAnd<Dal>> {
-  if ( env.type === 'postgres' ) return postgresDal ( env )
+export async function dalFor ( env: CommonEnvironment ): Promise<ErrorsAnd<Dal>> {
+  if ( env.type === 'postgres' ) return postgresDal ( env as PostgresEnv )
+  if ( env.type === 'oracle' ) return oracleDal ( env as OracleEnv )
   throw new Error ( `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify ( env )}` )
 }
 
@@ -128,12 +131,9 @@ export async function checkStatus ( envs: NameAnd<CleanEnvironment> ): Promise<N
   return result;
 }
 
-export const statusColDefn: NameAnd<ColumnDefn<EnvStatus>> = {
-  "Environment": { dataFn: ( t: EnvStatus, ) => t.name },
-  "Type": { dataFn: ( t: EnvStatus ) => t.env.type },
-  "Host": { dataFn: ( t: EnvStatus ) => t.env.host },
-  "Port": { dataFn: ( t: EnvStatus ) => t.env.port === undefined ? '' : t.env.port.toString () },
-  "Database": { dataFn: ( t: EnvStatus ) => t.env.database },
-  "UserName": { dataFn: ( t: EnvStatus ) => t.env.username },
-  "Up": { dataFn: ( t: EnvStatus ) => t.up.toString () },
+export function mapEnv<T> ( e: CommonEnvironment, postGes: ( e: PostgresEnv ) => T, oracleFn: ( e: OracleEnv ) => T ) {
+  if ( e.type === 'postgres' ) return postGes ( e as PostgresEnv )
+  if ( e.type === 'oracle' ) return oracleFn ( e as OracleEnv )
+  throw new Error ( `Unknown environment type ${e.type}. Currently on postgres is supported. ${JSON.stringify ( e )}` )
 }
+
