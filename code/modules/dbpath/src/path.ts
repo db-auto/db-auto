@@ -75,7 +75,8 @@ export async function processPathString ( envAndName: EnvAndName, summary: Summa
   if ( showSql || fullSql ) return ({ type: 'sql', sql, envName })
   return mapErrorsK ( await dalFor ( env ), async dal => {
     return useDal ( dal, async d => {
-      const result: ResPP = { type: 'res', res: await dal.query ( sql.join ( ' ' ), ) }
+      let res = await dal.query ( sql.join ( ' ' ), );
+      const result: ResPP = { type: 'res', res: res }
       return result
     } )
   } )

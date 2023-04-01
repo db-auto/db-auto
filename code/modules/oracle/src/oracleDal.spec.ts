@@ -50,7 +50,6 @@ describe ( 'oracleDal', () => {
       console.log('about to select')
 
       const res: DalResult = await dal.query ( "select * from drivertable" )
-      console.log('selected', res)
       expect ( res.rows ).toEqual ( [
         {
           "driverid": 1,
@@ -67,8 +66,32 @@ describe ( 'oracleDal', () => {
           { "name": "name" }
         ]
       } )
+      dal.update("commit")
     } finally {
       dal.close ()
+    }
+    const dal2 = await oracleDal ( env );
+    try {
+      const res: DalResult = await dal2.query ( "select T0.*    from drivertable T0" )
+      expect ( res.rows ).toEqual ( [
+        {
+          "driverid": 1,
+          "name": "phil"
+        },
+        {
+          "driverid": 2,
+          "name": "joe"
+        }
+      ] );
+      expect ( res.meta ).toEqual ( {
+        "columns": [
+          { "name": "driverid" },
+          { "name": "name" }
+        ]
+      } )
+
+    } finally {
+      dal2.close ()
     }
 
   } )

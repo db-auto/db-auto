@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, NameAnd, parseFile, reportErrors, toColumns } from "@dbpath/utils";
+import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapErrorsK, NameAnd, parseFile, reportErrors, toColumns } from "@dbpath/utils";
 import { makePathSpec } from "@dbpath/tables";
 import { cleanConfig, CleanConfig } from "./config";
 import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@dbpath/files";
@@ -129,8 +129,8 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     .description ( 'Displays the stored metadata for the environment' )
     .argument ( '[env]', 'The environment' )
     .action ( async ( envArg, command, options ) => {
-      reportErrors ( mapErrors ( await currentEnvironment ( cwd, dbPathDir, config.environments, envArg ), envAndNameOrErrors => {
-          let errorsOrData = loadMetadata ( cwd, envAndNameOrErrors.envName );
+      reportErrors ( await mapErrorsK ( await currentEnvironment ( cwd, dbPathDir, config.environments, envArg ), async envAndNameOrErrors => {
+          let errorsOrData = await loadMetadata ( cwd, envAndNameOrErrors.envName );
           if ( hasErrors ( errorsOrData ) ) return [ `Cannot display stored meta data for ${envAndNameOrErrors.envName}. Perhaps you need to dbpath metadata refresh ${envAndNameOrErrors.envName}.  Reason is`, ...errorsOrData ];
           return console.log ( JSON.stringify ( errorsOrData, null, 2 ) );
         }

@@ -67,9 +67,9 @@ export interface Dal extends ReadDal, WriteDal, MetaDal {
   close ();
 }
 
-export function useDal<T> ( dal: Dal, fn: ( d: Dal ) => T ): T {
+export async function useDal<T> ( dal: Dal, fn: ( d: Dal ) => T ): Promise<T> {
   try {
-    return fn ( dal )
+    return await fn ( dal )
   } finally {
     dal.close ()
   }

@@ -9,9 +9,9 @@ const oracledb = require ( 'oracledb' );
 const checkSql = ( sql: string, addSemiColon: boolean ) => addSemiColon && !sql.endsWith ( ';' ) ? sql + ';' : sql;
 export const oracleDalQuery = ( connection: Connection ): DalQueryFn =>
   async ( sql, params ) => {
-    const result = await connection.execute ( checkSql ( sql, false ),
-      safeArray(params),
-      { resultSet: true, outFormat: oracledb.OUT_FORMAT_OBJECT } );
+    let safeParams = safeArray ( params );
+    let fulSql = checkSql ( sql, false );
+    const result = await connection.execute ( fulSql, safeParams, { resultSet: true, outFormat: oracledb.OUT_FORMAT_OBJECT } );
     const rows: DalRow[] = [];
     const rs = result.resultSet;
     try {
@@ -19,13 +19,13 @@ export const oracleDalQuery = ( connection: Connection ): DalQueryFn =>
       while ( (row = await rs.getRow ()) ) {
         rows.push ( fromEntries<any> ( ...mapEntries<any, any> ( row, ( t, name ) => [ name.toLowerCase (), t ] ) ) )
       }
+      const meta: DalMeta = { columns: result.metaData.map<DalColMeta> ( md => ({ name: md.name.toLowerCase () }) ) }
+      return { rows, meta }
     } catch ( e ) {
       console.log ( e )
       throw e;
     } finally {
       await rs.close ();
-      const meta: DalMeta = { columns: result.metaData.map<DalColMeta> ( md => ({ name: md.name.toLowerCase () }) ) }
-      return { rows, meta }
     }
   };
 
@@ -35,7 +35,7 @@ const oracleDalUpdate = ( connection: Connection, addSemiColon?: boolean ): DalU
     let fullSql = checkSql ( sql, addSemiColon );
     // console.log ( 'trying to execute', fullSql, params )
     try {
-      const result: Result<unknown> = await connection.execute ( fullSql, safeArray(params) );
+      const result: Result<unknown> = await connection.execute ( fullSql, safeArray ( params ) );
       // console.log ( sql, result.rowsAffected )
       return result.rowsAffected;
     } catch ( e ) {
@@ -131,8 +131,8 @@ async function oracleMeta ( connection: Connection, schema: string ): Promise<Da
   // console.log ( 'pks', pks )
   const result = makeIntoNameAnd ( tables, t => t,
     t => ({
-      columns: makeIntoNameAnd(columns[ t ], c=>c.name, c=>({ ...c, name: undefined })),
-      pk: safeArray(pks[ t ]),
+      columns: makeIntoNameAnd ( columns[ t ], c => c.name, c => ({ ...c, name: undefined }) ),
+      pk: safeArray ( pks[ t ] ),
       fk: makeIntoNameAnd ( fkRaw.filter ( f => f.table === t ), f => f.name, fk => ({ ...fk, name: undefined, table: undefined }) )
     }) )
 
@@ -140,7 +140,7 @@ async function oracleMeta ( connection: Connection, schema: string ): Promise<Da
   return { tables: result as any }
 }
 export async function oracleDal ( env: OracleEnv ): Promise<Dal> {
-  const connection = await oracledb.getConnection ( { user: "phil", password: "phil", connectionString: "localhost/xepdb1" } );
+  const connection = await oracledb.getConnection ( { user: env.username, password: env.password, connectionString: env.connection } );
   return {
     query: oracleDalQuery ( connection ),
     update: oracleDalUpdate ( connection, false ),

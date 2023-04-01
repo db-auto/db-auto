@@ -186,6 +186,7 @@ describe ( "metadata", () => {
 
   it ( "should dbpath metadata show when none is available", async () => {
     await promises.rm ( Path.join ( mockTestDir, dbPathDir, 'dev' ), { force: true, recursive: true } )
+    await promises.rm ( Path.join ( mockTestDir, dbPathDir, 'oracle' ), { force: true, recursive: true } )
     const expected = readTestFile ( mockTestDir, "metadata.show.nodata.expected.txt" );
     expect ( await executeDbAuto ( mockTestDir, "metadata show" ) ).toEqual ( expected );
   } )
