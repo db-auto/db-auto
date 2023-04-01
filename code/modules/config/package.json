@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/config",
   "description": "",
-  "version": "0.2.15",
+  "version": "0.2.16",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -17,7 +17,7 @@
     ]
   },
   "dependencies": {
-    "@dbpath/utils": "0.2.15"
+    "@dbpath/utils": "0.2.16"
   },
   "devDependencies": {
     "typescript": "^4.0.5",
