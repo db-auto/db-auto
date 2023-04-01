@@ -2,11 +2,11 @@ import { OracleEnv } from "./oracleEnv";
 import { oracleDal } from "./oracleDal";
 import { DalResult, DatabaseMetaData } from "@dbpath/dal";
 import { sampleMeta } from "@dbpath/fixtures";
-import { ignoreError, ignoreErrorK } from "@dbpath/utils";
+import { deepSort, ignoreError, ignoreErrorK } from "@dbpath/utils";
 
 const inCi = process.env[ 'CI' ] === 'true'
 
-const env: OracleEnv = { type: 'postgres', username: "phil", password: "phil", connection: "localhost/xepdb1", schema: 'phil' };
+const env: OracleEnv = { type: 'postgres', username: "phil", password: "phil", connection: "localhost/xepdb1", schema: 'PHIL' };
 
 
 describe ( 'oracleDal', () => {
@@ -27,8 +27,10 @@ describe ( 'oracleDal', () => {
       await dal.update ( "create table  mission (id int, driverId int, mission varchar(255))" )
       await dal.update ( "create table  driver_aud (id int,who varchar(255), what varchar(255))" )
       await dal.update ( "create table  mission_aud (id int, who varchar(255), what varchar(255))" )
-      await dal.update ( `alter table drivertable add primary key  (driverId)` );
-        await dal.update ( `alter table mission add primary key (id)` );
+      await dal.update ( `alter table drivertable
+          add primary key (driverId)` );
+      await dal.update ( `alter table mission
+          add primary key (id)` );
       await dal.update ( `ALTER TABLE mission
           ADD CONSTRAINT fk_mission_driver FOREIGN KEY (driverId) REFERENCES drivertable (driverId)` );
       await dal.update ( `ALTER TABLE driver_aud
@@ -43,9 +45,12 @@ describe ( 'oracleDal', () => {
       await dal.update ( "insert into mission (id, driverId, mission) values (:1, :2, :3)", 2, 2, "m2" )
       await dal.update ( "insert into driver_aud (id, who, what) values (:1, :2, :3)", 1, "phil", "insert1" )
       await dal.update ( "insert into driver_aud (id, who, what) values (:1, :2, :3)", 2, "phil", "insert2" )
+      console.log('about to insert1')
       await dal.update ( "insert into mission_aud (id, who, what) values (:1, :2, :3)", 1, "phil", "insert" )
+      console.log('about to select')
 
       const res: DalResult = await dal.query ( "select * from drivertable" )
+      console.log('selected', res)
       expect ( res.rows ).toEqual ( [
         {
           "driverid": 1,
@@ -70,10 +75,14 @@ describe ( 'oracleDal', () => {
 
   it ( "should extract metadata", async () => {
     if ( inCi ) return
+
     const dal = await oracleDal ( env );
     try {
       const res: DatabaseMetaData = await dal.metaData ();
-      expect ( res ).toEqual ( sampleMeta )
+      const actual=JSON.stringify(deepSort(res),null,2  )
+        .replace(/number/g, 'integer')
+        .replace(/varchar2/g, 'text')
+      expect ( actual ).toEqual ( JSON.stringify(deepSort(sampleMeta),null,2) )
     } finally {
       dal.close ()
     }

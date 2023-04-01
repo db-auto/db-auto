@@ -1,12 +1,18 @@
-# db-auto
-Automation of database scripts: turning results to jq to simply scripting for support and diagnostics
+# dbpath
 
-* [Documentation](https://github.com/db-auto/db-auto/blob/main/code/modules/db-auto/README.md)
-* [Github repo](https://github.com/db-auto/db-auto)
-* [Npm package](https://www.npmjs.com/package/db-auto)
+Approaches like JPath and XPath are great for navigating JSON and XML documents. It is quite hard to navigate a database though.
+Sql is powerful but very verbose. DBPath is a way of navigating a database using a path notation. Currently it is primarily
+focused on  executing sql scripts from the command line, and get the results in a format that is easy to use
+in a script (json for jq or columns for linux commands like awk).
 
-This allows us to execute sql scripts from the command line, and get the results in a format that is easy to use 
-in a script.
+Because dbpath understands the database structure it can often work out how to join tables together without you telling it how.
+If there is only one foreign key between the two tables you mention, then you don't need to tell it what the join is. 
+Because the queries are quite simple, they are easy to read and understand.
+
+* [Documentation](https://github.com/db-path/dbpath/blob/main/code/modules/dbpath/README.md)
+* [Github repo](https://github.com/db-path/dbpath)
+* [Npm package](https://www.npmjs.com/package/dbpath)
+
 
 We don't execute `select * from table where ...` etc because that is not very useful from the command line. It is very verbose, hard to remember and easy to make mistakes with 
 Instead we give a list of tables and the tool joins them together to give the results we want. 
@@ -16,39 +22,47 @@ dbpath ?                                            # lists the tables
 dbpath d?                                           # lists the tables that start with d
 dbpath driver.a?                                    # lists the tables that the table driver and link to which start with a  
 dbpath driver 123                                   # lists the driver with id 123
-dbpath driver --name phil                           # lists the driver with name phil    
+dbpath driver -w name='phil'                        # lists the driver with name phil    
 dbpath driver.audit 123                             # lists the audit records for driver 123 (the records for driver are joined to the audit records) 
 dbpath driver.mission.audit 123                     # lists the audit records for the missions that driver 123 has been on
-dbpath driver.mission.audit 123 -date '2023-6-3'    # lists the audit records for the missions that driver 123 has been on for the given date
+dbpath driver.mission.audit 123 -w data='2023-6-3'  # lists the audit records for the missions that driver 123 has been on for the given date
 ```
 
 # TODO
 
-
+* Finish Oracle
+* Change () to {} for the join notation because it is more script friendly (avoids need for ")
+* Make sure schema you specify in environment is the one you get
+* What is our dbpath for linking to a different schema? Can't use '.' Needs to be script friendly. #?
+* Improve the wheres so that you don't need to quote the values
+* Add wheres to the joins directly
+* Allow short form name for the wheres
+* Make it so that you can change things like 'audit' because on the previous file.
+* Make it so that all tables can have an audit becased on the previous file name. (e.g. drivertable_aud, mission_aud) because our tables work like that
+* Let tables have 'short form wheres' in the join. For example 'active' should mean 'alias.actif = 1'. This adds enormously to human readability and documents the structure nicely
+* Composite keys (left because they are harder and we wanted to experiment with the simpler case to see if the approach works)
 * Start using ? notation and stored procedures so that we can avoid sql injection
 * Allow join notation (e.g. join ... on ... instead of select). 
-* `db-auto validate` Validate the db-auto.json file
-* Auto-detect the database details and populate db-auto.json
-* views so that we can restrict the columns visible 
-* manually saying which fields we want (views or fields)
-* Oracle/Mysql/sqllite support
+* `dbpath validate` Validate the config/summaries
+* Auto-detect the database details and populate the config - done for oracle and postgres
+* views so that we can restrict the columns visible  simply
+* manually saying which fields we want (views or fields) - done
+* Mysql/sqllite support oracle and postgres done
 * History of the commands run
-* Scripting 
+* Scripting: making it easy to run scripts that are dbpath commands for people in support environemnts
 * Secrets in a 'secrets file' that is not checked in as well as environment variables because it's just easier (although not better)
-* Work out how to do a left join `db-auto driver+mission+audit 123` use + instead of . ?
+* Work out how to do a left join `dbpath driver+mission+audit 123` use + instead of . ?
+* nice documentation
+* video
 
 # Error handling still to do
 What if types aren't right? 
-Bombs at the moment if the config file/tables are wrong. e,g 
-```shell
-dbpath driver.mission.mission_aud
-# (node:23068) UnhandledPromiseRejectionWarning: error: column t1.missionid does not exist
 
+```shell
 dbpath driver someThingNotANumber
 # db-auto driver someThingNotANumber
 # (node:15960) UnhandledPromiseRejectionWarning: error: column "somethingnotanumber" does not exist
 ```
-
 
 # Things to contemplate
 If the same field is in multiple tables we just see the 'latest' value. Do we care for this? If we do care how do we let people tweak it
@@ -62,7 +76,7 @@ We should be able to make this quickly from 'the last executed command'.
 
 
 ```shell
-dbpath driver.mission.detailed.audit.email --where 'T3.action="/email"' --view email --name phil
+dbpath driver.mission.detailed.audit.email --where 'T3.action="/email"' --view email -w phil
 ```
 This script is a bit long, so why not have a shortcut for it? We can have a short and a long description as well.
 
@@ -70,9 +84,11 @@ This script is a bit long, so why not have a shortcut for it? We can have a shor
 dbpath .emailForMissingVehicles  --name phil --date today()
 ```
 
+
+
 ## Full definition
 
 
-driver!driver_aud[f1,#,#view].(id=id)tablename
-driver!driver_aud[f1,#,#view].mission!fk_driver_mission
+driver[f1,#,#view].(id=id)tablename
+driver[f1,#,#view].mission!fk_driver_mission
 

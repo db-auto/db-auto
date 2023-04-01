@@ -1,4 +1,4 @@
-Usage: db-auto <command> [options]
+Usage: dbpath <command> [options]
 
 Arguments:
   path                    the list of table names joined by a . For example
@@ -9,7 +9,7 @@ Arguments:
 Options:
    --plan                 show the plan instead of executing (default: false)
   -s, --sql               show the sql instead of executing (default: false)
-  -e, --env <env>         override the default environment. Use 'db-auto envs'
+  -e, --env <env>         override the default environment. Use 'dbpath envs'
                           to see a list of names
   --fullSql               normally the show sql doesn't include limits. This
                           shows them (default: false)

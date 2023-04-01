@@ -28,13 +28,13 @@ export function findVersion () {
 }
 export function makeProgram ( cwd: string, config: CleanConfig, version: string ): Command {
   let program = new Command ()
-    .name ( 'db-auto' )
+    .name ( 'dbpath' )
     .usage ( '<command> [options]' )
     .argument ( '<path>', "the list of table names joined by a . For example driver.mission.mission_aud" )
     .argument ( '[id]', "the id of the primary key in the first table in the path" )
     .option ( ' --plan', "show the plan instead of executing", false )
     .option ( '-s, --sql', "show the sql instead of executing", false )
-    .option ( '-e, --env <env>', "override the default environment. Use 'db-auto envs' to see a list of names" )
+    .option ( '-e, --env <env>', "override the default environment. Use 'dbpath envs' to see a list of names" )
     .option ( '--fullSql', "normally the show sql doesn't include limits. This shows them", false )
     .option ( '-c, --count', "returns the count of the items in the table", false )
     .option ( '-d, --distinct', "only return distinct values", false )
