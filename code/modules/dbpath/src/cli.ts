@@ -70,7 +70,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
 
       if ( page < 1 ) throw new Error ( "Page must be greater than 0" )
       const where = fullOptions.where ? fullOptions.where : []
-      let pathSpec = makePathSpec ( path, meta.tables, id, fullOptions, where );
+      let pathSpec = makePathSpec ( env.schema, path, meta.tables, id, fullOptions, where );
       if ( fullOptions.trace ) {
         const pps = await tracePlan ( envAndNameOrErrors, config.summary, meta, pathSpec, fullOptions )
         pps.forEach ( line => console.log ( line ) )

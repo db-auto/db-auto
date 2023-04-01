@@ -23,7 +23,7 @@ export function pathToSelectData ( p: PathItem, pathSpecForWhere: PathSpecForWhe
       `T${i - 1}.${fromId} = ${alias}.${toId}` ) : [];
     const selectDataForTable: SelectData = {
       columns: p.fields.length > 0 ? p.fields : [ '*' ],
-      table: p.table,
+      table: pathSpecForWhere.schema + '.' + p.table,
       alias,
       where: [ ...linkWheres, ...TableWheres, ...pathWheres ]
     }

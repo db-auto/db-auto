@@ -3,6 +3,7 @@ import { HasPk } from "@dbpath/dal";
 
 
 export interface PathSpecForWheres {
+  schema: string,
   id?: string,
   table2Pk: NameAnd<HasPk>
   wheres?: string[]
@@ -16,8 +17,9 @@ export interface PathSpec extends PathSpecForWheres {
   limit?: number
 }
 
-export function makePathSpec ( path: string, table2Pk?: NameAnd<HasPk>, id?: string, queryParams?: NameAnd<string>, wheres?: string[] ): PathSpec {
+export function makePathSpec ( schema: string,path: string, table2Pk?: NameAnd<HasPk>, id?: string, queryParams?: NameAnd<string>, wheres?: string[] ): PathSpec {
   return {
+    schema,
     rawPath: path,
     path: path.split ( '.' ).filter ( p => p !== '' ),
     id,
