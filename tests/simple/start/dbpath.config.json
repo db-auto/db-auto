@@ -1,7 +1,6 @@
 {
-  "state":        {"file": ".db-auto"},
   "environments": {
-    "dev":  {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil", "comment": "don't store your passwords like this! This is just for tests"},
+    "dev":    {"type": "postgres", "host": "localhost", "port": 5432, "database": "postgres", "username": "phil", "password": "phil", "comment": "don't store your passwords like this! This is just for tests"},
     "oracle": {"type": "oracle", "connection": "localhost/xepdb1", "schema": "PHIL", "username": "phil", "password": "phil"}
   },
   "summary":      {

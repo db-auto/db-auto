@@ -1,5 +1,5 @@
 import { executeDbAuto, testRoot } from "./integration.fixture";
-import { promises } from "fs";
+import fs, { promises } from "fs";
 import { readTestFile } from "@dbpath/files";
 import Path from "path";
 import { dbPathDir, stateFileName } from "@dbpath/environments";
@@ -11,7 +11,15 @@ const mockTestDir = testRoot + '/simple';
 
 const inCi = process.env[ 'CI' ] === 'true'
 beforeEach ( async () => {
-  await promises.rm ( Path.join ( mockTestDir, dbPathDir, stateFileName ), { force: true } )
+  const p = ( s: string ) => Path.join ( mockTestDir, dbPathDir, s )
+  const sp = ( s: string ) => Path.join ( mockTestDir, 'start', s )
+  const cp = async ( s: string ) => promises.copyFile ( sp ( s ), p ( s ) )
+  await promises.rm ( p ( '.' ), { force: true, recursive: true } )
+  await promises.mkdir ( p ( './dev' ), { recursive: true } )
+  await promises.mkdir ( p ( './oracle' ), { recursive: true } )
+  await cp ( 'dbpath.config.json' )
+  await cp ( 'dev/metadata.json' )
+  await cp ( 'oracle/metadata.json' )
 } )
 describe ( "dbpath envs", () => {
   it ( "should display the envs", async () => {
@@ -164,4 +172,39 @@ describe ( "status", () => {
     const expected = readTestFile ( mockTestDir, 'status.expected.txt' );
     expect ( await executeDbAuto ( mockTestDir, `admin status` ) ).toEqual ( expected );
   } )
+} )
+
+describe ( "metadata", () => {
+  it ( "should dbpath metadata live", async () => {
+    const expected = readTestFile ( mockTestDir, "metadata.live.dev.expected.txt" );
+    expect ( await executeDbAuto ( mockTestDir, "metadata live " ) ).toEqual ( expected );
+  } );
+  it ( "should dbpath metadata live oracle", async () => {
+    const expected = readTestFile ( mockTestDir, "metadata.live.oracle.expected.txt" );
+    expect ( await executeDbAuto ( mockTestDir, "metadata live oracle" ) ).toEqual ( expected );
+  } );
+
+  it ( "should dbpath metadata show when none is available", async () => {
+    await promises.rm ( Path.join ( mockTestDir, dbPathDir, 'dev' ), { force: true, recursive: true } )
+    const expected = readTestFile ( mockTestDir, "metadata.show.nodata.expected.txt" );
+    expect ( await executeDbAuto ( mockTestDir, "metadata show" ) ).toEqual ( expected );
+  } )
+  it ( "should dbpath metadata refresh then show for postgres", async () => {
+    await promises.rm ( Path.join ( mockTestDir, dbPathDir, 'dev' ), { force: true , recursive: true} )
+    const expectedRefresh = readTestFile ( mockTestDir, "metadata.refresh.postgres.expected.txt" );
+    const expectedShow = readTestFile ( mockTestDir, "metadata.refreshThenShow.postgres.expected.txt" );
+    expect ( await executeDbAuto ( mockTestDir, "metadata refresh" ) ).toEqual ( expectedRefresh );
+    expect ( await executeDbAuto ( mockTestDir, "metadata show" ) ).toEqual ( expectedShow );
+
+    expect ( fs.existsSync ( Path.join ( mockTestDir, dbPathDir, 'dev' ) ) ).toBe ( true )
+  } )
+  it ( "should dbpath metadata refresh then show for oracle", async () => {
+    await promises.rm ( Path.join ( mockTestDir, dbPathDir, 'oracle' ), { force: true, recursive: true } )
+    const expectedRefresh = readTestFile ( mockTestDir, "metadata.refresh.oracle.expected.txt" );
+    const expectedShow = readTestFile ( mockTestDir, "metadata.refreshThenShow.oracle.expected.txt" );
+    expect ( await executeDbAuto ( mockTestDir, "metadata refresh  oracle" ) ).toEqual ( expectedRefresh );
+    expect ( await executeDbAuto ( mockTestDir, "metadata show oracle" ) ).toEqual ( expectedShow );
+    expect ( fs.existsSync ( Path.join ( mockTestDir, dbPathDir, 'oracle' ) ) ).toBe ( true )
+  } )
+
 } )

@@ -7,7 +7,7 @@ import fs from "fs";
 
 const metadataFileName = 'metadata.json'
 export const metadataDirectory = ( cwd: string, env: string ): ErrorsAnd<string> =>
-  findDirectoryHoldingFileOrError ( cwd, dbPathDir );
+  mapErrors ( findDirectoryHoldingFileOrError ( cwd, dbPathDir ), dir => Path.join ( dir, dbPathDir, env ) )
 export const metadataFile = ( cwd: string, env: string ): ErrorsAnd<string> =>
   mapErrors ( metadataDirectory ( cwd, env ), dir => Path.join ( dir, 'metadata.json' ) );
 

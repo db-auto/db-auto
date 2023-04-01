@@ -129,8 +129,11 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     .description ( 'Displays the stored metadata for the environment' )
     .argument ( '[env]', 'The environment' )
     .action ( async ( envArg, command, options ) => {
-      reportErrors ( mapErrors ( await currentEnvironment ( cwd, dbPathDir, config.environments, options.env ), envAndNameOrErrors =>
-        console.log ( JSON.stringify ( loadMetadata ( cwd, envAndNameOrErrors.envName ), null, 2 ) )
+      reportErrors ( mapErrors ( await currentEnvironment ( cwd, dbPathDir, config.environments, envArg ), envAndNameOrErrors => {
+          let errorsOrData = loadMetadata ( cwd, envAndNameOrErrors.envName );
+          if ( hasErrors ( errorsOrData ) ) return [ `Cannot display stored meta data for ${envAndNameOrErrors.envName}. Perhaps you need to dbpath metadata refresh ${envAndNameOrErrors.envName}.  Reason is`, ...errorsOrData ];
+          return console.log ( JSON.stringify ( errorsOrData, null, 2 ) );
+        }
       ) )
     } )
 
@@ -138,8 +141,9 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     .description ( 'Fetches the metadata from an environment' )
     .argument ( '[env]', 'The environment' )
     .action ( async ( envArg, command, options ) =>
-      useDalAndEnv ( cwd, config.environments, envArg, async ( { dal, envName } ) =>
-        saveMetadata ( cwd, envName, await dal.metaData () ) ) );
+      reportErrors ( await useDalAndEnv ( cwd, config.environments, envArg, async ( { dal, envName } ) => {
+        let meta = await dal.metaData ();
+        return saveMetadata ( cwd, envName, meta );} ) ) );
 
   const metadataStatus = metadata.command ( 'status' )
     .description ( 'Shows which environments have metadata recorded' )
