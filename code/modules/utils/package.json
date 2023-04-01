@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/utils",
   "description": "",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
