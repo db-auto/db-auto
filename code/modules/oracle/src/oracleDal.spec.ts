@@ -1,8 +1,9 @@
-import { OracleEnv } from "./oracleEnv";
+import { oracleDalDialect, OracleEnv } from "./oracleEnv";
 import { oracleDal } from "./oracleDal";
 import { DalResult, DatabaseMetaData } from "@dbpath/dal";
 import { sampleMeta } from "@dbpath/fixtures";
 import { deepSort, ignoreError, ignoreErrorK } from "@dbpath/utils";
+import { sqlFor } from "@dbpath/tables";
 
 const inCi = process.env[ 'CI' ] === 'true'
 
@@ -45,9 +46,9 @@ describe ( 'oracleDal', () => {
       await dal.update ( "insert into mission (id, driverId, mission) values (:1, :2, :3)", 2, 2, "m2" )
       await dal.update ( "insert into driver_aud (id, who, what) values (:1, :2, :3)", 1, "phil", "insert1" )
       await dal.update ( "insert into driver_aud (id, who, what) values (:1, :2, :3)", 2, "phil", "insert2" )
-      console.log('about to insert1')
+      console.log ( 'about to insert1' )
       await dal.update ( "insert into mission_aud (id, who, what) values (:1, :2, :3)", 1, "phil", "insert" )
-      console.log('about to select')
+      console.log ( 'about to select' )
 
       const res: DalResult = await dal.query ( "select * from drivertable" )
       expect ( res.rows ).toEqual ( [
@@ -66,7 +67,7 @@ describe ( 'oracleDal', () => {
           { "name": "name" }
         ]
       } )
-      dal.update("commit")
+      dal.update ( "commit" )
     } finally {
       dal.close ()
     }
@@ -102,13 +103,37 @@ describe ( 'oracleDal', () => {
     const dal = await oracleDal ( env );
     try {
       const res: DatabaseMetaData = await dal.metaData ();
-      const actual=JSON.stringify(res,null,2  )
-        .replace(/number/g, 'integer')
-        .replace(/varchar2/g, 'text')
-      expect ( actual ).toEqual ( JSON.stringify(deepSort(sampleMeta),null,2) )
+      const actual = JSON.stringify ( res, null, 2 )
+        .replace ( /number/g, 'integer' )
+        .replace ( /varchar2/g, 'text' )
+      expect ( actual ).toEqual ( JSON.stringify ( deepSort ( sampleMeta ), null, 2 ) )
     } finally {
       dal.close ()
     }
   } )
+
+} )
+
+describe ( "oracle limitFn", () => {
+  const someSql = [ "select * from table" ]
+  const limitFn = oracleDalDialect.limitFn
+  it ( "should modify sql by adding limit", () => {
+    expect ( limitFn ( 1, 3, someSql ) ).toEqual ( [
+      "select /*+ FIRST_ROWS(3) */ * from (",
+      "select * from table",
+      ")  where rownum >= 1 AND rownum<= 3"
+    ] )
+    expect ( limitFn ( 2, 3, someSql ) ).toEqual ( [
+      "select /*+ FIRST_ROWS(6) */ * from (",
+      "select * from table",
+      ")  where rownum >= 4 AND rownum<= 6"
+    ] )
+    expect ( limitFn ( 2, 6, someSql ) ).toEqual ( [
+      "select /*+ FIRST_ROWS(12) */ * from (",
+      "select * from table",
+      ")  where rownum >= 7 AND rownum<= 12"
+    ] )
+  } )
+
 
 } )

@@ -30,25 +30,37 @@ dbpath driver.mission.audit 123 -w data='2023-6-3'  # lists the audit records fo
 
 # TODO
 
-* Finish Oracle
-* Change () to {} for the join notation because it is more script friendly (avoids need for ")
-* Make sure schema you specify in environment is the one you get
-* What is our dbpath for linking to a different schema? Can't use '.' Needs to be script friendly. #?
-* Improve the wheres so that you don't need to quote the values
-* Add wheres to the joins directly
-* Allow short form name for the wheres
-* Make it so that you can change things like 'audit' because on the previous file.
-* Make it so that all tables can have an audit becased on the previous file name. (e.g. drivertable_aud, mission_aud) because our tables work like that
-* Let tables have 'short form wheres' in the join. For example 'active' should mean 'alias.actif = 1'. This adds enormously to human readability and documents the structure nicely
-* Composite keys (left because they are harder and we wanted to experiment with the simpler case to see if the approach works)
-* Start using ? notation and stored procedures so that we can avoid sql injection
-* Allow join notation (e.g. join ... on ... instead of select). 
-* `dbpath validate` Validate the config/summaries
+## Done
+* Make sure schema you specify in environment is the one you get 
 * Auto-detect the database details and populate the config - done for oracle and postgres
+
+## Done needing more testing
+* manually saying which fields we want (views or fields) 
+
+## Powerful capability/important hygiene
+* Finish Oracle -- needs limits
+* environment lists - be able to run the same command in multiple environments... e.g. dev, test, prod
+  * And how do we show the results with table/json?
+* Start using ? notation and stored procedures so that we can avoid sql injection
+* Improve the wheres so that you don't need to quote the values -- this is actually the same as the sql injection problem
+* `dbpath validate` Validate the config/summaries
+* History of the commands run and their result.
+* Unions
+
+## To make it easier to use:
+* Add wheres to the joins directly so that they can be part of the query 
+* What is our dbpath for linking to a different schema? Can't use '.' Needs to be script friendly. #?
+* Change () to {} for the join notation because it is more script friendly (avoids need for ")
+* Make it so that you can change things like 'audit' based on the previous file.
+* Let tables have 'short form wheres' in the join. For example 'active' should mean 'alias.actif = 1'. This adds enormously to human readability and documents the structure nicely
+* Allow short form name for the wheres
 * views so that we can restrict the columns visible  simply
-* manually saying which fields we want (views or fields) - done
+* Make it so that all tables can have an audit becased on the previous file name. (e.g. drivertable_aud, mission_aud) because our tables work like that
+* Composite keys (left because they are harder and we wanted to experiment with the simpler case to see if the approach works..and we have a workaround)
+* Allow join notation (e.g. join ... on ... instead of select). 
+
+## To do more
 * Mysql/sqllite support oracle and postgres done
-* History of the commands run
 * Scripting: making it easy to run scripts that are dbpath commands for people in support environemnts
 * Secrets in a 'secrets file' that is not checked in as well as environment variables because it's just easier (although not better)
 * Work out how to do a left join `dbpath driver+mission+audit 123` use + instead of . ?

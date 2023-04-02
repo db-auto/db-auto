@@ -17,6 +17,7 @@ export interface PathValidator {
 
   useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): ErrorsAnd<TwoIdsArray>
   actualTableName ( tableName: string ): string
+  pkFor ( tableName: string ): string[]
 }
 
 export const PathValidatorAlwaysOK: PathValidator = {
@@ -26,7 +27,8 @@ export const PathValidatorAlwaysOK: PathValidator = {
   useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): ErrorsAnd<TwoIdsArray> {
     return { twoIds: idEquals };
   },
-  actualTableName: t => t
+  actualTableName: t => t,
+  pkFor: t => [ 'id' ]
 
 }
 
@@ -118,6 +120,7 @@ export function DalPathValidator ( summary: Summary, m: DatabaseMetaData ): Path
     validateFields: validateFields ( summary, m ),
     validateLink: validateLinks ( summary, m ),
     useIdsOrSingleFkLinkOrError: useIdsOrSingleFkLinkOrError ( summary, m ),
-    actualTableName: t => fullTableName ( summary, t )
+    actualTableName: t => fullTableName ( summary, t ),
+    pkFor: t => m.tables[ t ]?.pk.map ( c => c.name )
   };
 }

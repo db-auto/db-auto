@@ -1,4 +1,5 @@
 import { NameAnd } from "@dbpath/utils";
+import { type } from "os";
 
 export interface CommonEnvironment {
   type: string,
@@ -8,8 +9,17 @@ export interface CommonEnvironment {
   password?: string
 }
 
+export type  LimitFn = ( pageNum: number, pageSize: number, s: string[] ) => string[]
+export function checkLimitOrThrow ( l: LimitFn ): LimitFn {
+  return ( pageNum, pageSize, s ) => {
+    if ( typeof pageNum !== 'number' || pageNum < 1 ) throw new Error ( `Invalid page number (${typeof pageNum}) ${pageNum}` )
+    if ( typeof pageSize !== 'number' || pageSize < 1 ) throw new Error ( `Invalid page size (${typeof pageSize}) ${pageSize}` )
+    return l ( pageNum, pageSize, s )
+  }
+}
+
 export interface DalDialect {
-  limitFn: ( pageNum: number, pageSize: number, s: string[] ) => string[]
+  limitFn: LimitFn
   safeQuery: string
 }
 
@@ -30,11 +40,11 @@ export interface NameAndType {
   name: string,
   type: string
 }
-export interface HasPk{
+export interface HasPk {
   pk: NameAndType[]
 
 }
-export interface TableMetaData extends HasPk{
+export interface TableMetaData extends HasPk {
   columns: NameAnd<ColumnMetaData>
   fk: NameAnd<ForeignKeyMetaData>
 }

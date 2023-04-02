@@ -6,7 +6,14 @@ import { driverMissionAuditPath, sampleSummary } from "@dbpath/fixtures";
 import { TableInPath, TwoIds } from "@dbpath/types";
 
 
-const validator = { ...PathValidatorAlwaysOK, actualTableName: t => fullTableName ( sampleSummary, t ) };
+const name2Pk = {
+  driver: [ 'driverId' ],
+  drivertable: [ 'driverId' ],
+  mission: [ 'id' ],
+  driver_aud: [ 'id' ],
+}
+const validator =
+        { ...PathValidatorAlwaysOK, actualTableName: t => fullTableName ( sampleSummary, t ), pkFor: tableName => name2Pk[ tableName ] };
 function makeContext ( s: string ): ParserContext {
   return {
     tokens: tokenise ( "junk." + s ),
@@ -41,16 +48,16 @@ describe ( "parseTable", () => {
     return error
   }
   it ( "should parse drive", () => {
-    expect ( pt ( "driver", 1 ) ).toEqual ( { table: "drivertable", fields: [] } )
-    expect ( pt ( "driver.", 1 ) ).toEqual ( { table: "drivertable", fields: [] } )
+    expect ( pt ( "driver", 1 ) ).toEqual ( { table: "drivertable", fields: [], "pk": [ "driverId" ], } )
+    expect ( pt ( "driver.", 1 ) ).toEqual ( { table: "drivertable", fields: [], "pk": [ "driverId" ], } )
   } )
   it ( "should parse mission", () => {
-    expect ( pt ( "mission", 1 ) ).toEqual ( { table: "mission", fields: [] } )
-    expect ( pt ( "mission.", 1 ) ).toEqual ( { table: "mission", fields: [] } )
+    expect ( pt ( "mission", 1 ) ).toEqual ( { table: "mission", fields: [], "pk": [ "id" ] } )
+    expect ( pt ( "mission.", 1 ) ).toEqual ( { table: "mission", fields: [], "pk": [ "id" ] } )
   } )
   it ( "should parse driver[field1,field2]", () => {
-    expect ( pt ( "driver[field1]", 4 ) ).toEqual ( { table: "drivertable", fields: [ "field1" ] } )
-    expect ( pt ( "driver[field1,field2]", 6 ) ).toEqual ( { table: "drivertable", fields: [ "field1", "field2" ] } )
+    expect ( pt ( "driver[field1]", 4 ) ).toEqual ( { table: "drivertable", fields: [ "field1" ], "pk": [ "driverId" ] } )
+    expect ( pt ( "driver[field1,field2]", 6 ) ).toEqual ( { table: "drivertable", fields: [ "field1", "field2" ], "pk": [ "driverId" ] } )
   } )
   it ( "should report nice error messages", () => {
     expect ( ptError ( "driver[", 7 ) ).toEqual ( [ "Expected a field but got to end" ] );
@@ -60,13 +67,14 @@ describe ( "parseTable", () => {
 
 describe ( "parseLink", () => {
   it ( "should parse .{table}}", () => {
-    expect ( pl ( ".driver", 2 ) ).toEqual ( { table: "drivertable", fields: [], "idEquals": [], } )
-    expect ( pl ( ".mission,", 2 ) ).toEqual ( { table: "mission", fields: [], "idEquals": [], } )
+    expect ( pl ( ".driver", 2 ) ).toEqual ( { table: "drivertable", fields: [], "idEquals": [], "pk": [ "driverId" ] } )
+    expect ( pl ( ".mission,", 2 ) ).toEqual ( { table: "mission", fields: [], "idEquals": [], "pk": [ "id" ] } )
   } )
   it ( "should parse .driver[f1,f2]", () => {
     const previousLink = pt ( "someTable", 1 )
     expect ( pl ( ".driver[f1,f2]", 7, previousLink ) ).toEqual ( {
       "table": "drivertable",
+      "pk": [ "driverId" ],
       "fields": [ "f1", "f2" ],
       previousLink,
       "idEquals": [],
@@ -78,67 +86,66 @@ describe ( "parseLink", () => {
   } )
   it ( "should handle just an id in the id=id part", () => {
     expect ( pl ( ".driver.(driver)mission", 7 ) ).toEqual ( {
-      "fields": [],
-      "idEquals": [
-        {
-          "fromId": "driver",
-          "toId": "driver"
-        }
-      ],
       "previousLink": {
         "fields": [],
         "idEquals": [],
+        pk: [ "driverId" ],
         "table": "drivertable"
       },
-      "table": "mission"
+      "table": "mission",
+      "fields": [],
+      pk: [ "id" ],
+      "idEquals": [ { "fromId": "driver", "toId": "driver" } ],
     } )
   } )
   it ( "should parse .(id1=id2)drive", () => {
     expect ( pl ( ".(id1=id2)driver", 7 ) ).toEqual ( {
       "fields": [],
-      "idEquals": [
-        {
-          "fromId": "id1",
-          "toId": "id2"
-        }
-      ],
+      "idEquals": [ { "fromId": "id1", "toId": "id2" } ],
+      pk: [ "driverId" ],
       "table": "drivertable"
     } )
   } )
 
   it ( "should parse .driver.mission.audit", () => {
     expect ( pl ( ".driver.mission.audit", 6 ) ).toEqual ( {
-      "fields": [],
-      "idEquals": [],
       "previousLink": {
-        "fields": [],
-        "idEquals": [],
         "previousLink": {
           "fields": [],
           "idEquals": [],
+          pk: [ "driverId" ],
           "table": "drivertable"
         },
-        "table": "mission"
+        "table": "mission",
+        pk: [ "id" ],
+        "fields": [],
+        "idEquals": [],
       },
-      "table": "driver_aud"
+      "table": "driver_aud",
+      pk: [ "id" ],
+      "fields": [],
+      "idEquals": [],
     } )
 
   } )
   it ( "should parse .drive!fullDrive[f1,f2].(id1=id2)mission[f3].(id3=id4)audit", () => {
     expect ( pl ( ".driver[f1,f2].mission.audit", 11 ) ).toEqual ( {
-      "fields": [],
       "previousLink": {
-        "fields": [],
         "previousLink": {
           "fields": [ "f1", "f2" ],
           "table": "drivertable",
+          pk: [ "driverId" ],
           "idEquals": [],
         },
         "table": "mission",
+        pk: [ "id" ],
         "idEquals": [],
+        "fields": [],
       },
       "table": "driver_aud",
+      pk: [ "id" ],
       "idEquals": [],
+      "fields": [],
     } )
   } )
 } )
@@ -147,23 +154,27 @@ describe ( "parsePath", () => {
   it ( "should parse a simple path", () => {
     expect ( parsePath ( PathValidatorAlwaysOK ) ( "driver" ) ).toEqual ( {
       "fields": [],
-      "table": "driver"
+      "table": "driver",
+      pk: [ "id" ],
     } )
   } )
   it ( "should parse a complex path", () => {
 
     expect ( parsePath ( validator ) ( "driver.(id1=id2)mission.audit[f3,f4]" ) ).toEqual ( {
-      "fields": [ "f3", "f4" ], "idEquals": [],
       "previousLink": {
-        "fields": [],
-        "idEquals": [ { "fromId": "id1", "toId": "id2" } ],
         "previousLink": {
           "fields": [],
-          "table": "drivertable"
+          "table": "drivertable",
+          pk: [ "driverId" ],
         },
-        "table": "mission"
+        "table": "mission",
+        "fields": [],
+        pk: [ "id" ],
+        "idEquals": [ { "fromId": "id1", "toId": "id2" } ],
       },
-      "table": "driver_aud"
+      "table": "driver_aud",
+      pk: [ "id" ],
+      "fields": [ "f3", "f4" ], "idEquals": [],
     } )
   } )
   describe ( "error message", () => {
@@ -222,6 +233,10 @@ describe ( "PathValidator in parsePath", () => {
       actualTableName ( tableName: string ): string {
         remembered.push ( `actualTableName(${tableName})` )
         return tableName
+      },
+      pkFor ( tableName: string ): string[] {
+        remembered.push ( `pkFor(${tableName})` )
+        return [ 'id' ]
       }
     }
     parsePath ( rem ) ( "driver.(id1=id2)mission.audit[f3,f4]" )
@@ -229,6 +244,9 @@ describe ( "PathValidator in parsePath", () => {
       "actualTableName(audit)",
       "actualTableName(driver)",
       "actualTableName(mission)",
+      "pkFor(audit)",
+      "pkFor(driver)",
+      "pkFor(mission)",
       "useIdsOrSingleFkLinkOrError(driver,mission) [{\"fromId\":\"id1\",\"toId\":\"id2\"}]",
       "useIdsOrSingleFkLinkOrError(mission,audit) []",
       "vFields(audit)[f3,f4]",

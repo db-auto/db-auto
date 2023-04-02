@@ -226,3 +226,48 @@ describe ( "admin init", () => {
     expect ( readTestFile ( mockTestDir, ".dbpath/dbpath.config.json" ) ).toEqual ( expectedDbInit )
   } )
 } )
+
+describe ( "paging", () => {
+    const asJson = async ( pageNum, pageSize, env ) => {
+      let string = await executeDbAuto ( mockTestDir, `driver --page ${pageNum} --pageSize ${pageSize} --json -e ${env}` );
+      try {
+        return JSON.parse ( string );
+      } catch ( e ) {
+        console.log(string)
+        console.error ( e )
+        throw e
+      }
+    }
+    it ( "should page for postgres", async () => {
+      expect ( await asJson ( 1, 1, "dev" ) ).toEqual ( [
+        {
+          "driverid": 1,
+          "name": "phil"
+        }
+      ] );
+      expect ( await asJson ( 2, 1, "dev" ) ).toEqual ( [
+        {
+          "driverid": 2,
+          "name": "joe"
+        }
+      ] );
+
+    } )
+    it ( "should page for oracle", async () => {
+      expect ( await asJson ( 1, 1, "oracle" ) ).toEqual ( [
+        {
+          "driverid": 1,
+          "name": "phil"
+        }
+      ] );
+      expect ( await asJson ( 2, 1, "oracle" ) ).toEqual ( [
+        {
+          "driverid": 2,
+          "name": "joe"
+        }
+      ] );
+
+    } )
+
+  }
+)

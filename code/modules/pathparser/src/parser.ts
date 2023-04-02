@@ -119,7 +119,7 @@ export function parseTableName ( context: ParserContext ): ResultAndContext<Tabl
 export const parseTable = ( context: ParserContext ): ResultAndContext<TableInPath> =>
   mapParser ( parseTableName ( context ), ( cEndOfTable, tableName ) =>
     mapParser ( parseBracketedCommaSeparated ( cEndOfTable, '[', ',', identifier ( 'field' ), ']' ), ( c, fields ) =>
-      validateAndReturn ( cEndOfTable, c, { ...tableName, fields }, c.validator.validateFields ( tableName.table, fields ) ) ) );
+      validateAndReturn ( cEndOfTable, c, { ...tableName, fields, pk: c.validator.pkFor ( tableName.table ) }, c.validator.validateFields ( tableName.table, fields ) ) ) );
 
 export const parseTableAndNextLink = ( previousLink: TableInPath | undefined, idEquals: TwoIds[] ): PathParser<LinkInPath> => context =>
   mapParser<TableInPath, LinkInPath> ( parseTable ( context ), ( c, table ) => {

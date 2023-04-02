@@ -9,6 +9,7 @@ twoIds: TwoIds[]
 
 export interface TableInPath {
   table: string
+  pk: string[]
   fields?: string[ ]
 }
 export interface LinkInPath extends TableInPath {

@@ -10,6 +10,7 @@ import * as fs from "fs";
 
 import { loadMetadata, saveMetadata } from "./metadataFile";
 import { initConfig } from "./init";
+import { checkLimitOrThrow } from "@dbpath/dal";
 
 
 export const configFileName = 'dbpath.config.json';
@@ -66,7 +67,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
       const { env, envName } = envAndNameOrErrors
       const dialect = sqlDialect ( env.type );
       const page = options.page ? parseInt ( options.page ) : 1
-      const fullOptions = { ...options, limitBy: dialect.limitFn, page }
+      const fullOptions = { ...options, limitBy: checkLimitOrThrow ( dialect.limitFn ), page }
 
       if ( page < 1 ) throw new Error ( "Page must be greater than 0" )
       const where = fullOptions.where ? fullOptions.where : []

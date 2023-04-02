@@ -44,13 +44,7 @@ const oracleDalUpdate = ( connection: Connection, addSemiColon?: boolean ): DalU
     }
   }
 }
-export const oracleSqlDialect: DalDialect = {
-  limitFn: ( pageNum: number, pageSize: number, s: string[] ) => {
-    const offset = (pageNum - 1) * pageSize
-    return [ ...s, `LIMIT ${pageSize} OFFSET ${offset}` ]
-  },
-  safeQuery: 'SELECT 1'
-}
+
 
 
 async function findTableNames ( connection: Connection, schema: string ) {
