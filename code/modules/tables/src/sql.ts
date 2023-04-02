@@ -25,6 +25,7 @@ export function pathToSelectData ( p: PathItem, pathSpecForWhere: PathSpecForWhe
       columns: p.fields.length > 0 ? p.fields : [ '*' ],
       table: pathSpecForWhere.schema + '.' + p.table,
       alias,
+      pk: p.pk,
       where: [ ...linkWheres, ...TableWheres, ...pathWheres ]
     }
     return selectDataForTable

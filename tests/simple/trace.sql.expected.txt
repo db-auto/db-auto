@@ -2,16 +2,20 @@ Environment: dev
 driver
 select T0.*
    from public.drivertable T0
+order by T0.driverid
 
 driver.mission
 select T0.*, T1.*
    from public.drivertable T0, public.mission T1 where T0.driverid = T1.driverid
+order by T0.driverid
 
 driver.mission.driver
 select T0.*, T1.*, T2.*
    from public.drivertable T0, public.mission T1, public.drivertable T2 where T0.driverid = T1.driverid and T1.driverid = T2.driverid
+order by T0.driverid
 
 driver.mission.driver.audit
 select T0.*, T1.*, T2.*, T3.*
    from public.drivertable T0, public.mission T1, public.drivertable T2, public.driver_aud T3 where T0.driverid = T1.driverid and T1.driverid = T2.driverid and T2.driverid = T3.id
+order by T0.driverid
 

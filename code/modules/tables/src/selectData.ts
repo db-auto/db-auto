@@ -1,8 +1,9 @@
-import { flatMap } from "@dbpath/utils";
+import { flatMap, safeArray } from "@dbpath/utils";
 
 
 export interface SelectData {
   table: string,
+  pk: string[],
   alias: string,
   columns: string[],
   where: string[],
@@ -12,13 +13,15 @@ export interface SelectData {
 export interface MergedSelectData {
   tables: { table: string, alias: string }[]
   columns: { alias: string, column: string }[],
-  where: string[]
+  where: string[],
+  pk: string[]
 }
 export function mergeSelectData ( selectData: SelectData[] ): MergedSelectData {
   const tables = selectData.map ( s => ({ table: s.table, alias: s.alias }) )
   const columns = flatMap ( selectData, s => s.columns.map ( c => ({ alias: s.alias, column: c }) ) )
   const where = flatMap ( selectData, s => s.where ).filter ( w => w !== undefined )
-  return { tables, columns, where }
+  const pk = selectData.length === 0 ? [] : [ selectData[ 0 ].pk.map ( pk => `${tables[ 0 ].alias}.${pk}` ).join ( ',' ) ]
+  return { tables, columns, where, pk }
 
 }
 
@@ -36,7 +39,8 @@ export const sqlFor = ( s: SqlOptions ) => ( m: MergedSelectData ): string[] => 
   const columns = count ? 'count(1)' : m.columns.map ( c => `${c.alias}.${c.column}` ).join ( ', ' )
   const tables = m.tables.map ( t => `${t.table} ${t.alias}` ).join ( ', ' )
   const where = m.where.length > 0 ? `where ${m.where.join ( ' and ' )}` : ''
-  let result = [ `select ${distinctClause}${columns}`, `   from ${tables} ${where}`.trimRight () ];
-  if ( limitBy && page !== undefined && pageSize !== undefined ) return limitBy ( page, pageSize, result )
+  let orderBy = count ? [] : [ `order by ${safeArray ( m.pk ).join ( ', ' )}` ];
+  let result = [ `select ${distinctClause}${columns}`, `   from ${tables} ${where}`.trimRight (), ...orderBy ];
+  if ( limitBy && page !== undefined && pageSize !== undefined && !count ) return limitBy ( page, pageSize, result )
   return result
 };

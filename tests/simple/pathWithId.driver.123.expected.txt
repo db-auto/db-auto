@@ -1,3 +1,4 @@
 Environment: dev
 select T0.*
    from public.drivertable T0 where T0.driverid=123
+order by T0.driverid

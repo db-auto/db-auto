@@ -1,4 +1,5 @@
 Environment: dev
 select T0.*, T1.*
    from public.drivertable T0, public.mission T1 where T0.driverid = T1.driverid
+order by T0.driverid
 LIMIT 3 OFFSET 3
