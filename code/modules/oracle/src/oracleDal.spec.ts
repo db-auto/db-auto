@@ -2,8 +2,8 @@ import { oracleDalDialect, OracleEnv } from "./oracleEnv";
 import { oracleDal } from "./oracleDal";
 import { DalResult, DatabaseMetaData } from "@dbpath/dal";
 import { sampleMeta } from "@dbpath/fixtures";
-import { deepSort, ignoreError, ignoreErrorK } from "@dbpath/utils";
-import { sqlFor } from "@dbpath/tables";
+import { deepSort, ignoreErrorK } from "@dbpath/utils";
+
 
 const inCi = process.env[ 'CI' ] === 'true'
 
@@ -115,25 +115,36 @@ describe ( 'oracleDal', () => {
 } )
 
 describe ( "oracle limitFn", () => {
-  const someSql = [ "select * from table" ]
   const limitFn = oracleDalDialect.limitFn
-  it ( "should modify sql by adding limit", () => {
-    expect ( limitFn ( 1, 3, someSql ) ).toEqual ( [
-      "select /*+ FIRST_ROWS(3) */ * from (",
-      "select * from table",
-      ")  where rownum >= 1 AND rownum<= 3"
-    ] )
-    expect ( limitFn ( 2, 3, someSql ) ).toEqual ( [
-      "select /*+ FIRST_ROWS(6) */ * from (",
-      "select * from table",
-      ")  where rownum >= 4 AND rownum<= 6"
-    ] )
-    expect ( limitFn ( 2, 6, someSql ) ).toEqual ( [
-      "select /*+ FIRST_ROWS(12) */ * from (",
-      "select * from table",
-      ")  where rownum >= 7 AND rownum<= 12"
-    ] )
-  } )
 
+  describe ( "one table (no where)", () => {
+    const someSql = [ "select * from table", "order by id" ]
+    it ( "should modify sql by adding limit", () => {
+      expect ( limitFn ( 1, 3, someSql ) ).toEqual ([
+        "select /*+ FIRST_ROWS(3) */ rownum as dbautorownum,* from table",
+        "where rownum<=3 order by id",
+        "--1"
+      ] )
+      expect ( limitFn ( 2, 3, someSql ) ).toEqual ( [
+        "select /*+ FIRST_ROWS(6) */ rownum as dbautorownum,* from table",
+        "where rownum <= 6 order by id",
+        "--4"
+      ])
+      expect ( limitFn ( 2, 6, someSql ) ).toEqual ( [
+        "select /*+ FIRST_ROWS(12) */ rownum as dbautorownum,* from table",
+        "where rownum <=12 order by id",
+        "--7"
+      ])
+    } )
+  } )
+  describe ( "two tables - with where", () => {
+    const someSql = [ 'select * from sometable', ' where x = 11' ]
+    expect ( limitFn ( 2, 6, someSql ) ).toEqual ( [
+      "select /*+ FIRST_ROWS(12) */ rownum as dbautorownum,* from sometable",
+      " where rownum <=12 and x = 11",
+      "--7"
+    ] )
+
+  } )
 
 } )

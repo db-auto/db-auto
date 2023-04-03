@@ -1,4 +1,5 @@
 import { flatMap, safeArray } from "@dbpath/utils";
+import { Paging } from "@dbpath/types";
 
 
 export interface SelectData {
@@ -25,9 +26,8 @@ export function mergeSelectData ( selectData: SelectData[] ): MergedSelectData {
 
 }
 
-export interface SqlOptions {
-  page?: number,
-  pageSize?: number,
+
+export interface SqlOptions  extends Paging{
   distinct?: boolean,
   count?: boolean,
   limitBy?: ( pageNum: number, pageSize: number, s: string[] ) => string[]

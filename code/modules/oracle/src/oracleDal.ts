@@ -1,30 +1,45 @@
 import { Dal, DalColMeta, DalMeta, DalQueryFn, DalRow, DalUpdateFn, DatabaseMetaData, NameAndType } from "@dbpath/dal";
 
 import { OracleEnv } from "./oracleEnv";
-import { Connection, Result } from "oracledb";
+import { Connection, Result, ResultSet } from "oracledb";
 import { composeNameAndValidators, deepSort, flatMap, fromEntries, makeIntoNameAnd, makeIntoNameAndList, mapEntries, NameAnd, NameAndValidator, safeArray, validateChildString, validateChildValue } from "@dbpath/utils";
+import { hackDeleteRowForPaging, hackFilterColumnNames } from "./limitFn.hack";
 
 const oracledb = require ( 'oracledb' );
 
-export const oracleRowNum = 'dbauto_rownum';
+
 const checkSql = ( sql: string, addSemiColon: boolean ) => addSemiColon && !sql.endsWith ( ';' ) ? sql + ';' : sql;
+
+export async function hackDrainStart ( sql: string, rs: ResultSet<any> ) {
+  const match = sql.match ( /--(\d+)$/ )
+  if ( !match || match.length === 0 ) return
+  const size = Number.parseInt ( match[ 1 ] )
+  let i = 1
+  while ( i++ < size ) {
+    if ( !await rs.getRow () ) return
+  }
+}
 export const oracleDalQuery = ( connection: Connection ): DalQueryFn =>
   async ( sql, params ) => {
     let safeParams = safeArray ( params );
     let fulSql = checkSql ( sql, false );
     const result = await connection.execute ( fulSql, safeParams, { resultSet: true, outFormat: oracledb.OUT_FORMAT_OBJECT } );
+
     const rows: DalRow[] = [];
     const rs = result.resultSet;
     try {
       let row;
+      await hackDrainStart ( sql, rs );
       while ( (row = await rs.getRow ()) ) {
         let r = fromEntries<any> ( ...mapEntries<any, any> ( row, ( t, name ) => [ name.toLowerCase (), t ] ) );
-        delete r[ oracleRowNum ]
-        delete r.rownum
+        hackDeleteRowForPaging ( r );
         rows.push ( r )
       }
-      const meta: DalMeta = { columns: result.metaData.map<DalColMeta> ( md => ({ name: md.name.toLowerCase () }) ).filter(c=> c.name!=='rownum' && c.name !== oracleRowNum) }
-      return { rows, meta }
+      const meta: DalMeta = { columns: result.metaData
+          .map<DalColMeta> ( md => ({ name: md.name.toLowerCase () }) )
+          .filter ( hackFilterColumnNames ) }
+      let r = { rows, meta };
+      return r
     } catch ( e ) {
       console.log ( e )
       throw e;

@@ -1,3 +1,9 @@
+
+export interface Paging{
+  page?: number,
+  pageSize?: number,
+}
+
 export interface TwoIds {
   fromId: string,
   toId: string
@@ -6,6 +12,7 @@ export interface TwoIds {
 export interface TwoIdsArray {
 twoIds: TwoIds[]
 }
+
 
 export interface TableInPath {
   table: string
