@@ -1,11 +1,12 @@
-import { Dal, DalColMeta, DalDialect, DalMeta, DalQueryFn, DalRow, DalUpdateFn, DatabaseMetaData, NameAndType } from "@dbpath/dal";
+import { Dal, DalColMeta, DalMeta, DalQueryFn, DalRow, DalUpdateFn, DatabaseMetaData, NameAndType } from "@dbpath/dal";
 
 import { OracleEnv } from "./oracleEnv";
 import { Connection, Result } from "oracledb";
-import { composeNameAndValidators, deepSort, flatMap, fromEntries, makeIntoNameAnd, makeIntoNameAndList, mapEntries, NameAnd, NameAndValidator, safeArray, validateChildNumber, validateChildString, validateChildValue } from "@dbpath/utils";
+import { composeNameAndValidators, deepSort, flatMap, fromEntries, makeIntoNameAnd, makeIntoNameAndList, mapEntries, NameAnd, NameAndValidator, safeArray, validateChildString, validateChildValue } from "@dbpath/utils";
 
 const oracledb = require ( 'oracledb' );
 
+export const oracleRowNum = 'dbauto_rownum';
 const checkSql = ( sql: string, addSemiColon: boolean ) => addSemiColon && !sql.endsWith ( ';' ) ? sql + ';' : sql;
 export const oracleDalQuery = ( connection: Connection ): DalQueryFn =>
   async ( sql, params ) => {
@@ -17,9 +18,12 @@ export const oracleDalQuery = ( connection: Connection ): DalQueryFn =>
     try {
       let row;
       while ( (row = await rs.getRow ()) ) {
-        rows.push ( fromEntries<any> ( ...mapEntries<any, any> ( row, ( t, name ) => [ name.toLowerCase (), t ] ) ) )
+        let r = fromEntries<any> ( ...mapEntries<any, any> ( row, ( t, name ) => [ name.toLowerCase (), t ] ) );
+        delete r[ oracleRowNum ]
+        delete r.rownum
+        rows.push ( r )
       }
-      const meta: DalMeta = { columns: result.metaData.map<DalColMeta> ( md => ({ name: md.name.toLowerCase () }) ) }
+      const meta: DalMeta = { columns: result.metaData.map<DalColMeta> ( md => ({ name: md.name.toLowerCase () }) ).filter(c=> c.name!=='rownum' && c.name !== oracleRowNum) }
       return { rows, meta }
     } catch ( e ) {
       console.log ( e )
@@ -44,7 +48,6 @@ const oracleDalUpdate = ( connection: Connection, addSemiColon?: boolean ): DalU
     }
   }
 }
-
 
 
 async function findTableNames ( connection: Connection, schema: string ) {
@@ -123,12 +126,12 @@ async function oracleMeta ( connection: Connection, schema: string ): Promise<Da
   // console.log ( 'pkRaw', pkRaw )
   // console.log ( 'fkRaw', fkRaw )
   // console.log ( 'pks', pks )
-  const result = deepSort(makeIntoNameAnd ( tables, t => t,
+  const result = deepSort ( makeIntoNameAnd ( tables, t => t,
     t => ({
       columns: makeIntoNameAnd ( columns[ t ], c => c.name, c => ({ ...c, name: undefined }) ),
       pk: safeArray ( pks[ t ] ),
       fk: makeIntoNameAnd ( fkRaw.filter ( f => f.table === t ), f => f.name, fk => ({ ...fk, name: undefined, table: undefined }) )
-    }) ))
+    }) ) )
 
 
   return { tables: result as any }

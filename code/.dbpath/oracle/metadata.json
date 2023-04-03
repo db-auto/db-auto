@@ -1,37 +1,26 @@
 {
   "tables": {
-    "mission": {
+    "driver_aud": {
       "columns": {
         "id": {
           "type": "number"
         },
-        "driverid": {
-          "type": "number"
+        "what": {
+          "type": "varchar2"
         },
-        "mission": {
+        "who": {
           "type": "varchar2"
         }
       },
-      "pk": [
-        {
-          "name": "id",
-          "type": "number"
-        }
-      ],
       "fk": {
-        "fk_mission_driver": {
-          "refTable": "drivertable",
-          "refColumn": "driverid",
-          "column": "driverid",
-          "raw": "FOREIGN KEY (driverid) REFERENCES drivertable(driverid)"
-        },
-        "fk_mission_aud_mission": {
-          "refTable": "mission_aud",
-          "refColumn": "id",
+        "fk_driver_aud_driver": {
           "column": "id",
-          "raw": "FOREIGN KEY (id) REFERENCES mission(id) reversed"
+          "raw": "FOREIGN KEY (id) REFERENCES drivertable(driverid)",
+          "refColumn": "driverid",
+          "refTable": "drivertable"
         }
-      }
+      },
+      "pk": []
     },
     "drivertable": {
       "columns": {
@@ -42,70 +31,81 @@
           "type": "varchar2"
         }
       },
+      "fk": {
+        "fk_driver_aud_driver": {
+          "column": "driverid",
+          "raw": "FOREIGN KEY (id) REFERENCES drivertable(driverid) reversed",
+          "refColumn": "id",
+          "refTable": "driver_aud"
+        },
+        "fk_mission_driver": {
+          "column": "driverid",
+          "raw": "FOREIGN KEY (driverid) REFERENCES drivertable(driverid) reversed",
+          "refColumn": "driverid",
+          "refTable": "mission"
+        }
+      },
       "pk": [
         {
           "name": "driverid",
           "type": "number"
         }
-      ],
-      "fk": {
-        "fk_mission_driver": {
-          "refTable": "mission",
-          "refColumn": "driverid",
-          "column": "driverid",
-          "raw": "FOREIGN KEY (driverid) REFERENCES drivertable(driverid) reversed"
-        },
-        "fk_driver_aud_driver": {
-          "refTable": "driver_aud",
-          "refColumn": "id",
-          "column": "driverid",
-          "raw": "FOREIGN KEY (id) REFERENCES drivertable(driverid) reversed"
-        }
-      }
+      ]
     },
-    "driver_aud": {
+    "mission": {
       "columns": {
+        "driverid": {
+          "type": "number"
+        },
         "id": {
           "type": "number"
         },
-        "who": {
-          "type": "varchar2"
-        },
-        "what": {
+        "mission": {
           "type": "varchar2"
         }
       },
-      "pk": [],
       "fk": {
-        "fk_driver_aud_driver": {
-          "refTable": "drivertable",
-          "refColumn": "driverid",
+        "fk_mission_aud_mission": {
           "column": "id",
-          "raw": "FOREIGN KEY (id) REFERENCES drivertable(driverid)"
+          "raw": "FOREIGN KEY (id) REFERENCES mission(id) reversed",
+          "refColumn": "id",
+          "refTable": "mission_aud"
+        },
+        "fk_mission_driver": {
+          "column": "driverid",
+          "raw": "FOREIGN KEY (driverid) REFERENCES drivertable(driverid)",
+          "refColumn": "driverid",
+          "refTable": "drivertable"
         }
-      }
+      },
+      "pk": [
+        {
+          "name": "id",
+          "type": "number"
+        }
+      ]
     },
     "mission_aud": {
       "columns": {
         "id": {
           "type": "number"
         },
-        "who": {
+        "what": {
           "type": "varchar2"
         },
-        "what": {
+        "who": {
           "type": "varchar2"
         }
       },
-      "pk": [],
       "fk": {
         "fk_mission_aud_mission": {
-          "refTable": "mission",
-          "refColumn": "id",
           "column": "id",
-          "raw": "FOREIGN KEY (id) REFERENCES mission(id)"
+          "raw": "FOREIGN KEY (id) REFERENCES mission(id)",
+          "refColumn": "id",
+          "refTable": "mission"
         }
-      }
+      },
+      "pk": []
     }
   }
 }
