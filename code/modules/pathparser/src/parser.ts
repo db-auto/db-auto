@@ -112,8 +112,8 @@ export const parseIdEqualsId = ( c: ParserContext ): ResultAndContext<TwoIds> =>
 
 export const parseSchemaAndTable = ( context: ParserContext ): ResultAndContext<SchemaAndTable> => {
   return mapParser ( identifier ( 'schema or table' ) ( context ), ( c, schemaOrTable ) => {
-    if ( isNextChar ( c, "#" ) ) {
-      return mapParser ( nextChar ( c, '#' ), c =>
+    if ( isNextChar ( c, ":" ) ) {
+      return mapParser ( nextChar ( c, ':' ), c =>
         mapParser ( identifier ( 'tableName' ) ( c ), ( c, table ) => {
           let result: SchemaAndTable = { schema: schemaOrTable, table };
           return lift ( c, result );

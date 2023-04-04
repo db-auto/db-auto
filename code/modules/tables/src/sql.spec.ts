@@ -15,36 +15,38 @@ const table2Pk = sampleMeta.tables
 const schema = 'someSchema'
 describe ( "pathToSelectData", () => {
   it ( "should make an array of select data", () => {
-    expect ( pathToSelectData ( driverPath, { schema, table2Pk } ) ).toEqual ( [
-      { "alias": "T0", "columns": [ '*' ], "table": "someSchema.drivertable", "pk": ["driverId"], "where": [] } ] )
+    expect ( pathToSelectData ( driverPath, { schema, table2Pk } ) ).toEqual ( [ {
+      "alias": "T0",
+      "columns": [ "*" ], "pk": [ "driverId" ],
+      "schema": "someSchema",
+      "table": "drivertable",
+      "where": []
+    } ] )
   } )
   it ( "should make an array of select data with id", () => {
-    expect ( pathToSelectData ( driverPath, { schema, id: '1', table2Pk } ) ).toEqual ( [
-      {
-        "alias": "T0",
-        "columns": [ "*" ],
-        "table": "someSchema.drivertable", "pk":[ "driverId"],
-        "where": [ "T0.driverid=1" ]
-      }
-    ] )
+    expect ( pathToSelectData ( driverPath, { schema, id: '1', table2Pk } ) ).toEqual ( [ {
+      "alias": "T0",
+      "columns": [ "*" ], "pk": [ "driverId" ],
+      "schema": "someSchema",
+      "table": "drivertable",
+      "where": [ "T0.driverid=1" ]
+    } ] )
   } )
 
   it ( "should make an array of select data for driver.mission.audit", () => {
     expect ( pathToSelectData ( driverMissionAuditWithFieldsAndLinksPath, { schema, table2Pk } ) ).toEqual ( [
-      { "alias": "T0", "columns": [ '*' ], "table": "someSchema.drivertable", "pk": ["driverId"], "where": [] },
-      { "alias": "T1", "columns": [ '*' ], "table": "someSchema.mission", "pk": ["id"], "where": [ "T0.id1 = T1.id2" ] },
-      { "alias": "T2", "columns": [ "f3", "f4" ], "table": "someSchema.audit", "pk": ["id"], "where": [ "T1.id2 = T2.id3" ] }
-    ] )
+      { "alias": "T0", "columns": [ "*" ], "pk": [ "driverId" ], "schema": "someSchema", "table": "drivertable", "where": [] },
+      { "alias": "T1", "columns": [ "*" ], "pk": [ "id" ], "schema": "someSchema", "table": "mission", "where": [ "T0.id1 = T1.id2" ] }, {
+        "alias": "T2", "columns": [ "f3", "f4" ], "pk": [ "id" ], "schema": "someSchema", "table": "audit", "where": [ "T1.id2 = T2.id3" ]
+      } ] )
   } )
 
   it ( "should make an array of select data for driver.mission.audit 123", () => {
     expect ( pathToSelectData ( driverMissionAuditWithFieldsAndLinksPath, { schema, id: '1', table2Pk } ) ).toEqual ( [
-      { "alias": "T0", "columns": [ '*' ], "table": "someSchema.drivertable", "pk": ["driverId"], "where": [ "T0.driverid=1" ] },
-      { "alias": "T1", "columns": [ '*' ], "table": "someSchema.mission", "pk": ["id"], "where": [ "T0.id1 = T1.id2" ] },
-      { "alias": "T2", "columns": [ "f3", "f4" ], "table": "someSchema.audit", "pk": ["id"], "where": [ "T1.id2 = T2.id3" ] }
-    ] )
+      { "alias": "T0", "columns": [ "*" ], "pk": [ "driverId" ], "schema": "someSchema", "table": "drivertable", "where": [ "T0.driverid=1" ] },
+      { "alias": "T1", "columns": [ "*" ], "pk": [ "id" ], "schema": "someSchema", "table": "mission", "where": [ "T0.id1 = T1.id2" ] },
+      { "alias": "T2", "columns": [ "f3", "f4" ], "pk": [ "id" ], "schema": "someSchema", "table": "audit", "where": [ "T1.id2 = T2.id3" ] } ] )
   } )
-
 } )
 
 describe ( "pathToSql", () => {
@@ -53,7 +55,7 @@ describe ( "pathToSql", () => {
       "select T0.*, T1.*, T2.f3, T2.f4",
       "   from someSchema.drivertable T0, someSchema.mission T1, someSchema.audit T2 where T0.id1 = T1.id2 and T1.id2 = T2.id3",
       "order by T0.driverId"
-    ])
+    ] )
   } )
 
   it ( "should make sql with integerids", () => {

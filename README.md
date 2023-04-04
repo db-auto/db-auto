@@ -47,6 +47,11 @@ dbpath driver.mission.audit 123 -w data='2023-6-3'  # lists the audit records fo
 * History of the commands run and their result.
 * Unions
 
+# Schemas
+* foreign keys and schemas... if we do `s0:table1.s1:table2` without an xx we needs to sort out schemas properly
+   * 
+
+
 ## To make it easier to use:
 * Add wheres to the joins directly so that they can be part of the query 
 * What is our dbpath for linking to a different schema? Can't use '.' Needs to be script friendly. #?
@@ -58,6 +63,7 @@ dbpath driver.mission.audit 123 -w data='2023-6-3'  # lists the audit records fo
 * Make it so that all tables can have an audit becased on the previous file name. (e.g. drivertable_aud, mission_aud) because our tables work like that
 * Composite keys (left because they are harder and we wanted to experiment with the simpler case to see if the approach works..and we have a workaround)
 * Allow join notation (e.g. join ... on ... instead of select). 
+
 
 ## To do more
 * Mysql/sqllite support oracle and postgres done

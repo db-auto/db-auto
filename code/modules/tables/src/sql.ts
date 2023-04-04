@@ -15,6 +15,7 @@ function makePkWhere ( pathSpecForWhere: PathSpecForWheres, p: TableInPath, alia
 }
 export function pathToSelectData ( p: PathItem, pathSpecForWhere: PathSpecForWheres ): SelectData[] {
   const parts: PathItem[] = mapOverPath ( p, p => p );
+  const schema = pathSpecForWhere.schema
   return parts.map ( ( p, i ) => {
     let alias = `T${i}`;
     let TableWheres = pathSpecForWhere.id && isTableInPath ( p ) ? makePkWhere ( pathSpecForWhere, p, alias ) : []
@@ -22,8 +23,9 @@ export function pathToSelectData ( p: PathItem, pathSpecForWhere: PathSpecForWhe
     let linkWheres = isLinkInPath ( p ) ? p.idEquals.map ( ( { fromId, toId } ) =>
       `T${i - 1}.${fromId} = ${alias}.${toId}` ) : [];
     const selectDataForTable: SelectData = {
+      schema: p.schema ? p.schema : schema,
       columns: p.fields.length > 0 ? p.fields : [ '*' ],
-      table: pathSpecForWhere.schema + '.' + p.table,
+      table:  p.table,
       alias,
       pk: p.pk,
       where: [ ...linkWheres, ...TableWheres, ...pathWheres ]

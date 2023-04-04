@@ -128,7 +128,7 @@ describe ( "parseLink", () => {
     } )
 
   } )
-  it ( "should parse .drive!fullDrive[f1,f2].(id1=id2)mission[f3].(id3=id4)audit", () => {
+  it ( "should parse .drive[f1,f2].(id1=id2)mission[f3].audit", () => {
     expect ( pl ( ".driver[f1,f2].mission.audit", 11 ) ).toEqual ( {
       "previousLink": {
         "previousLink": {
@@ -206,6 +206,29 @@ describe ( "parsePath", () => {
         "previousLink": { "fields": [], "table": "a" },
         "table": "b"
       } )
+    } )
+    it ( "should process s0:driver.s1:mission.s2:audit", () => {
+      expect ( parsePath ( validator ) ( " s0:driver.s1:mission.s2:audit" ) ).toEqual ( {
+        "fields": [],
+        "idEquals": [],
+        "pk": [ "id" ],
+        "previousLink": {
+          "fields": [],
+          "idEquals": [],
+          "pk": [ "id" ],
+          "previousLink": {
+            "fields": [],
+            "pk": [ "driverId" ],
+            "schema": " s0",
+            "table": "drivertable"
+          },
+          "schema": "s1",
+          "table": "mission"
+        },
+        "schema": "s2",
+        "table": "driver_aud"
+      } )
+
     } )
   } )
 } )
