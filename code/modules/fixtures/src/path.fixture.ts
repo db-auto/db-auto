@@ -41,3 +41,36 @@ export const driverMissionAuditWithFieldsAndLinksPath: LinkInPath = {
   "fields": [ "f3", "f4" ],
   "idEquals": [ { "fromId": "id2", "toId": "id3" } ],
 }
+
+export const crossSchemaPath: LinkInPath = {
+  "fields": [],
+  "idEquals": [],
+  "pk": [
+    "id"
+  ],
+  "previousLink": {
+    "fields": [],
+    "idEquals": [
+      {
+        "fromId": "driverId",
+        "toId": "id"
+      }
+    ],
+    "pk": [
+      "id"
+    ],
+    "previousLink": {
+      "fields": [],
+      "pk": [
+        "driverId"
+      ],
+      "schema": " s0",
+      "table": "drivertable"
+    },
+    "schema": "s1",
+    "table": "mission"
+  },
+  "schema": "s2",
+  "table": "driver_aud"
+
+}

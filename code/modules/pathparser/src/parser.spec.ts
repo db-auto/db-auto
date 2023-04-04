@@ -207,32 +207,46 @@ describe ( "parsePath", () => {
         "table": "b"
       } )
     } )
-    it ( "should process s0:driver.s1:mission.s2:audit", () => {
-      expect ( parsePath ( validator ) ( " s0:driver.s1:mission.s2:audit" ) ).toEqual ( {
-        "fields": [],
-        "idEquals": [],
-        "pk": [ "id" ],
-        "previousLink": {
-          "fields": [],
-          "idEquals": [],
-          "pk": [ "id" ],
-          "previousLink": {
-            "fields": [],
-            "pk": [ "driverId" ],
-            "schema": " s0",
-            "table": "drivertable"
-          },
-          "schema": "s1",
-          "table": "mission"
-        },
-        "schema": "s2",
-        "table": "driver_aud"
-      } )
-
-    } )
   } )
 } )
 
+
+describe ( "schemas", () => {
+  it ( "should process s0:driver.(driverId=id)s1:mission.s2:audit", () => {
+    expect ( parsePath ( validator ) ( " s0:driver.(driverId=id)s1:mission.s2:audit" ) ).toEqual ( {
+      "fields": [],
+      "idEquals": [],
+      "pk": [
+        "id"
+      ],
+      "previousLink": {
+        "fields": [],
+        "idEquals": [
+          {
+            "fromId": "driverId",
+            "toId": "id"
+          }
+        ],
+        "pk": [
+          "id"
+        ],
+        "previousLink": {
+          "fields": [],
+          "pk": [
+            "driverId"
+          ],
+          "schema": " s0",
+          "table": "drivertable"
+        },
+        "schema": "s1",
+        "table": "mission"
+      },
+      "schema": "s2",
+      "table": "driver_aud"
+    })
+  } )
+
+} )
 describe ( "PathValidator in parsePath", () => {
   it ( "should be called", () => {
     var remembered: string[] = []

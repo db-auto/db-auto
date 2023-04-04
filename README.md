@@ -49,7 +49,7 @@ dbpath driver.mission.audit 123 -w data='2023-6-3'  # lists the audit records fo
 
 # Schemas
 * foreign keys and schemas... if we do `s0:table1.s1:table2` without an xx we needs to sort out schemas properly
-   * 
+   * Need to update metadata scraping, and the validate code.
 
 
 ## To make it easier to use:
