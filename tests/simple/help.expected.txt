@@ -32,6 +32,8 @@ Options:
   -h, --help              display help for command
 
 Commands:
+  getting-started         Type 'dbpath getting-started for instructions on how
+                          to get started
   admin                   commands for viewing and manipulating the
                           configuration of dbpath
   metadata                commands for viewing and storing metadata

@@ -86,6 +86,53 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     } )
   // findQueryParams ( config.tables ).forEach ( param => program.option ( '--' + param.name + " <" + param.name + ">", param.description ) )
 
+  const gettingStarted = program.command ( 'getting-started' ).description ( `Type 'dbpath getting-started' for instructions on how to get started` )
+    .action ( async ( options, command ) => {
+      console.log(
+`    Getting started with dbpath
+    ===========================
+    
+    Config file
+    ===========
+    You need a config file that will store connection information to databases (database typem connection url, and maybe username/password etc)
+           Note that while you can store usernames and passwords here, it is only recommend for 'getting started' and not for real use.
+    To create this config file you can run 'dbpath admin init' which creates a '.dbpath' directory in the current directory and a config file in it.
+    
+    This file will be found if you run dbpath from any subdirectory of the current directory.
+    
+    Environments
+    ============
+    Once you have the config file, you can run 'dbpath admin envs' to see the environments that are defined in the config file.
+    Note that these environments will not work for you: you have to set them up yourself. There are instructions in the config file to help
+    
+    You can check the environments by running 'dbpath admin status'. This will check that the environments are accessible and give a report.
+    By default 'dev' is the current environment. You can change this by running 'dbpath admin env <env>' where <env> is the name of the environment you want to use.       
+   
+    Metadata
+    ========
+    You can load the metadata for the current environment by running 'dbpath metadata refresh'. This will create a file called 
+    'metadata.json' in directory named after the environment under the '.dbpath' directory.
+    
+    Example usage
+    =============
+    dbpath driver                            views a table called 'driver'
+    dbpath driver --page 2                   pages through the results: this is page 2
+    dbpath driver --page 2 --pageSize 20     pages through the results: this is page 2 with 20 rows per page              
+    dbpath driver 1                          views a row in the table called 'driver' with id 1
+    dbpath driver.mission 1                  views a row in the table called 'mission' with id 1 in the table called 'driver'
+                                             note that the links between driver and mission were found from the metadata
+    dbpath driver  --count                   returns the number of rows in the table called 'driver'
+    dbpath driver.{driverid,id}mission       joins driver and mission using driver.driverid= mission.id
+    dbpath driver --where driverid=1         returns all rows in the table called 'driver' where driverid=1. Any where can be specified
+    
+    dbpath driver.mission.audit --sql        show the sql that would be run
+    
+    dbpath driver --json                     returns the results as json
+    dbpath driver --onelinejson              returns the results as json, one json object per line (ideal for piping to jq)
+    dbpath driver --notitles                 returns the results as columns, but without titles
+    dbpath driver.mission.trace --trace      executes first 'driver' then 'driver.mission' and then 'driver.mission.audit'`)
+    })
+
   const admin = program.command ( 'admin' ).description ( 'commands for viewing and manipulating the configuration of dbpath' )
   const status = admin.command ( 'status' ).description ( "Checks that the environments are accessible and gives report" )
     .action ( async ( options, command ) => {
@@ -99,7 +146,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     .action ( ( env, options, command ) => {
       const check = config.environments[ env ]
       if ( !check ) {
-        console.log ( `Environment ${env} is not defined` )
+        console.log ( `Environment ${env} is not defined. Legal values are ${Object.keys ( config.environments ).sort ()}` )
         process.exit ( 1 )
       }
       saveEnvName ( cwd, dbPathDir, env )
