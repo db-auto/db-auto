@@ -33,12 +33,14 @@ dbpath driver.mission.audit 123 -w data='2023-6-3'  # lists the audit records fo
 ## Done
 * Make sure schema you specify in environment is the one you get 
 * Auto-detect the database details and populate the config - done for oracle and postgres
-
+* Schemas with notation schema:table
+* Oracle - limits now in place. (Horribly because Oracle 11 sucks for paging)
 ## Done needing more testing
 * manually saying which fields we want (views or fields) 
 
 ## Powerful capability/important hygiene
-* Finish Oracle -- needs limits
+
+* The select command
 * environment lists - be able to run the same command in multiple environments... e.g. dev, test, prod
   * And how do we show the results with table/json?
 * Start using ? notation and stored procedures so that we can avoid sql injection
@@ -48,22 +50,20 @@ dbpath driver.mission.audit 123 -w data='2023-6-3'  # lists the audit records fo
 * Unions
 
 # Schemas
-* foreign keys and schemas... if we do `s0:table1.s1:table2` without an xx we needs to sort out schemas properly
+* foreign keys and schemas... if we do `s0:table1.s1:table2` without an xx we need to sort out schemas properly
    * Need to update metadata scraping, and the validate code.
-
+* Allow multiple schemas in the same environment. One is the 'main/default'. But the others need to be scraped
 
 ## To make it easier to use:
 * Add wheres to the joins directly so that they can be part of the query 
-* What is our dbpath for linking to a different schema? Can't use '.' Needs to be script friendly. #?
-* Change () to {} for the join notation because it is more script friendly (avoids need for ")
+* Change () to {} for the join notation because it is more script friendly (avoids need for ") Only I did this and it wasn't... So change it back
 * Make it so that you can change things like 'audit' based on the previous file.
 * Let tables have 'short form wheres' in the join. For example 'active' should mean 'alias.actif = 1'. This adds enormously to human readability and documents the structure nicely
 * Allow short form name for the wheres
 * views so that we can restrict the columns visible  simply
 * Make it so that all tables can have an audit becased on the previous file name. (e.g. drivertable_aud, mission_aud) because our tables work like that
 * Composite keys (left because they are harder and we wanted to experiment with the simpler case to see if the approach works..and we have a workaround)
-* Allow join notation (e.g. join ... on ... instead of select). 
-
+* Allow join notation (e.g. join ... on ... instead of select).
 
 ## To do more
 * Mysql/sqllite support oracle and postgres done

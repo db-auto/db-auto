@@ -1,10 +1,11 @@
 import { ErrorsAnd, flatMap, hasErrors, mapErrors, mapErrorsK, NameAnd } from "@dbpath/utils";
-import { mergeSelectData, PathSpec, pathToSelectData, SelectData, sqlFor, SqlOptions } from "@dbpath/tables";
-import { dalFor, EnvAndName } from "@dbpath/environments";
-import { DalPathValidator, DalResult, DalResultDisplayOptions, DatabaseMetaData, ForeignKeyMetaData, fullTableName, PathValidator, PathValidatorAlwaysOK, prettyPrintDalResult, TableMetaData, useDal } from "@dbpath/dal";
+import { makePathSpec, mergeSelectData, pathToSelectData, SelectData, sqlFor } from "@dbpath/tables";
+import { dalFor } from "@dbpath/environments";
 import { parsePath } from "@dbpath/pathparser";
 import { Summary } from "@dbpath/config";
 import { isLinkInPath } from "@dbpath/types";
+import { CommonSqlOptionsFromCli, JustPathOptions } from "./cliOptions";
+import { DalPathValidator, DalResult, DisplayOptions, ForeignKeyMetaData, fullTableName, PathValidator, PathValidatorAlwaysOK, prettyPrintDalResult, TableMetaData, useDal } from "@dbpath/dal";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -50,31 +51,27 @@ function processQueryPP ( summary: Summary, tableMD: NameAnd<TableMetaData>, raw
   } )
 }
 
-interface ProcessPathOptions extends DalResultDisplayOptions, SqlOptions {
-  plan?: boolean,
-  sql?: boolean
-  fullSql?: boolean
 
-}
-
-
-export async function processPathString ( envAndName: EnvAndName, summary: Summary, meta: DatabaseMetaData, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<ErrorsAnd<PP>> {
-  const path = pathSpec.path
-  const { env, envName } = envAndName
+export async function processPathString ( commonSqlOptions: CommonSqlOptionsFromCli, path: string, id: string | undefined, justPathOptions: JustPathOptions ): Promise<ErrorsAnd<PP>> {
+  const { env, envName, dialect, meta, config, display } = commonSqlOptions
+  const { showSql, fullSql, showPlan, where } = justPathOptions
+  let summary = config.summary;
   if ( path.length === 0 ) return [ 'Path must have at least one part' ]
   const lastPart = path[ path.length - 1 ]
-  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( summary, meta.tables, pathSpec.rawPath )
+  if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( summary, meta.tables, path )
   let validator = DalPathValidator ( summary, meta );
-  let plan = parsePath ( validator ) ( pathSpec.rawPath );
+  let plan = parsePath ( validator ) ( path );
   if ( hasErrors ( plan ) ) return plan
+  const pathSpec = makePathSpec ( env.schema, path, meta.tables, id, where )
   const data = pathToSelectData ( plan, pathSpec )
-  const { plan: showPlan, sql: showSql, fullSql } = options
   if ( showPlan ) return { type: 'selectData', data }
-  const optionsModifiedForLimits = showSql && !fullSql ? { ...options, limitBy: undefined } : options
+  const limitBy = showSql && !fullSql ? undefined : dialect.limitFn
+  const optionsModifiedForLimits = { ...display, ...justPathOptions, limitBy } //: display
+
   const sql = sqlFor ( optionsModifiedForLimits ) ( mergeSelectData ( data ) );
   if ( showSql || fullSql ) return ({ type: 'sql', sql, envName })
   return mapErrorsK ( await dalFor ( env ), async dal => {
-    return useDal ( dal, async d => {
+    return useDal ( dal, async dal => {
       let res = await dal.query ( sql.join ( ' ' ), );
       const result: ResPP = { type: 'res', res: res }
       return result
@@ -82,7 +79,7 @@ export async function processPathString ( envAndName: EnvAndName, summary: Summa
   } )
 }
 
-export function prettyPrintPP ( options: DalResultDisplayOptions, showSql: boolean, pp: PP ): string[] {
+export function prettyPrintPP ( options: DisplayOptions, showSql: boolean, pp: PP ): string[] {
   if ( pp.type === 'links' ) return [ "Links:", '  ' + pp.links.join ( ', ' ) ]
   if ( pp.type === 'selectData' ) return [ JSON.stringify ( pp.data, null, 2 ) ]
   if ( pp.type === 'sql' ) {
@@ -93,23 +90,21 @@ export function prettyPrintPP ( options: DalResultDisplayOptions, showSql: boole
   throw new Error ( `Unknown PP type\n${JSON.stringify ( pp )}` )
 }
 
-export function makeTracePlanSpecs ( pathSpec: PathSpec ): PathSpec[] {
-  const path = pathSpec.path
-  const result: PathSpec[] = []
-  for ( let i = 0; i < path.length; i++ ) {
-    let p = path.slice ( 0, i + 1 );
-    result.push ( { ...pathSpec, rawPath: p.join ( '.' ), path: p } )
-  }
-  return result;
+export function makeTracePaths ( path: string ): string[] {
+  const parts = path.split ( '.' )
+  const result: string[] = []
+  for ( let i = 0; i < parts.length; i++ ) result.push ( parts.slice ( 0, i + 1 ).join ( '.' ) )
+  return result
 }
-export async function tracePlan ( env: EnvAndName, summary: Summary, meta: DatabaseMetaData, pathSpec: PathSpec, options: ProcessPathOptions ): Promise<string[]> {
+export async function tracePlan ( commonSqlOptions: CommonSqlOptionsFromCli, path: string, id: string | undefined, justPathOptions: JustPathOptions ): Promise<string[]> {
   const result: PP[] = []
-  const specs = makeTracePlanSpecs ( pathSpec )
-  for ( let i = 0; i < specs.length; i++ ) {
-    const pp = await processPathString ( env, summary, meta, specs[ i ], options )
+  const { envName, display } = commonSqlOptions
+  const paths = makeTracePaths ( path )
+  for ( let i = 0; i < paths.length; i++ ) {
+    const pp = await processPathString ( commonSqlOptions, paths[ i ], id, justPathOptions )
     if ( hasErrors ( pp ) ) return pp
     result.push ( pp )
   }
-  return [ `Environment: ${env.envName}`, ...flatMap<PP, string> ( result, ( pp, i ) =>
-    [ `${specs[ i ].path.join ( '.' )}`, ...prettyPrintPP ( options, false, pp ), '' ] ) ]
+  return [ `Environment: ${envName}`, ...flatMap<PP, string> ( result, ( pp, i ) =>
+    [ `${paths[ i ]}`, ...prettyPrintPP ( display, false, pp ), '' ] ) ]
 }

@@ -7,24 +7,21 @@ export interface PathSpecForWheres {
   id?: string,
   table2Pk: NameAnd<HasPk>
   wheres?: string[]
-  queryParams?: NameAnd<string>,
 }
 export interface PathSpec extends PathSpecForWheres {
   rawPath: string,
   path: string[],
   id: string | undefined,
-  queryParams: NameAnd<string>,
   limit?: number
 }
 
-export function makePathSpec ( schema: string,path: string, table2Pk?: NameAnd<HasPk>, id?: string, queryParams?: NameAnd<string>, wheres?: string[] ): PathSpec {
+export function makePathSpec ( schema: string, path: string, table2Pk?: NameAnd<HasPk>, id?: string, wheres?: string[] ): PathSpec {
   return {
     schema,
     rawPath: path,
     path: path.split ( '.' ).filter ( p => p !== '' ),
     id,
     table2Pk,
-    queryParams: safeObject ( queryParams ),
     wheres: safeArray ( wheres )
   }
 }

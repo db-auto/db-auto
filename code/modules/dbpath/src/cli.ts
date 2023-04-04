@@ -1,6 +1,5 @@
 import { Command } from "commander";
 import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapErrorsK, NameAnd, parseFile, reportErrors, toColumns } from "@dbpath/utils";
-import { makePathSpec } from "@dbpath/tables";
 import { cleanConfig, CleanConfig } from "./config";
 import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@dbpath/files";
 import { checkStatus, currentEnvironment, dbPathDir, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn, useDalAndEnv } from "@dbpath/environments";
@@ -10,7 +9,7 @@ import * as fs from "fs";
 
 import { loadMetadata, saveMetadata } from "./metadataFile";
 import { initConfig } from "./init";
-import { checkLimitOrThrow } from "@dbpath/dal";
+import { commonSqlOptions, justPathOptions, JustPathOptions } from "./cliOptions";
 
 
 export const configFileName = 'dbpath.config.json';
@@ -28,6 +27,7 @@ export function findVersion () {
     return "version not known"
   }
 }
+
 export function makeProgram ( cwd: string, config: CleanConfig, version: string ): Command {
   let program = new Command ()
     .name ( 'dbpath' )
@@ -50,46 +50,26 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     // .allowUnknownOption ( true )
     .version ( version )
     .action ( async ( path, id, options ) => {
-      //TODO move sql dialect here..
-      const envAndNameOrErrors = currentEnvironment ( cwd, dbPathDir, config.environments, options.env )
-      if ( hasErrors ( envAndNameOrErrors ) ) {
-        reportErrors ( envAndNameOrErrors )
-        return;
+        const pathOptions: JustPathOptions = justPathOptions ( options )
+        await reportErrors ( await mapErrorsK ( await commonSqlOptions ( cwd, config, options ), async commonSqlOptions => {
+            if ( options.trace ) {
+              const pps = await tracePlan ( commonSqlOptions, path, id, pathOptions )
+              pps.forEach ( line => console.log ( line ) )
+              return
+            }
+            return mapErrorsK ( await processPathString ( commonSqlOptions, path, id, pathOptions ), pp => {
+              prettyPrintPP ( commonSqlOptions.display, true, pp ).forEach ( line => console.log ( line ) );
+              return null
+            } );
+          }
+        ) )
       }
-      const meta = await loadMetadata ( cwd, envAndNameOrErrors.envName )
-      if ( hasErrors ( meta ) ) {
-        console.log ( 'Cannot load metadata for environment ' + envAndNameOrErrors.envName )
-        console.log ( 'Try running db-auto refresh' )
-        reportErrors ( meta )
-        return
-      }
-
-      const { env, envName } = envAndNameOrErrors
-      const dialect = sqlDialect ( env.type );
-      const page = options.page ? parseInt ( options.page ) : 1
-      const fullOptions = { ...options, limitBy: checkLimitOrThrow ( dialect.limitFn ), page }
-
-      if ( page < 1 ) throw new Error ( "Page must be greater than 0" )
-      const where = fullOptions.where ? fullOptions.where : []
-      let pathSpec = makePathSpec ( env.schema, path, meta.tables, id, fullOptions, where );
-      if ( fullOptions.trace ) {
-        const pps = await tracePlan ( envAndNameOrErrors, config.summary, meta, pathSpec, fullOptions )
-        pps.forEach ( line => console.log ( line ) )
-        return
-      }
-      const errorsOrresult = await processPathString ( envAndNameOrErrors, config.summary, meta, pathSpec, fullOptions );
-      if ( hasErrors ( errorsOrresult ) ) {
-        reportErrors ( errorsOrresult );
-        return
-      }
-      prettyPrintPP ( fullOptions, true, errorsOrresult ).forEach ( line => console.log ( line ) )
-    } )
-  // findQueryParams ( config.tables ).forEach ( param => program.option ( '--' + param.name + " <" + param.name + ">", param.description ) )
+    )
 
   const gettingStarted = program.command ( 'getting-started' ).description ( `Type 'dbpath getting-started' for instructions on how to get started` )
     .action ( async ( options, command ) => {
-      console.log(
-`    Getting started with dbpath
+      console.log (
+        `    Getting started with dbpath
     ===========================
     
     Config file
@@ -130,8 +110,20 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     dbpath driver --json                     returns the results as json
     dbpath driver --onelinejson              returns the results as json, one json object per line (ideal for piping to jq)
     dbpath driver --notitles                 returns the results as columns, but without titles
-    dbpath driver.mission.trace --trace      executes first 'driver' then 'driver.mission' and then 'driver.mission.audit'`)
-    })
+    dbpath driver.mission.trace --trace      executes first 'driver' then 'driver.mission' and then 'driver.mission.audit'` )
+    } )
+
+  const select = program.command ( "select" ).description ( "an arbitary sql select statement executed in the current environment" )
+    .argument ( "<sql>", "The sql to execute (must be a select statement)" )
+    .option ( "-j, --json", "returns the results as json" )
+    .option ( "-o, --onelinejson", "returns the results as json, one json object per line (ideal for piping to jq)" )
+    .option ( "-n, --notitles", "returns the results as columns, but without titles" )
+    .option ( "-p, --page <page>", "page through the results" )
+    .option ( "-s, --pageSize <pageSize>", "page through the results" )
+    .action ( async ( sql: string, options: any, command: any ) => {
+
+    } )
+
 
   const admin = program.command ( 'admin' ).description ( 'commands for viewing and manipulating the configuration of dbpath' )
   const status = admin.command ( 'status' ).description ( "Checks that the environments are accessible and gives report" )

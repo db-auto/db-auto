@@ -18,17 +18,17 @@ export function reportErrors<T> ( e: ErrorsAnd<T> ): ErrorsAnd<T> {
 export function hasErrors<T> ( t: ErrorsAnd<T> ): t is string[] {
   return Array.isArray ( t )
 }
-export function ignoreError<T>(t: () => T){
+export function ignoreError<T> ( t: () => T ) {
   try {
-    return t()
-  } catch (e) {
+    return t ()
+  } catch ( e ) {
     return undefined
   }
 }
-export async function ignoreErrorK<T>(t: () => Promise<T>){
+export async function ignoreErrorK<T> ( t: () => Promise<T> ) {
   try {
-    return await t()
-  } catch (e) {
+    return await t ()
+  } catch ( e ) {
     return undefined
   }
 }
@@ -59,6 +59,9 @@ export function allValuesIn<T> ( ts: ErrorsAnd<T>[] ): T[] {
 }
 export function mapErrorsK<T, T1> ( t: ErrorsAnd<T>, fn: ( t: T ) => Promise<ErrorsAnd<T1>> ): Promise<ErrorsAnd<T1>> {
   return hasErrors ( t ) ? Promise.resolve ( t ) : fn ( t )
+}
+export function prefixAnyErrors<T> ( t: ErrorsAnd<T>, ...prefix: string[] ): ErrorsAnd<T> {
+  return hasErrors ( t ) ? [ ...prefix, ...errors ( t ) ] : t
 }
 export function flattenErrors<T> ( t: ErrorsAnd<ErrorsAnd<T>> ): ErrorsAnd<T> {
   return hasErrors ( t ) ? flatten ( t as any ) : t
