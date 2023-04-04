@@ -148,7 +148,7 @@ export const parseTableAndNextLink = ( previousLink: TableInPath | undefined, id
   } );
 export const parseLink = ( previousTable: TableInPath | undefined ): PathParser<LinkInPath> =>
   c => mapParser ( nextChar ( c, '.' ), c =>
-    mapParser ( parseBracketedCommaSeparated ( c, "(", ',', parseIdEqualsId, ')' ), ( c, idEquals ) =>
+    mapParser ( parseBracketedCommaSeparated ( c, "{", ',', parseIdEqualsId, '}' ), ( c, idEquals ) =>
       parseTableAndNextLink ( previousTable, idEquals ) ( c ) ) )
 
 export const parseTableAndLinks: PathParser<PathItem> = c =>

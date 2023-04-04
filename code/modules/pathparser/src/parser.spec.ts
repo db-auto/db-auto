@@ -61,12 +61,12 @@ describe ( "parseTable", () => {
   } )
   it ( "should report nice error messages", () => {
     expect ( ptError ( "driver[", 7 ) ).toEqual ( [ "Expected a field but got to end" ] );
-    expect ( ptError ( "driver[(]", 7 ) ).toEqual ( [ "Expected a field unexpected character (" ] );
+    expect ( ptError ( "driver[{]", 7 ) ).toEqual ( [ "Expected a field unexpected character {" ] );
   } )
 } )
 
 describe ( "parseLink", () => {
-  it ( "should parse .{table}}", () => {
+  it ( "should parse .table}", () => {
     expect ( pl ( ".driver", 2 ) ).toEqual ( { table: "drivertable", fields: [], "idEquals": [], "pk": [ "driverId" ] } )
     expect ( pl ( ".mission,", 2 ) ).toEqual ( { table: "mission", fields: [], "idEquals": [], "pk": [ "id" ] } )
   } )
@@ -85,7 +85,7 @@ describe ( "parseLink", () => {
     expect ( pl ( ".driver.mission.audit", 6 ) ).toEqual ( driverMissionAuditPath )
   } )
   it ( "should handle just an id in the id=id part", () => {
-    expect ( pl ( ".driver.(driver)mission", 7 ) ).toEqual ( {
+    expect ( pl ( ".driver.{driver}mission", 7 ) ).toEqual ( {
       "previousLink": {
         "fields": [],
         "idEquals": [],
@@ -98,8 +98,8 @@ describe ( "parseLink", () => {
       "idEquals": [ { "fromId": "driver", "toId": "driver" } ],
     } )
   } )
-  it ( "should parse .(id1=id2)drive", () => {
-    expect ( pl ( ".(id1=id2)driver", 7 ) ).toEqual ( {
+  it ( "should parse .{id1=id2}drive", () => {
+    expect ( pl ( ".{id1=id2}driver", 7 ) ).toEqual ( {
       "fields": [],
       "idEquals": [ { "fromId": "id1", "toId": "id2" } ],
       pk: [ "driverId" ],
@@ -128,7 +128,7 @@ describe ( "parseLink", () => {
     } )
 
   } )
-  it ( "should parse .drive[f1,f2].(id1=id2)mission[f3].audit", () => {
+  it ( "should parse .drive[f1,f2].{id1=id2}mission[f3].audit", () => {
     expect ( pl ( ".driver[f1,f2].mission.audit", 11 ) ).toEqual ( {
       "previousLink": {
         "previousLink": {
@@ -160,7 +160,7 @@ describe ( "parsePath", () => {
   } )
   it ( "should parse a complex path", () => {
 
-    expect ( parsePath ( validator ) ( "driver.(id1=id2)mission.audit[f3,f4]" ) ).toEqual ( {
+    expect ( parsePath ( validator ) ( "driver.{id1=id2}mission.audit[f3,f4]" ) ).toEqual ( {
       "previousLink": {
         "previousLink": {
           "fields": [],
@@ -178,18 +178,18 @@ describe ( "parsePath", () => {
     } )
   } )
   describe ( "error message", () => {
-    it ( "should process a()", () => {
-      expect ( parsePath ( validator ) ( "a()" ) ).toEqual ( [
-        "a()",
+    it ( "should process a{}", () => {
+      expect ( parsePath ( validator ) ( "a{}" ) ).toEqual ( [
+        "a{}",
         " ^",
         "Expected '.'"
       ] )
     } )
-    it ( "should process a.()", () => {
-      expect ( parsePath ( validator ) ( "a.()" ) ).toEqual ( [
-        "a.()",
+    it ( "should process a.{}", () => {
+      expect ( parsePath ( validator ) ( "a.{}" ) ).toEqual ( [
+        "a.{}",
         "   ^",
-        "Expected a 'from id'='to id' unexpected character )"
+        "Expected a 'from id'='to id' unexpected character }"
       ] )
     } )
     it ( "should process a.[]", () => {
@@ -200,7 +200,7 @@ describe ( "parsePath", () => {
       ] )
     } )
     it ( "should process a.(noequals)b", () => {
-      expect ( parsePath ( validator ) ( "a.(noequals)b" ) ).toEqual ( {
+      expect ( parsePath ( validator ) ( "a.{noequals}b" ) ).toEqual ( {
         "fields": [],
         "idEquals": [ { "fromId": "noequals", "toId": "noequals" } ],
         "previousLink": { "fields": [], "table": "a" },
@@ -212,8 +212,8 @@ describe ( "parsePath", () => {
 
 
 describe ( "schemas", () => {
-  it ( "should process s0:driver.(driverId=id)s1:mission.s2:audit", () => {
-    expect ( parsePath ( validator ) ( " s0:driver.(driverId=id)s1:mission.s2:audit" ) ).toEqual ( {
+  it ( "should process s0:driver.{driverId=id}s1:mission.s2:audit", () => {
+    expect ( parsePath ( validator ) ( " s0:driver.{driverId=id}s1:mission.s2:audit" ) ).toEqual ( {
       "fields": [],
       "idEquals": [],
       "pk": [
@@ -276,7 +276,7 @@ describe ( "PathValidator in parsePath", () => {
         return [ 'id' ]
       }
     }
-    parsePath ( rem ) ( "driver.(id1=id2)mission.audit[f3,f4]" )
+    parsePath ( rem ) ( "driver.{id1=id2}mission.audit[f3,f4]" )
     expect ( remembered.sort () ).toEqual ( [
       "actualTableName(audit)",
       "actualTableName(driver)",
@@ -334,8 +334,8 @@ describe ( "PathValidator in parsePath", () => {
       ...PathValidatorAlwaysOK,
       validateLink: ( table1, table2, ids ) => [ `link ${table1}.${table2} error ${JSON.stringify ( ids )}` ]
     }
-    expect ( parsePath ( pv ) ( "driver.(id1=id2)mission.audit" ) ).toEqual ( [
-      "driver.(id1=id2)mission.audit",
+    expect ( parsePath ( pv ) ( "driver.{id1=id2}mission.audit" ) ).toEqual ( [
+      "driver.{id1=id2}mission.audit",
       "                ^",
       "link driver.mission error [{\"fromId\":\"id1\",\"toId\":\"id2\"}]"
     ] )

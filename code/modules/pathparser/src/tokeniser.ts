@@ -28,7 +28,8 @@ export interface TokenAndContext {
   token: Token;
   context: TokeniserContext;
 }
-const specials = "[](),.=:";
+const specials = "[]{},.=:`";
+
 export function tokeniseNext ( context: TokeniserContext ): TokenAndContext {
   const initialPos = context.pos;
   var pos = context.pos
