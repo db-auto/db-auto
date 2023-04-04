@@ -3,7 +3,8 @@ import { ErrorsAnd, hasErrors } from "@dbpath/utils";
 import { PathValidator } from "@dbpath/dal";
 import { LinkInPath, PathItem, TableInPath, TwoIds } from "@dbpath/types";
 
-export interface TableAndFullTableName {
+export interface SchemaAndTable {
+  schema?: string
   table: string
   fullTable?: string
 }
@@ -108,16 +109,29 @@ export const parseIdEqualsId = ( c: ParserContext ): ResultAndContext<TwoIds> =>
     else
       return lift ( c, { fromId, toId: fromId } )
   } );
-export function parseTableName ( context: ParserContext ): ResultAndContext<TableAndFullTableName> {
-  return mapParser ( identifier ( 'table name' ) ( context ), ( c, tableName ) => {
-    const table = context.validator.actualTableName ( tableName );
-    return validateAndReturn ( context, c, { table }, c.validator.validateTableName ( table ) )
+
+export const parseSchemaAndTable = ( context: ParserContext ): ResultAndContext<SchemaAndTable> => {
+  return mapParser ( identifier ( 'schema or table' ) ( context ), ( c, schemaOrTable ) => {
+    if ( isNextChar ( c, "#" ) ) {
+      return mapParser ( nextChar ( c, '#' ), c =>
+        mapParser ( identifier ( 'tableName' ) ( c ), ( c, table ) => {
+          let result: SchemaAndTable = { schema: schemaOrTable, table };
+          return lift ( c, result );
+        } ) )
+    }
+    return lift ( c, { table: schemaOrTable } )
+  } )
+}
+export function parseSchemaAndTableNameAdjustingForSummary ( context: ParserContext ): ResultAndContext<SchemaAndTable> {
+  return mapParser ( parseSchemaAndTable ( context ), ( c, schemaAndTable ) => {
+    const table = context.validator.actualTableName ( schemaAndTable.table );
+    return validateAndReturn ( context, c, { ...schemaAndTable, table }, c.validator.validateTableName ( table ) )
   } )
 }
 
 
 export const parseTable = ( context: ParserContext ): ResultAndContext<TableInPath> =>
-  mapParser ( parseTableName ( context ), ( cEndOfTable, tableName ) =>
+  mapParser ( parseSchemaAndTableNameAdjustingForSummary ( context ), ( cEndOfTable, tableName ) =>
     mapParser ( parseBracketedCommaSeparated ( cEndOfTable, '[', ',', identifier ( 'field' ), ']' ), ( c, fields ) =>
       validateAndReturn ( cEndOfTable, c, { ...tableName, fields, pk: c.validator.pkFor ( tableName.table ) }, c.validator.validateFields ( tableName.table, fields ) ) ) );
 

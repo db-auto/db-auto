@@ -15,6 +15,7 @@ twoIds: TwoIds[]
 
 
 export interface TableInPath {
+  schema?: string
   table: string
   pk: string[]
   fields?: string[ ]

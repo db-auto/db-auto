@@ -196,7 +196,7 @@ describe ( "parsePath", () => {
       expect ( parsePath ( validator ) ( "a.[]" ) ).toEqual ( [
         "a.[]",
         "  ^",
-        "Expected a table name unexpected character ["
+        "Expected a schema or table unexpected character ["
       ] )
     } )
     it ( "should process a.(noequals)b", () => {
