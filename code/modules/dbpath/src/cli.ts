@@ -2,8 +2,8 @@ import { Command } from "commander";
 import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapErrorsK, NameAnd, parseFile, reportErrors, toColumns } from "@dbpath/utils";
 import { cleanConfig, CleanConfig } from "./config";
 import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@dbpath/files";
-import { checkStatus, currentEnvironment, dbPathDir, EnvStatus, prettyPrintEnvironments, saveEnvName, sqlDialect, statusColDefn, useDalAndEnv } from "@dbpath/environments";
-import { prettyPrintPP, processPathString, tracePlan } from "./path";
+import { checkStatus, currentEnvironment, dbPathDir, EnvStatus, prettyPrintEnvironments, saveEnvName, statusColDefn, useDalAndEnv } from "@dbpath/environments";
+import { executeSql, prettyPrintPP, processPathString, tracePlan } from "./path";
 import Path from "path";
 import * as fs from "fs";
 
@@ -50,8 +50,8 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     // .allowUnknownOption ( true )
     .version ( version )
     .action ( async ( path, id, options ) => {
-        const pathOptions: JustPathOptions = justPathOptions ( options )
         await reportErrors ( await mapErrorsK ( await commonSqlOptions ( cwd, config, options ), async commonSqlOptions => {
+            const pathOptions: JustPathOptions = justPathOptions ( options )
             if ( options.trace ) {
               const pps = await tracePlan ( commonSqlOptions, path, id, pathOptions )
               pps.forEach ( line => console.log ( line ) )
@@ -121,7 +121,12 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     .option ( "-p, --page <page>", "page through the results" )
     .option ( "-s, --pageSize <pageSize>", "page through the results" )
     .action ( async ( sql: string, options: any, command: any ) => {
-
+      await reportErrors ( await mapErrorsK ( await commonSqlOptions ( cwd, config, options ), async commonSqlOptions =>
+        mapErrorsK ( await executeSql ( commonSqlOptions.env, [ 'select ' + sql ] ),
+          pp => {
+            prettyPrintPP ( commonSqlOptions.display, true, pp ).forEach ( line => console.log ( line ) )
+            return null
+          } ) ) )
     } )
 
 

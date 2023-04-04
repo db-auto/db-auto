@@ -1,6 +1,6 @@
 import { ErrorsAnd, flatMap, hasErrors, mapErrors, mapErrorsK, NameAnd } from "@dbpath/utils";
 import { makePathSpec, mergeSelectData, pathToSelectData, SelectData, sqlFor } from "@dbpath/tables";
-import { dalFor } from "@dbpath/environments";
+import { CleanEnvironment, dalFor } from "@dbpath/environments";
 import { parsePath } from "@dbpath/pathparser";
 import { Summary } from "@dbpath/config";
 import { isLinkInPath } from "@dbpath/types";
@@ -52,6 +52,18 @@ function processQueryPP ( summary: Summary, tableMD: NameAnd<TableMetaData>, raw
 }
 
 
+export async function executeSql ( env: CleanEnvironment, sql: string[] ): Promise<ErrorsAnd<PP>> {
+  return mapErrorsK ( await dalFor ( env ), async dal => {
+    return useDal ( dal, async dal => {
+      try {
+        let res = await dal.query ( sql.join ( ' ' ), );
+        return { type: 'res', res: res }
+      } catch ( e ) {
+        return [ `Error processing`, sql, '', e.message ]
+      }
+    } )
+  } )
+}
 export async function processPathString ( commonSqlOptions: CommonSqlOptionsFromCli, path: string, id: string | undefined, justPathOptions: JustPathOptions ): Promise<ErrorsAnd<PP>> {
   const { env, envName, dialect, meta, config, display } = commonSqlOptions
   const { showSql, fullSql, showPlan, where } = justPathOptions
@@ -70,13 +82,7 @@ export async function processPathString ( commonSqlOptions: CommonSqlOptionsFrom
 
   const sql = sqlFor ( optionsModifiedForLimits ) ( mergeSelectData ( data ) );
   if ( showSql || fullSql ) return ({ type: 'sql', sql, envName })
-  return mapErrorsK ( await dalFor ( env ), async dal => {
-    return useDal ( dal, async dal => {
-      let res = await dal.query ( sql.join ( ' ' ), );
-      const result: ResPP = { type: 'res', res: res }
-      return result
-    } )
-  } )
+  return await executeSql ( env, sql );
 }
 
 export function prettyPrintPP ( options: DisplayOptions, showSql: boolean, pp: PP ): string[] {
