@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/fixtures",
   "description": "",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -17,8 +17,8 @@
     ]
   },
   "dependencies": {
-    "@dbpath/utils": "0.3.9",
-    "@dbpath/types": "0.3.9"
+    "@dbpath/utils": "0.3.10",
+    "@dbpath/types": "0.3.10"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

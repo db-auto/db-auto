@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/postgres",
   "description": "",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "pg": "^8.10.0",
-    "@dbpath/utils": "0.3.9",
-    "@dbpath/dal": "0.3.9"
+    "@dbpath/utils": "0.3.10",
+    "@dbpath/dal": "0.3.10"
   },
   "devDependencies": {
     "@types/pg": "^8.6.6",
