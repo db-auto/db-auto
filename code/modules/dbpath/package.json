@@ -1,7 +1,7 @@
 {
   "name": "dbpath",
   "description": "",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "main": "dist/index",
   "types": "dist/index",
   "bin": {
@@ -21,11 +21,11 @@
   },
   "dependencies": {
     "commander": "^10.0.0",
-    "@dbpath/tables": "0.3.4",
-    "@dbpath/pathparser": "0.3.4",
-    "@dbpath/utils": "0.3.4",
-    "@dbpath/files": "0.3.4",
-    "@dbpath/environments": "0.3.4"
+    "@dbpath/tables": "0.3.5",
+    "@dbpath/pathparser": "0.3.5",
+    "@dbpath/utils": "0.3.5",
+    "@dbpath/files": "0.3.5",
+    "@dbpath/environments": "0.3.5"
   },
   "devDependencies": {
     "typescript": "^4.0.5",
