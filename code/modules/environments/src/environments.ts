@@ -105,8 +105,12 @@ export function sqlDialect ( type: string ) {
   throw new Error ( `Unknown environment type ${type}. Currently on postgres is supported. ${JSON.stringify ( type )}` )
 }
 export async function dalFor ( env: CommonEnvironment ): Promise<ErrorsAnd<Dal>> {
-  if ( env.type === 'postgres' ) return postgresDal ( env as PostgresEnv )
-  if ( env.type === 'oracle' ) return oracleDal ( env as OracleEnv )
+  try {
+    if ( env.type === 'postgres' ) return await postgresDal ( env as PostgresEnv )
+    if ( env.type === 'oracle' ) return await oracleDal ( env as OracleEnv )
+  } catch ( e ) {
+    return [ `Could not get a dal for ${env.type}. Is it up? try 'dbpath admin status'`, e.message ]
+  }
   throw new Error ( `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify ( env )}` )
 }
 
@@ -117,16 +121,18 @@ export interface EnvStatus {
 }
 //TODO do in parallel
 export async function envIsUp ( env: CleanEnvironment ): Promise<boolean> {
-  let dal = await dalFor ( env );
-  if ( hasErrors ( dal ) ) return false
   try {
-    const dialect = sqlDialect ( env.type );
-    await dal.query ( dialect.safeQuery );
-    return true
+    let dal = await dalFor ( env );
+    if ( hasErrors ( dal ) ) return false
+    try {
+      const dialect = sqlDialect ( env.type );
+      await dal.query ( dialect.safeQuery );
+      return true
+    } finally {
+      await dal.close ();
+    }
   } catch ( e ) {
     return false
-  } finally {
-    await dal.close ();
   }
 }
 
