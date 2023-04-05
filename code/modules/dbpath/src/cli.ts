@@ -28,7 +28,7 @@ export function findVersion () {
   }
 }
 async function processSqlQuery ( sql: string[], options: any, commonSqlOptions: CommonSqlOptionsFromCli ): Promise<ErrorsAnd<PP>> {
-  const rawSql: string[] = options.file ? fs.readFileSync ( options.file, 'utf8' ).split ( '\n' ) : toArray ( sql )
+  const rawSql: string[] = options.file ? fs.readFileSync ( sql.join ( '' ), 'utf8' ).split ( '\n' ) : toArray ( sql )
   if ( options.sql ) return { sql: rawSql, type: 'sql', envName: commonSqlOptions.envName }
   const { page, pageSize } = commonSqlOptions.display
   const withPaging = options.update ? rawSql : commonSqlOptions.dialect.limitFn ( page, pageSize, rawSql )
@@ -73,7 +73,6 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
         ) )
       }
     )
-
 
 
   const gettingStarted = program.command ( 'getting-started' ).description ( `Type 'dbpath getting-started' for instructions on how to get started` )
@@ -135,7 +134,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     .option ( "-s, --sql", "show sql that will execute" )
     .option ( " --fullSql", "show sql that will execute (includes sql added for paging)" )
 
-    .option ( '-f,--file <file>', 'file containing sql to execute' )
+    .option ( '-f,--file ', 'Treat the first argument as a filename' )
     .action ( async ( sql: string[], ignoreOpts: any, command: Command ) => {
       const options = command.optsWithGlobals ()
       await reportErrors ( await mapErrorsK ( await commonSqlOptions ( cwd, config, options ), async commonSqlOptions => {
