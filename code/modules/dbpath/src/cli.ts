@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapErrorsK, NameAnd, parseFile, reportErrors, toArray, toColumns } from "@dbpath/utils";
+import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapErrorsK, NameAnd, parseFile, postfixAnyErrors, prefixAnyErrors, reportErrors, toArray, toColumns } from "@dbpath/utils";
 import { cleanConfig, CleanConfig } from "./config";
 import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@dbpath/files";
 import { checkStatus, currentEnvironment, dbPathDir, EnvStatus, prettyPrintEnvironments, saveEnvName, statusColDefn, useDalAndEnv } from "@dbpath/environments";
@@ -180,11 +180,8 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
   const envs = admin.command ( 'envs' ).description ( "Lists all the environments" )
     .action ( ( options, command ) => {
       const envAndNameOrErrors = currentEnvironment ( cwd, dbPathDir, config.environments, options.env )
-      if ( hasErrors ( envAndNameOrErrors ) ) {
-        reportErrors ( envAndNameOrErrors )
-        return;
-      }
-      console.log ( "Current environment is " + envAndNameOrErrors.envName )
+      if ( hasErrors ( envAndNameOrErrors ) ) reportErrors (postfixAnyErrors( envAndNameOrErrors , 'To set the current environment use dbpath env <env>'))
+      else console.log ( "Current environment is " + envAndNameOrErrors.envName )
       prettyPrintEnvironments ( config.environments ).forEach ( line => console.log ( line ) )
     } )
 

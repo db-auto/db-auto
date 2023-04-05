@@ -63,6 +63,9 @@ export function mapErrorsK<T, T1> ( t: ErrorsAnd<T>, fn: ( t: T ) => Promise<Err
 export function prefixAnyErrors<T> ( t: ErrorsAnd<T>, ...prefix: string[] ): ErrorsAnd<T> {
   return hasErrors ( t ) ? [ ...prefix, ...errors ( t ) ] : t
 }
+export function postfixAnyErrors<T> ( t: ErrorsAnd<T>, ...postfix: string[] ): ErrorsAnd<T> {
+  return hasErrors ( t ) ? [ ...errors ( t ), ...postfix ] : t
+}
 export function flattenErrors<T> ( t: ErrorsAnd<ErrorsAnd<T>> ): ErrorsAnd<T> {
   return hasErrors ( t ) ? flatten ( t as any ) : t
 }

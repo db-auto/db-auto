@@ -13,13 +13,17 @@ export type Environment = PostgresEnv | OracleEnv
 
 
 export const stateFileName = 'dbpath.state.json';
+
+function envNotFound ( envName: string, envs: NameAnd<any> ) {
+  return [ `Environment ${envName} not found. Legal names are ${Object.keys ( envs ).sort ()}` ];
+}
 export function currentEnvName ( cwd: string, marker: string, env: string | undefined, cleanE: NameAnd<CleanEnvironment> ): ErrorsAnd<string> {
   if ( env ) return env
   const contents = loadFileInDirectory ( cwd, 'environments', marker, stateFileName )
   if ( hasErrors ( contents ) ) return 'dev'
   const foundEnv = contents.currentEnvironment
   if ( cleanE[ foundEnv ] ) return foundEnv
-  return [ `Environment ${foundEnv} not found. Legal values are ${Object.keys ( cleanE ).sort ().join ( ', ' )}` ]
+  return envNotFound ( foundEnv, cleanE )
 }
 
 export function saveEnvName ( cwd: string, marker: string, env: string ): ErrorsAnd<void> {
@@ -46,7 +50,7 @@ export function currentEnvironment ( cwd: string, marker: string, envs: NameAnd<
       if ( errors.length > 0 ) return [ `Errors loading environment details`, ...errors, 'You need to edit the config file before you can use this environment' ]
       return { env, envName }
     }
-    return [ `Environment ${envName} not found. Legal names are ${Object.keys ( envs ).sort ()}` ]
+    return envNotFound ( envName, envs )
   } );
 }
 export interface DalAndEnv extends EnvAndName {
