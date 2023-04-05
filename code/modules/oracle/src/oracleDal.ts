@@ -35,9 +35,11 @@ export const oracleDalQuery = ( connection: Connection ): DalQueryFn =>
         hackDeleteRowForPaging ( r );
         rows.push ( r )
       }
-      const meta: DalMeta = { columns: result.metaData
+      const meta: DalMeta = {
+        columns: result.metaData
           .map<DalColMeta> ( md => ({ name: md.name.toLowerCase () }) )
-          .filter ( hackFilterColumnNames ) }
+          .filter ( hackFilterColumnNames )
+      }
       let r = { rows, meta };
       return r
     } catch ( e ) {
@@ -54,8 +56,10 @@ const oracleDalUpdate = ( connection: Connection, addSemiColon?: boolean ): DalU
     let fullSql = checkSql ( sql, addSemiColon );
     // console.log ( 'trying to execute', fullSql, params )
     try {
+
       const result: Result<unknown> = await connection.execute ( fullSql, safeArray ( params ) );
       // console.log ( sql, result.rowsAffected )
+      connection.commit ();
       return result.rowsAffected;
     } catch ( e ) {
       console.log ( e )

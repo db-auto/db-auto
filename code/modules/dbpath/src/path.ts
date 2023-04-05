@@ -31,7 +31,7 @@ export interface UpdatePP {
   type: 'update',
   res: number
 }
-type PP = SelectDataPP | LinksPP | SqlPP | ResPP | UpdatePP
+export type PP = SelectDataPP | LinksPP | SqlPP | ResPP | UpdatePP
 
 
 const filterLinkPP = ( lookfor: string ) => ( raw: string[] ): LinksPP => {

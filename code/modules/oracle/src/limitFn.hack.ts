@@ -20,7 +20,7 @@ export function hackLimitFnForPaging ( pageNum: number, pageSize: number, sql: s
     if ( hasWhere ) return s.replace ( 'where ', `where rownum <=${stop} and ` )
     return s.replace ( 'order by ', `where rownum<=${stop} order by ` )
   }
-  const copy = [ sql[ 0 ].replace ( 'select ', `select /*+ FIRST_ROWS(${stop}) */ rownum as ${oracleRowNum},` ), ...sql.slice ( 1 ) ]
+  const copy = [ sql[ 0 ].replace ( 'select ', `select /*+ FIRST_ROWS(${stop}) */ ` ), ...sql.slice ( 1 ) ]
     .map ( addLimit )
 
   return [ ...copy,

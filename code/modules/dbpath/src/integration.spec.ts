@@ -3,8 +3,6 @@ import fs, { promises } from "fs";
 import { readTestFile } from "@dbpath/files";
 import Path from "path";
 import { dbPathDir, stateFileName } from "@dbpath/environments";
-import { defaultConfig } from "./init";
-import { cleanLineEndings } from "@dbpath/utils";
 
 
 // jest.setTimeout ( 10000 );
@@ -233,7 +231,7 @@ describe ( "paging", () => {
       try {
         return JSON.parse ( string );
       } catch ( e ) {
-        console.log(string)
+        console.log ( string )
         console.error ( e )
         throw e
       }
@@ -271,3 +269,52 @@ describe ( "paging", () => {
 
   }
 )
+
+describe ( "dbpath sql", () => {
+  describe ( "common", () => {
+    it ( "should view the sql", async () => {
+      expect ( await executeDbAuto ( mockTestDir, "sql select * from drivertable --sql" ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.sql.txt" ) )
+    } )
+  } )
+  describe ( "postgres", () => {
+    it ( "should view the fullSql", async () => {
+      expect ( await executeDbAuto ( mockTestDir, "sql select * from drivertable --fullSql" ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.postgres.fullsql.txt" ) )
+    } )
+    it ( "should execute a sql select", async () => {
+      expect ( await executeDbAuto ( mockTestDir, "sql select * from drivertable order by driverid" ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.postgres.select.txt" ) )
+    } )
+    it ( "should execute a sql update", async () => {
+      expect ( await executeDbAuto ( mockTestDir, `sql "update drivertable set name='joey' where driverid=2" -u` ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.postgres.update.joe.txt" ) )
+      expect ( await executeDbAuto ( mockTestDir, "driver" ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.postgres.selectjoe.txt" ) )
+      expect ( await executeDbAuto ( mockTestDir, `sql "update drivertable set name='joe' where driverid=2" -u` ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.postgres.update.phil.txt" ) )
+      expect ( await executeDbAuto ( mockTestDir, "driver" ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.postgres.select.txt" ) )
+    } )
+  } )
+  describe ( "oracle", () => {
+    it ( "should view the fullSql", async () => {
+      expect ( await executeDbAuto ( mockTestDir, `sql "select * from drivertable" --fullSql -e oracle` ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.oracle.fullsql.txt" ) )
+    } )
+    it ( "should execute a sql select", async () => {
+      expect ( await executeDbAuto ( mockTestDir, `sql "select * from drivertable  order by driverid" -e oracle` ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.oracle.select.txt" ) )
+    } )
+    it ( "should execute a sql update", async () => {
+      expect ( await executeDbAuto ( mockTestDir, `sql "update drivertable set name='joey' where driverid=2" -e oracle -u` ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.oracle.update.joe.txt" ) )
+      expect ( await executeDbAuto ( mockTestDir, "driver -e oracle" ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.oracle.selectjoe.txt" ) )
+      expect ( await executeDbAuto ( mockTestDir, `sql "update drivertable set name='joe' where driverid=2" -e oracle -u` ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.oracle.update.phil.txt" ) )
+      expect ( await executeDbAuto ( mockTestDir, "driver -e oracle" ) )
+        .toEqual ( readTestFile ( mockTestDir, "sql.oracle.select.txt" ) )
+    } )
+  } )
+} )

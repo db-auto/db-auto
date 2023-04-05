@@ -67,7 +67,6 @@ describe ( 'oracleDal', () => {
           { "name": "name" }
         ]
       } )
-      dal.update ( "commit" )
     } finally {
       dal.close ()
     }
@@ -127,12 +126,12 @@ describe ( "oracle limitFn", () => {
       ] )
       expect ( limitFn ( 2, 3, someSql ) ).toEqual ( [
         "select /*+ FIRST_ROWS(6) */ rownum as dbautorownum,* from table",
-        "where rownum <= 6 order by id",
+        "where rownum<=6 order by id",
         "--4"
       ])
       expect ( limitFn ( 2, 6, someSql ) ).toEqual ( [
         "select /*+ FIRST_ROWS(12) */ rownum as dbautorownum,* from table",
-        "where rownum <=12 order by id",
+        "where rownum<=12 order by id",
         "--7"
       ])
     } )

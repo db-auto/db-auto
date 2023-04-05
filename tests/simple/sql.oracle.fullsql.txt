@@ -1,0 +1,3 @@
+Environment: oracle
+select /*+ FIRST_ROWS(15) */ * from drivertable
+--1

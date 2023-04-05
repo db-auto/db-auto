@@ -1,15 +1,15 @@
 import { Command } from "commander";
-import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapErrorsK, NameAnd, parseFile, reportErrors, safeArray, toArray, toColumns } from "@dbpath/utils";
+import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapErrorsK, NameAnd, parseFile, reportErrors, toArray, toColumns } from "@dbpath/utils";
 import { cleanConfig, CleanConfig } from "./config";
 import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@dbpath/files";
 import { checkStatus, currentEnvironment, dbPathDir, EnvStatus, prettyPrintEnvironments, saveEnvName, statusColDefn, useDalAndEnv } from "@dbpath/environments";
-import { executeSelectOrUpdate, prettyPrintPP, processPathString, tracePlan } from "./path";
+import { executeSelectOrUpdate, PP, prettyPrintPP, processPathString, SqlPP, tracePlan } from "./path";
 import Path from "path";
 import * as fs from "fs";
 
 import { loadMetadata, saveMetadata } from "./metadataFile";
 import { initConfig } from "./init";
-import { commonSqlOptions, justPathOptions, JustPathOptions } from "./cliOptions";
+import { commonSqlOptions, CommonSqlOptionsFromCli, justPathOptions, JustPathOptions } from "./cliOptions";
 
 
 export const configFileName = 'dbpath.config.json';
@@ -26,6 +26,14 @@ export function findVersion () {
   } catch ( e ) {
     return "version not known"
   }
+}
+async function processSqlQuery ( sql: string[], options: any, commonSqlOptions: CommonSqlOptionsFromCli ): Promise<ErrorsAnd<PP>> {
+  const rawSql: string[] = options.file ? fs.readFileSync ( options.file, 'utf8' ).split ( '\n' ) : toArray ( sql )
+  if ( options.sql ) return { sql: rawSql, type: 'sql', envName: commonSqlOptions.envName }
+  const { page, pageSize } = commonSqlOptions.display
+  const withPaging = options.update ? rawSql : commonSqlOptions.dialect.limitFn ( page, pageSize, rawSql )
+  if ( options.fullSql ) return { sql: withPaging, type: 'sql', envName: commonSqlOptions.envName }
+  return await executeSelectOrUpdate ( commonSqlOptions.env, withPaging, options.update )
 }
 
 export function makeProgram ( cwd: string, config: CleanConfig, version: string ): Command {
@@ -65,6 +73,8 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
         ) )
       }
     )
+
+
 
   const gettingStarted = program.command ( 'getting-started' ).description ( `Type 'dbpath getting-started' for instructions on how to get started` )
     .action ( async ( options, command ) => {
@@ -113,32 +123,29 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     dbpath driver.mission.trace --trace      executes first 'driver' then 'driver.mission' and then 'driver.mission.audit'` )
     } )
 
-  const selectCommand = program.command ( "sql" ).description ( "an arbitary (needs to be quoted) sql statement executed in the current environment" )
-    .argument ( "<sql...>").description("The sql to execute. Currently will throw exceptions if not a select. " )
+  const sqlCommand = program.command ( "sql" ).description ( "an arbitary (needs to be quoted) sql statement executed in the current environment" )
+    .argument ( "<sql...>" ).description ( "The sql to execute. Currently will throw exceptions if not a select. " )
+    .option ( '-e, --env <env>', "override the default environment. Use 'dbpath envs' to see a list of names" )
     .option ( "-p, --page <page>", "page through the results. You need to be sure it is ordered" )
     .option ( "-j,--json", "returns the results as json" )
     .option ( "-o, --onelinejson", "returns the results as json, one json object per line (ideal for piping to jq)" )
     .option ( "-n, --notitles", "returns the results as columns, but without titles" )
     .option ( "--pageSize <pageSize>", "     if you want consistency" )
     .option ( "-u, --update", "execute an update statement instead of a select" )
-    .option ( "-s, --sql", "show sql that will execute (includes sql added for paging)" )
+    .option ( "-s, --sql", "show sql that will execute" )
+    .option ( " --fullSql", "show sql that will execute (includes sql added for paging)" )
+
     .option ( '-f,--file <file>', 'file containing sql to execute' )
-    .action ( async ( sql: string[],ignoreOpts: any, command: Command ) => {
+    .action ( async ( sql: string[], ignoreOpts: any, command: Command ) => {
       const options = command.optsWithGlobals ()
       await reportErrors ( await mapErrorsK ( await commonSqlOptions ( cwd, config, options ), async commonSqlOptions => {
-        const rawSql: string[] = options.file ? fs.readFileSync ( options.file, 'utf8' ).split ( '\n' ) :  toArray(sql)
-        const { page, pageSize } = commonSqlOptions.display
-        const withPaging = options.update ? rawSql : commonSqlOptions.dialect.limitFn ( page, pageSize, rawSql )
-
-        if ( options.sql ) return { sql: withPaging, type: 'sql', env: commonSqlOptions.envName }
-        return mapErrorsK ( await executeSelectOrUpdate ( commonSqlOptions.env, withPaging, options.update ),
-          pp => {
+        return mapErrorsK ( await processSqlQuery ( sql, options, commonSqlOptions ),
+          async pp => {
             prettyPrintPP ( commonSqlOptions.display, true, pp ).forEach ( line => console.log ( line ) )
             return null
           } );
       } ) )
     } )
-
 
   const admin = program.command ( 'admin' ).description ( 'commands for viewing and manipulating the configuration of dbpath' )
   const status = admin.command ( 'status' ).description ( "Checks that the environments are accessible and gives report" )
