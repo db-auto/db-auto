@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/dal",
   "description": "",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -17,8 +17,8 @@
     ]
   },
   "dependencies": {
-    "@dbpath/config": "0.3.6",
-    "@dbpath/fixtures": "0.3.6"
+    "@dbpath/config": "0.3.7",
+    "@dbpath/fixtures": "0.3.7"
   },
   "devDependencies": {
     "typescript": "^4.0.5",
