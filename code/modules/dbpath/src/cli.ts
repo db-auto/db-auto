@@ -3,7 +3,7 @@ import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapErrorsK, NameAnd, pa
 import { cleanConfig, CleanConfig } from "./config";
 import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@dbpath/files";
 import { checkStatus, currentEnvironment, dbPathDir, EnvStatus, prettyPrintEnvironments, saveEnvName, statusColDefn, useDalAndEnv } from "@dbpath/environments";
-import { executeSql, prettyPrintPP, processPathString, tracePlan } from "./path";
+import { executeSelect, executeSelectOrUpdate, prettyPrintPP, processPathString, tracePlan } from "./path";
 import Path from "path";
 import * as fs from "fs";
 
@@ -113,16 +113,17 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     dbpath driver.mission.trace --trace      executes first 'driver' then 'driver.mission' and then 'driver.mission.audit'` )
     } )
 
-  const select = program.command ( "select" ).description ( "an arbitary sql select statement executed in the current environment" )
-    .argument ( "<sql>", "The sql to execute (must be a select statement)" )
+  const select = program.command ( "sql" ).description ( "an arbitary sql statement executed in the current environment" )
+    .argument ( "<sql...>", "The sql to execute. Currently will throw exceptions if not a select. " )
     .option ( "-j, --json", "returns the results as json" )
     .option ( "-o, --onelinejson", "returns the results as json, one json object per line (ideal for piping to jq)" )
     .option ( "-n, --notitles", "returns the results as columns, but without titles" )
     .option ( "-p, --page <page>", "page through the results" )
     .option ( "-s, --pageSize <pageSize>", "page through the results" )
-    .action ( async ( sql: string, options: any, command: any ) => {
+    .option ( "-u, --update", "execute an update statement instead of a select" )
+    .action ( async ( sql: string[], options: any, command: any ) => {
       await reportErrors ( await mapErrorsK ( await commonSqlOptions ( cwd, config, options ), async commonSqlOptions =>
-        mapErrorsK ( await executeSql ( commonSqlOptions.env, [ 'select ' + sql ] ),
+        mapErrorsK ( await executeSelectOrUpdate ( commonSqlOptions.env,  sql , options.update ),
           pp => {
             prettyPrintPP ( commonSqlOptions.display, true, pp ).forEach ( line => console.log ( line ) )
             return null

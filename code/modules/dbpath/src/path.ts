@@ -27,7 +27,11 @@ export interface ResPP {
   type: 'res',
   res: DalResult
 }
-type PP = SelectDataPP | LinksPP | SqlPP | ResPP
+export interface UpdatePP {
+  type: 'update',
+  res: number
+}
+type PP = SelectDataPP | LinksPP | SqlPP | ResPP | UpdatePP
 
 
 const filterLinkPP = ( lookfor: string ) => ( raw: string[] ): LinksPP => {
@@ -51,8 +55,11 @@ function processQueryPP ( summary: Summary, tableMD: NameAnd<TableMetaData>, raw
   } )
 }
 
+export async function executeSelectOrUpdate ( env: CleanEnvironment, sql: string[] , update: boolean|undefined): Promise<ErrorsAnd<PP>> {
+  return update ? executeUpdate ( env, sql ) : executeSelect ( env, sql );
+}
 
-export async function executeSql ( env: CleanEnvironment, sql: string[] ): Promise<ErrorsAnd<PP>> {
+export async function executeSelect ( env: CleanEnvironment, sql: string[] ): Promise<ErrorsAnd<PP>> {
   return mapErrorsK ( await dalFor ( env ), async dal => {
     return useDal ( dal, async dal => {
       try {
@@ -60,6 +67,18 @@ export async function executeSql ( env: CleanEnvironment, sql: string[] ): Promi
         return { type: 'res', res: res }
       } catch ( e ) {
         return [ `Error processing`, sql, '', e.message ]
+      }
+    } )
+  } )
+}
+export async function executeUpdate ( env: CleanEnvironment, sql: string[] ): Promise<ErrorsAnd<PP>> {
+  return mapErrorsK ( await dalFor ( env ), async dal => {
+    return useDal ( dal, async dal => {
+      try {
+        let res = await dal.update ( sql.join ( ' ' ), );
+        return { type: 'update', res: res }
+      } catch ( e ) {
+        return [ `Error processing `, sql, '', e.message ]
       }
     } )
   } )
@@ -82,7 +101,7 @@ export async function processPathString ( commonSqlOptions: CommonSqlOptionsFrom
 
   const sql = sqlFor ( optionsModifiedForLimits ) ( mergeSelectData ( data ) );
   if ( showSql || fullSql ) return ({ type: 'sql', sql, envName })
-  return await executeSql ( env, sql );
+  return await executeSelect ( env, sql );
 }
 
 export function prettyPrintPP ( options: DisplayOptions, showSql: boolean, pp: PP ): string[] {
@@ -93,6 +112,7 @@ export function prettyPrintPP ( options: DisplayOptions, showSql: boolean, pp: P
     return [ ...env, ...pp.sql ]
   }
   if ( pp.type === 'res' ) return prettyPrintDalResult ( options, pp.res )
+  if ( pp.type === 'update' ) return [ `Updated ${pp.res} rows` ]
   throw new Error ( `Unknown PP type\n${JSON.stringify ( pp )}` )
 }
 
