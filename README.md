@@ -104,9 +104,22 @@ dbpath .emailForMissingVehicles  --name phil --date today()
 
 
 
-## Full definition
+## how to do scripts
 
+Could do
+```shell
+dbpath script!
+dbpath script!.mission
+dbpath driver.script!
+dbpath driver.(script!).mission
+```
 
-driver[f1,#,#view].(id=id)tablename
-driver[f1,#,#view].mission!fk_driver_mission
+The `script!` is literally just string substituted in. i.e. it's an include. It can be included anywhere there is an identifier.
+
+This is 
+* Easy
+* Quick
+* Is it a security nightmare?
+
+To fix the latter we can have 'signed scripts'
 
