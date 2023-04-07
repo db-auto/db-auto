@@ -1,12 +1,9 @@
 {
-  "name": "dbpath",
+  "name": "@dbpath/scripts",
   "description": "",
   "version": "0.3.10",
   "main": "dist/index",
   "types": "dist/index",
-  "bin": {
-    "dbpath": "dist/index.js"
-  },
   "browserslist": {
     "development": [
       "last 1 chrome version",
@@ -20,15 +17,12 @@
     ]
   },
   "dependencies": {
-    "commander": "^10.0.0",
-    "@dbpath/tables": "0.3.10",
-    "@dbpath/pathparser": "0.3.10",
+    "pg": "^8.10.0",
     "@dbpath/utils": "0.3.10",
-    "@dbpath/files": "0.3.10",
-    "@dbpath/scripts": "0.3.10",
-    "@dbpath/environments": "0.3.10"
+    "@dbpath/types": "0.3.10"
   },
   "devDependencies": {
+    "@types/pg": "^8.6.6",
     "typescript": "^4.0.5",
     "@types/node": "^14.14.7",
     "@types/jest": "^26.0.15",
@@ -41,11 +35,6 @@
     "dist/index.js",
     "dist/index.d.ts",
     "dist/src/"
-  ],
-  "keywords": [
-    "sql",
-    "database",
-    "devops"
   ],
   "license": "MIT",
   "repository": "git@github.com:db-auto/db-auto.git",

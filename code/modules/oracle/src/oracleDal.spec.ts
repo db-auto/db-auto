@@ -120,17 +120,17 @@ describe ( "oracle limitFn", () => {
     const someSql = [ "select * from table", "order by id" ]
     it ( "should modify sql by adding limit", () => {
       expect ( limitFn ( 1, 3, someSql ) ).toEqual ([
-        "select /*+ FIRST_ROWS(3) */ rownum as dbautorownum,* from table",
+        "select /*+ FIRST_ROWS(3) */ * from table",
         "where rownum<=3 order by id",
         "--1"
-      ] )
+      ])
       expect ( limitFn ( 2, 3, someSql ) ).toEqual ( [
-        "select /*+ FIRST_ROWS(6) */ rownum as dbautorownum,* from table",
+        "select /*+ FIRST_ROWS(6) */ * from table",
         "where rownum<=6 order by id",
         "--4"
       ])
       expect ( limitFn ( 2, 6, someSql ) ).toEqual ( [
-        "select /*+ FIRST_ROWS(12) */ rownum as dbautorownum,* from table",
+        "select /*+ FIRST_ROWS(12) */ * from table",
         "where rownum<=12 order by id",
         "--7"
       ])
@@ -139,10 +139,10 @@ describe ( "oracle limitFn", () => {
   describe ( "two tables - with where", () => {
     const someSql = [ 'select * from sometable', ' where x = 11' ]
     expect ( limitFn ( 2, 6, someSql ) ).toEqual ( [
-      "select /*+ FIRST_ROWS(12) */ rownum as dbautorownum,* from sometable",
+      "select /*+ FIRST_ROWS(12) */ * from sometable",
       " where rownum <=12 and x = 11",
       "--7"
-    ] )
+    ])
 
   } )
 

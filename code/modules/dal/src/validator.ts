@@ -15,6 +15,7 @@ export interface PathValidator {
   validateFields: ValidateFieldsFn,
   validateLink: ValidateLinkFn
 
+
   useIdsOrSingleFkLinkOrError ( fromTableName: string, toTableName: string, idEquals: TwoIds[] ): ErrorsAnd<TwoIdsArray>
   actualTableName ( tableName: string ): string
   pkFor ( tableName: string ): string[]

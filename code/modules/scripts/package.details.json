@@ -1,0 +1,15 @@
+{
+  "template":    "typescript",
+  "name":        "@dbpath/scripts",
+  "description": "",
+  "packageJson": {
+    "dependencies":    {"pg": "^8.10.0"},
+    "devDependencies": {"@types/pg": "^8.6.6"}
+  },
+  "links":       ["@dbpath/utils", "@dbpath/types"],
+  "guards":      {
+    "compile": true,
+    "publish": true,
+    "test":    true
+  }
+}

@@ -1,11 +1,12 @@
 import { ErrorsAnd, flatMap, hasErrors, mapErrors, mapErrorsK, NameAnd } from "@dbpath/utils";
 import { makePathSpec, mergeSelectData, pathToSelectData, SelectData, sqlFor } from "@dbpath/tables";
 import { CleanEnvironment, dalFor } from "@dbpath/environments";
-import { parsePath } from "@dbpath/pathparser";
+import { parsePath, preprocessor } from "@dbpath/pathparser";
 import { Summary } from "@dbpath/config";
-import { isLinkInPath } from "@dbpath/types";
+import { isLinkInPath, LinkInPath, PathItem } from "@dbpath/types";
 import { CommonSqlOptionsFromCli, JustPathOptions } from "./cliOptions";
 import { DalPathValidator, DalResult, DisplayOptions, ForeignKeyMetaData, fullTableName, PathValidator, PathValidatorAlwaysOK, prettyPrintDalResult, TableMetaData, useDal } from "@dbpath/dal";
+import { preprocessorFnForScript } from "@dbpath/scripts";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -55,7 +56,7 @@ function processQueryPP ( summary: Summary, tableMD: NameAnd<TableMetaData>, raw
   } )
 }
 
-export async function executeSelectOrUpdate ( env: CleanEnvironment, sql: string[] , update: boolean|undefined): Promise<ErrorsAnd<PP>> {
+export async function executeSelectOrUpdate ( env: CleanEnvironment, sql: string[], update: boolean | undefined ): Promise<ErrorsAnd<PP>> {
   return update ? executeUpdate ( env, sql ) : executeSelect ( env, sql );
 }
 
@@ -91,7 +92,8 @@ export async function processPathString ( commonSqlOptions: CommonSqlOptionsFrom
   const lastPart = path[ path.length - 1 ]
   if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( summary, meta.tables, path )
   let validator = DalPathValidator ( summary, meta );
-  let plan = parsePath ( validator ) ( path );
+  const scriptIdFn: ( s: string ) => string = preprocessorFnForScript ( {} )
+  let plan: ErrorsAnd<PathItem> = mapErrors ( preprocessor ( scriptIdFn, path ), parsePath ( validator ) );
   if ( hasErrors ( plan ) ) return plan
   const pathSpec = makePathSpec ( env.schema, path, meta.tables, id, where )
   const data = pathToSelectData ( plan, pathSpec )

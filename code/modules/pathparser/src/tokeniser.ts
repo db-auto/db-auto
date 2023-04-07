@@ -28,6 +28,7 @@ export interface TokenAndContext {
   token: Token;
   context: TokeniserContext;
 }
+
 const specials = "[]{},.=:`";
 
 export function tokeniseNext ( context: TokeniserContext ): TokenAndContext {
@@ -51,7 +52,7 @@ export function tokeniseNext ( context: TokeniserContext ): TokenAndContext {
     return { token: { type: 'string', value: context.path.slice ( context.pos, pos ), pos: initialPos }, context: { ...context, pos } };
   }
 }
-export function tokenise ( path: string ): Token[] {
+export const tokenise = ( path: string ): Token[] => {
   var context: TokeniserContext = {
     path,
     pos: 0,
@@ -66,4 +67,4 @@ export function tokenise ( path: string ): Token[] {
     } else return tokens;
   }
 
-}
+};

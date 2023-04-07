@@ -18,7 +18,7 @@
   },
   "links":       [
     "@dbpath/tables", "@dbpath/pathparser",
-    "@dbpath/utils", "@dbpath/files",
+    "@dbpath/utils", "@dbpath/files","@dbpath/scripts",
     "@dbpath/environments"
   ],
   "guards":      {
