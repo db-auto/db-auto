@@ -1,5 +1,6 @@
 import { flatMap, mapK } from "./utils";
-import { errors, ErrorsAnd, mapErrors, mapErrorsK } from "./errors";
+import { errors, ErrorsAnd, hasErrors, mapErrors, mapErrorsK } from "./errors";
+import { safeObject } from "./safe";
 
 export interface NameAnd<T> {
   [ name: string ]: T
@@ -23,6 +24,13 @@ export function mapEntries<T, T1> ( o: NameAnd<T>, fn: ( t: T, name: string ) =>
 }
 export function flatMapEntries<T, T1> ( o: NameAnd<T>, fn: ( t: T, name: string ) => T1[] ): T1[] {
   return flatMap ( Object.entries ( o ), ( [ name, t ] ) => fn ( t, name ) )
+}
+export function mapObjectWithErrors<T, T1> ( o: NameAnd<T>, fn: ( t: T, name: string ) => ErrorsAnd<T1> ): ErrorsAnd<NameAnd<T1>> {
+  let result: [ string, ErrorsAnd<T1> ][] = Object.entries ( safeObject ( o ) ).map ( ( [ name, t ] ) => [ name, fn ( t, name ) ] )
+  const errors = flatMap ( result, ( [ n, v ] ) => hasErrors ( v ) ? v : [] )
+  if ( errors.length > 0 ) return errors
+  const values = result as [ string, T1 ][]
+  return fromEntries<T1> ( ...values )
 }
 export async function mapObjectWithErrorsK<T, T1> ( o: NameAnd<T>, fn: ( t: T, name: string ) => Promise<ErrorsAnd<T1>> ): Promise<ErrorsAnd<NameAnd<T1>>> {
   let result: [ string, ErrorsAnd<T1> ][] = await mapK ( Object.entries ( o ), async ( [ name, t ] ) => [ name, await fn ( t, name ) ] )

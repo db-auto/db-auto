@@ -92,7 +92,7 @@ export async function processPathString ( commonSqlOptions: CommonSqlOptionsFrom
   const lastPart = path[ path.length - 1 ]
   if ( lastPart.endsWith ( '?' ) ) return processQueryPP ( summary, meta.tables, path )
   let validator = DalPathValidator ( summary, meta );
-  const scriptIdFn: ( s: string ) => string = preprocessorFnForScript ( {} )
+  const scriptIdFn: ( s: string ) => string = preprocessorFnForScript ( config.scripts )
   let plan: ErrorsAnd<PathItem> = mapErrors ( preprocessor ( scriptIdFn, path ), parsePath ( validator ) );
   if ( hasErrors ( plan ) ) return plan
   const pathSpec = makePathSpec ( env.schema, path, meta.tables, id, where )

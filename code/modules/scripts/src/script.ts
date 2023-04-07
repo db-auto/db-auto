@@ -1,4 +1,4 @@
-import { composeNameAndValidators, ErrorsAnd, NameAnd, NameAndValidator, safeObject, toArray, validateChild, validateChildItemOrArray, validateChildString, validateString, validateValue } from "@dbpath/utils";
+import { composeNameAndValidators, ErrorsAnd, mapObjectWithErrors, NameAnd, NameAndValidator, safeObject, toArray, validateChild, validateChildItemOrArray, validateChildString, validateString, validateValue } from "@dbpath/utils";
 
 export interface Param {
   description?: string
@@ -33,6 +33,7 @@ export const validateScript = composeNameAndValidators<Script> (
   validateChild ( 'params', validateParam, true ),
 )
 
+
 export function cleanScript ( prefix: string, s: Script ): ErrorsAnd<CleanScript> {
   const errors = validateScript ( prefix ) ( s )
   if ( errors.length > 0 ) return errors
@@ -43,6 +44,9 @@ export function cleanScript ( prefix: string, s: Script ): ErrorsAnd<CleanScript
     params: safeObject ( s.params ),
     script: s.script,
   }
+}
+export function cleanNameAndScripts ( prefix: string, scripts: NameAnd<Script> ): ErrorsAnd<NameAnd<CleanScript>> {
+  return mapObjectWithErrors ( scripts, ( s, name ) => cleanScript ( `${prefix}.${name}`, s ) )
 }
 
 export function preprocessorFnForScript ( nameAndScript: NameAnd<CleanScript> ): (( s: string ) => string) {

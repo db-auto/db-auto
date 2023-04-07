@@ -9,5 +9,10 @@
       "driver": {"tableName": "drivertable"},
       "audit":  {"tableName": "driver_aud"}
     }
+  },
+  "scripts":      {
+    "driverMissions": {"description": "gets the missions that the driver is on", "script": "driver.mission"},
+    "driverAudit":    {"description": "gets the audit for the driver", "script": "driver.audit"},
+    "driverSql":      {"description": "demo of sql script", "script": "select * from drivertable", "comment": "This is next thing to get working"}
   }
 }
