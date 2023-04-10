@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/environments",
   "description": "",
-  "version": "0.3.14",
+  "version": "0.3.16",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -17,11 +17,11 @@
     ]
   },
   "dependencies": {
-    "@dbpath/utils": "0.3.14",
-    "@dbpath/files": "0.3.14",
-    "@dbpath/postgres": "0.3.14",
-    "@dbpath/mysql": "0.3.14",
-    "@dbpath/oracle": "0.3.14"
+    "@dbpath/utils": "0.3.16",
+    "@dbpath/files": "0.3.16",
+    "@dbpath/postgres": "0.3.16",
+    "@dbpath/mysql": "0.3.16",
+    "@dbpath/oracle": "0.3.16"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

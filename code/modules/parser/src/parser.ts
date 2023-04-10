@@ -41,7 +41,7 @@ export function liftError<C extends ParserContext, R> ( context: C, error: strin
 export function isNextChar<C extends ParserContext> ( c: C, ch: string ): boolean {
   const tokens = c.tokens;
   let token = tokens[ c.pos ];
-  return token?.type === 'char' && token.value === ch;
+  return token?.value === ch;
 }
 export const foldNextChar = <C extends ParserContext, R> ( c: C, ch: string, ifTrue: Parser<C, R>, ifFalse: Parser<C, R> ): ResultAndContext<C, R> =>
   isNextChar ( c, ch ) ? ifTrue ( c ) : ifFalse ( c );
@@ -50,7 +50,7 @@ export function nextChar<C extends ParserContext> ( c: C, ch: string ): ResultAn
   var pos = c.pos;
   const tokens = c.tokens;
   let token = tokens[ pos++ ];
-  return token?.type === 'char' && token.value === ch
+  return token.value === ch
     ? { result: ch, context: { ...c, pos } }
     : liftError ( c, [ `Expected ${ch} ${gotForError ( c )}` ] );
 }
