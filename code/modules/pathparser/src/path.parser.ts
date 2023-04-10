@@ -10,7 +10,7 @@ export interface SchemaAndTable {
 }
 
 export type Result = TableInPath;
-
+export const pathParseSpecialCharsForTokenise = "[]{},.=:`";
 
 export interface PathParserContext extends ParserContext {
   validator: PathValidator
@@ -78,7 +78,7 @@ export const parseTableAndLinks: PathParser<PathItem> = c =>
 
 
 export const parsePath = ( validator: PathValidator ) => ( s: string ): ErrorsAnd<LinkInPath | TableInPath> => {
-  const tokens = tokenise ( s )
+  const tokens = tokenise ( pathParseSpecialCharsForTokenise ) ( s )
   const errorTokens = tokens.filter ( t => t.type === 'error' )
   if ( errorTokens.length > 0 ) return [ 'sort out tokeniser issues' ]
   const c: PathParserContext = { pos: 0, tokens, validator }

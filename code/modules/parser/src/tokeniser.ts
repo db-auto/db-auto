@@ -2,6 +2,7 @@ export interface TokeniserContext {
   path: string;
   pos: number;
   thisToken: string;
+  specials: string
 }
 
 export interface CharToken {
@@ -29,9 +30,10 @@ export interface TokenAndContext {
   context: TokeniserContext;
 }
 
-const specials = "[]{},.=:`";
+
 
 export function tokeniseNext ( context: TokeniserContext ): TokenAndContext {
+  const specials = context.specials
   const initialPos = context.pos;
   var pos = context.pos
   if ( pos >= context.path.length ) return { token: undefined, context }
@@ -52,11 +54,12 @@ export function tokeniseNext ( context: TokeniserContext ): TokenAndContext {
     return { token: { type: 'string', value: context.path.slice ( context.pos, pos ), pos: initialPos }, context: { ...context, pos } };
   }
 }
-export const tokenise = ( path: string ): Token[] => {
+export const tokenise = ( specials: string ) => ( path: string ): Token[] => {
   var context: TokeniserContext = {
     path,
     pos: 0,
-    thisToken: ''
+    thisToken: '',
+    specials
   };
   const tokens: Token[] = [];
   while ( true ) {

@@ -1,7 +1,7 @@
 import { fullTableName, PathValidator, PathValidatorAlwaysOK } from "@dbpath/dal";
 import { driverMissionAuditPath, sampleSummary } from "@dbpath/fixtures";
 import { TableInPath, TwoIds } from "@dbpath/types";
-import { parseLink, parsePath, parseTable, PathParserContext } from "./path.parser";
+import { parseLink, parsePath, parseTable, PathParserContext, pathParseSpecialCharsForTokenise } from "./path.parser";
 import { ParserContext, ResultAndContext, tokenise } from "@dbpath/parser";
 
 export function errorData<C extends ParserContext, R> ( pr: ResultAndContext<C, R>, s: string ) {
@@ -20,7 +20,7 @@ const validator =
         { ...PathValidatorAlwaysOK, actualTableName: t => fullTableName ( sampleSummary, t ), pkFor: tableName => name2Pk[ tableName ] };
 function makeContext ( s: string ): PathParserContext {
   return {
-    tokens: tokenise ( "junk." + s ),
+    tokens: tokenise ( pathParseSpecialCharsForTokenise ) ( "junk." + s ),
     pos: 2,
     validator: validator
   }

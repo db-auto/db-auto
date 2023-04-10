@@ -70,6 +70,11 @@ export function parseCommaSeparated<C extends ParserContext, R> ( c: C, comma: s
     ( c ) => lift ( c, [ r ] ) ) )
 }
 
+export function brackets<C extends ParserContext, R> ( c: C, open: string, parser: Parser<C, R>, close: string ): ResultAndContext<C, R> {
+  return mapParser ( nextChar ( c, open ),
+    c => mapParser ( parser ( c ), ( c, r ) =>
+      mapParser ( nextChar ( c, close ), c => lift ( c, r ) ) ) );
+}
 
 export function parseBracketedCommaSeparated<C extends ParserContext, R> ( c: C, open: string, comma: string, parser: Parser<C, R>, close: string ): ResultAndContext<C, R[]> {
   return foldNextChar ( c, open, c => mapParser ( nextChar ( c, open ), ( c ) =>

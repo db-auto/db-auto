@@ -1,11 +1,13 @@
 import { Token, tokenise, tokeniseNext, TokeniserContext } from "./tokeniser";
 
+const specials = "[]{},.=:`";
 describe ( 'tokeniserNext', function () {
   function makeContext ( thisBit: string ): TokeniserContext {
     return {
       path: 'prefix' + thisBit,
       pos: 6,
-      thisToken: ''
+      thisToken: '',
+      specials
     }
   }
   function nt ( thisBit: string, consumed: number ): Token {
@@ -57,10 +59,10 @@ describe ( 'tokeniserNext', function () {
 describe ( 'tokenise', function () {
 
   it ( "for string", () => {
-    expect ( tokenise ( "hello" ) ).toEqual ( [ { type: 'string', value: 'hello', pos: 0 } ] )
+    expect ( tokenise ( specials ) ( "hello" ) ).toEqual ( [ { type: 'string', value: 'hello', pos: 0 } ] )
   } )
   it ( "for string,string", () => {
-    expect ( tokenise ( "hello,world" ) ).toEqual ( [
+    expect ( tokenise(specials) ( "hello,world" ) ).toEqual ( [
       { "pos": 0, "type": "string", "value": "hello" },
       { "pos": 5, "type": "char", "value": "," },
       { "pos": 6, "type": "string", "value": "world" }
@@ -68,7 +70,7 @@ describe ( 'tokenise', function () {
   } )
 
   it ( "for escaped", () => {
-    expect ( tokenise ( "`hello,world`[a]" ) ).toEqual ( [
+    expect ( tokenise ( specials ) ( "`hello,world`[a]" ) ).toEqual ( [
       { "pos": 0, "type": "string", "value": "`hello,world`" },
       { "pos": 13, "type": "char", "value": "[" },
       { "pos": 14, "type": "string", "value": "a" },
@@ -76,7 +78,7 @@ describe ( 'tokenise', function () {
     ] )
   } )
   it ( "for a few characters and strings", () => {
-    expect ( tokenise ( "[a]b{c}" ) ).toEqual ( [
+    expect ( tokenise ( specials ) ( "[a]b{c}" ) ).toEqual ( [
       { "pos": 0, "type": "char", "value": "[" },
       { "pos": 1, "type": "string", "value": "a" },
       { "pos": 2, "type": "char", "value": "]" },
@@ -88,7 +90,7 @@ describe ( 'tokenise', function () {
   } )
 
   it ( "for a mixed set", () => {
-    expect ( tokenise ( "[a]b{`c[]{},`}" ) ).toEqual ( [
+    expect ( tokenise ( specials ) ( "[a]b{`c[]{},`}" ) ).toEqual ( [
       { "pos": 0, "type": "char", "value": "[" },
       { "pos": 1, "type": "string", "value": "a" },
       { "pos": 2, "type": "char", "value": "]" },
