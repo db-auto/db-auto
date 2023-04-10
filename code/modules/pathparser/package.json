@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/pathparser",
   "description": "",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -17,10 +17,10 @@
     ]
   },
   "dependencies": {
-    "@dbpath/types": "0.3.11",
-    "@dbpath/utils": "0.3.11",
-    "@dbpath/parser": "0.3.11",
-    "@dbpath/fixtures": "0.3.11"
+    "@dbpath/types": "0.3.12",
+    "@dbpath/utils": "0.3.12",
+    "@dbpath/parser": "0.3.12",
+    "@dbpath/fixtures": "0.3.12"
   },
   "devDependencies": {
     "typescript": "^4.0.5",
