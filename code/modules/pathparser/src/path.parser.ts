@@ -82,8 +82,8 @@ export const parsePath = ( validator: PathValidator ) => ( s: string ): ErrorsAn
   const errorTokens = tokens.filter ( t => t.type === 'error' )
   if ( errorTokens.length > 0 ) return [ 'sort out tokeniser issues' ]
   const c: PathParserContext = { pos: 0, tokens, validator }
-  const { context, error, result } = parseTableAndLinks ( c )
-  if ( error ) return parserErrorMessage ( s, context, error );
+  const { context, errors, result } = parseTableAndLinks ( c )
+  if ( errors ) return parserErrorMessage ( s, context, errors );
   if ( context.pos < tokens.length - 1 )
     return parserErrorMessage ( s, context, [ "Expected '.'" ] )
   return result

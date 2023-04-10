@@ -7,7 +7,7 @@ import { ParserContext, ResultAndContext, tokenise } from "@dbpath/parser";
 export function errorData<C extends ParserContext, R> ( pr: ResultAndContext<C, R>, s: string ) {
   let token = pr.context.tokens[ pr.context.pos ];
   let pos = token ? token.pos : s.length;
-  return { error: pr.error, token, pos, s };
+  return { error: pr.errors, token, pos, s };
 }
 
 const name2Pk = {
@@ -27,15 +27,15 @@ function makeContext ( s: string ): PathParserContext {
 }
 function pt ( s: string, consume: number ) {
   let initialContext = makeContext ( s )
-  let { context, result, error } = parseTable ( initialContext );
-  if ( error ) throw error
+  let { context, result, errors } = parseTable ( initialContext );
+  if ( errors ) throw errors
   expect ( context.pos - initialContext.pos ).toEqual ( consume );
   return result
 }
 function pl ( s: string, consume: number, pt?: TableInPath ) {
   let initialContext = makeContext ( s )
-  let { context, result, error } = parseLink ( pt ) ( initialContext );
-  if ( error ) throw error
+  let { context, result, errors } = parseLink ( pt ) ( initialContext );
+  if ( errors ) throw errors
   expect ( context.pos - initialContext.pos ).toEqual ( consume );
   return result
 }
@@ -45,11 +45,11 @@ describe ( "parseTable", () => {
   function ptError ( s: string, errorPos: number ) {
     let initialContext = makeContext ( s )
     let cr = parseTable ( initialContext );
-    const { context, result, error } = cr
+    const { context, result, errors } = cr
     expect ( result ).toBeUndefined ()
     const { pos } = errorData ( cr, 'junk.' + s )
     expect ( pos - 'junk.'.length ).toEqual ( errorPos )
-    return error
+    return errors
   }
   it ( "should parse drive", () => {
     expect ( pt ( "driver", 1 ) ).toEqual ( { table: "drivertable", fields: [], "pk": [ "driverId" ], } )

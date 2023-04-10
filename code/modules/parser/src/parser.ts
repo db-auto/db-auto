@@ -10,21 +10,21 @@ export interface ParserContext {
 export interface ResultAndContext<C extends ParserContext, R> {
   result?: R
   context: C
-  error?: string[]
+  errors?: string[]
 }
 export const identifier = ( type: string ) => <C extends ParserContext> ( context: C ): ResultAndContext<C, string> => {
   var pos = context.pos;
   const tokens = context.tokens;
   let token = tokens[ pos++ ];
-  if ( token === undefined ) return { context, error: [ `Expected a ${type} but got to end` ] };
+  if ( token === undefined ) return { context, errors: [ `Expected a ${type} but got to end` ] };
   if ( token.type === 'string' ) {
     return { result: token.value, context: { ...context, pos } };
   } else {
-    return { context, error: [ `Expected a ${type} ${gotForError ( context )}` ] };
+    return { context, errors: [ `Expected a ${type} ${gotForError ( context )}` ] };
   }
 };
 export const mapParser = <C extends ParserContext, T, T1> ( c: ResultAndContext<C, T>, f: ( c: C, t: T ) => ResultAndContext<C, T1> ): ResultAndContext<C, T1> => {
-  if ( c.error ) return c as any;
+  if ( c.errors ) return c as any;
   let result = f ( c.context, c.result );
   return result;
 };
@@ -36,7 +36,7 @@ export function lift<C extends ParserContext, R> ( context: C, result: R ): Resu
   return { context, result }
 }
 export function liftError<C extends ParserContext, R> ( context: C, error: string[] ): ResultAndContext<C, R> {
-  return { context, error }
+  return { context, errors: error }
 }
 export function isNextChar<C extends ParserContext> ( c: C, ch: string ): boolean {
   const tokens = c.tokens;
