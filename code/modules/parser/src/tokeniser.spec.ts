@@ -1,4 +1,4 @@
-import { Token, TokenAndContext, tokenise, tokeniseNext, TokeniserContext } from "./tokeniser";
+import { Token, tokenise, tokeniseNext, TokeniserContext } from "./tokeniser";
 
 describe ( 'tokeniserNext', function () {
   function makeContext ( thisBit: string ): TokeniserContext {

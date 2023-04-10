@@ -1,10 +1,14 @@
-import { errorData, parseLink, parsePath, ParserContext, parseTable } from "./parser";
-import { tokenise } from "./tokeniser";
 import { fullTableName, PathValidator, PathValidatorAlwaysOK } from "@dbpath/dal";
-
 import { driverMissionAuditPath, sampleSummary } from "@dbpath/fixtures";
 import { TableInPath, TwoIds } from "@dbpath/types";
+import { parseLink, parsePath, parseTable, PathParserContext } from "./path.parser";
+import { ParserContext, ResultAndContext, tokenise } from "@dbpath/parser";
 
+export function errorData<C extends ParserContext, R> ( pr: ResultAndContext<C, R>, s: string ) {
+  let token = pr.context.tokens[ pr.context.pos ];
+  let pos = token ? token.pos : s.length;
+  return { error: pr.error, token, pos, s };
+}
 
 const name2Pk = {
   driver: [ 'driverId' ],
@@ -14,7 +18,7 @@ const name2Pk = {
 }
 const validator =
         { ...PathValidatorAlwaysOK, actualTableName: t => fullTableName ( sampleSummary, t ), pkFor: tableName => name2Pk[ tableName ] };
-function makeContext ( s: string ): ParserContext {
+function makeContext ( s: string ): PathParserContext {
   return {
     tokens: tokenise ( "junk." + s ),
     pos: 2,
@@ -243,7 +247,7 @@ describe ( "schemas", () => {
       },
       "schema": "s2",
       "table": "driver_aud"
-    })
+    } )
   } )
 
 } )

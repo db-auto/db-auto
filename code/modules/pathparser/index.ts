@@ -1,4 +1,2 @@
-
-export * from './src/parser'
-export * from './src/tokeniser'
+export * from './src/path.parser'
 export * from './src/preprocessor'
