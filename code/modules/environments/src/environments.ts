@@ -108,12 +108,13 @@ export function sqlDialect ( type: string ) {
   if ( type === 'oracle' ) return oracleDalDialect
   throw new Error ( `Unknown environment type ${type}. Currently on postgres is supported. ${JSON.stringify ( type )}` )
 }
-export async function dalFor ( env: CommonEnvironment ): Promise<ErrorsAnd<Dal>> {
+export async function dalFor ( env: CommonEnvironment, shortMessages?: boolean ): Promise<ErrorsAnd<Dal>> {
   try {
     if ( env.type === 'postgres' ) return await postgresDal ( env as PostgresEnv )
     if ( env.type === 'oracle' ) return await oracleDal ( env as OracleEnv )
   } catch ( e ) {
-    return [ `Could not get a dal for ${env.type}. Is it up? try 'dbpath admin status'`, e.message ]
+    const msgs = shortMessages ? [] : [ `Could not get a dal for ${env.type}. Is it up? try 'dbpath admin status'` ]
+    return [ ...msgs, e.toString () ]
   }
   throw new Error ( `Unknown environment type ${env.type}. Currently on postgres is supported. ${JSON.stringify ( env )}` )
 }
@@ -121,13 +122,14 @@ export async function dalFor ( env: CommonEnvironment ): Promise<ErrorsAnd<Dal>>
 export interface EnvStatus {
   name: string
   up: boolean
+  errors?: string[]
   env: CleanEnvironment
 }
 //TODO do in parallel
-export async function envIsUp ( env: CleanEnvironment ): Promise<boolean> {
+export async function envIsUp ( env: CleanEnvironment ): Promise<ErrorsAnd<true>> {
   try {
-    let dal = await dalFor ( env );
-    if ( hasErrors ( dal ) ) return false
+    let dal = await dalFor ( env, true );
+    if ( hasErrors ( dal ) ) return dal
     try {
       const dialect = sqlDialect ( env.type );
       await dal.query ( dialect.safeQuery );
@@ -136,14 +138,16 @@ export async function envIsUp ( env: CleanEnvironment ): Promise<boolean> {
       await dal.close ();
     }
   } catch ( e ) {
-    return false
+    return [ e.toString () ]
   }
 }
 
 export async function checkStatus ( envs: NameAnd<CleanEnvironment> ): Promise<NameAnd<EnvStatus>> {
   let result: NameAnd<EnvStatus> = {}
-  for ( const [ name, env ] of Object.entries ( envs ) )
-    result[ name ] = { name, env, up: await envIsUp ( env ) }
+  for ( const [ name, env ] of Object.entries ( envs ) ) {
+    let up = await envIsUp ( env );
+    result[ name ] = up === true ? { name, env, up: up } : { name, env, up: false, errors: up }
+  }
   return result;
 }
 

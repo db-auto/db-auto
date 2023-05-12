@@ -1,4 +1,4 @@
-import { ColumnDefn, NameAnd, safeToString, toColumns } from "@dbpath/utils";
+import { ColumnDefn, NameAnd, safeArray, safeToString, toColumns } from "@dbpath/utils";
 import { CleanEnvironment, EnvStatus, mapEnv } from "./environments";
 
 
@@ -24,6 +24,7 @@ export const statusColDefn: NameAnd<ColumnDefn<EnvStatus>> = {
   "Schema": { dataFn: ( t: EnvStatus ) => safeToString ( t.env.schema ) },
   "UserName": { dataFn: ( t: EnvStatus ) => t.env.username },
   "Connection": { dataFn: ( t: EnvStatus ) => mapEnv ( t.env, e => '', e => e.connection ) },
+  "Errors": { dataFn: ( t: EnvStatus ) => safeArray ( t.errors ).join ( ' ' ) },
 
 }
 
