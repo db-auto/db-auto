@@ -1,3 +1,3 @@
 
 Cannot display stored meta data for dev. Perhaps you need to dbpath metadata refresh dev.  Reason is
-Cannot find .dbpath\dev. Started looking in C:\git\dbpath\tests\simple
+Cannot find .dbpath\dev. Started looking in C:\git\ts\dbpath\tests\simple
