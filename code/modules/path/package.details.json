@@ -1,34 +1,25 @@
 {
   "template":    "typescript",
-  "name":        "dbpath",
+  "name":        "@dbpath/path",
   "description": "",
   "packageJson": {
-    "bin":             {
-      "dbpath": "dist/index.js"
-    },
-    "dependencies":    {
-      "commander": "^10.0.0"
-    },
-    "keywords":        [
-      "sql",
-      "database",
-      "devops"
-    ],
+    "dependencies":    {},
     "devDependencies": {}
   },
   "links":       [
     "@dbpath/cleanconfig",
+    "@dbpath/config",
+    "@dbpath/dal",
     "@dbpath/environments",
-    "@dbpath/files",
-    "@dbpath/path",
     "@dbpath/pathparser",
-    "@dbpath/tables",
     "@dbpath/scripts",
+    "@dbpath/tables",
+    "@dbpath/types",
     "@dbpath/utils"
   ],
   "guards":      {
     "compile": true,
     "publish": true,
-    "test":    true
+    "test":    false
   }
 }

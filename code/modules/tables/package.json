@@ -1,7 +1,7 @@
 {
   "name": "@dbpath/tables",
   "description": "",
-  "version": "0.3.16",
+  "version": "0.3.18",
   "main": "dist/index",
   "types": "dist/index",
   "browserslist": {
@@ -17,9 +17,9 @@
     ]
   },
   "dependencies": {
-    "@dbpath/utils": "0.3.16",
-    "@dbpath/types": "0.3.16",
-    "@dbpath/fixtures": "0.3.16"
+    "@dbpath/utils": "0.3.18",
+    "@dbpath/types": "0.3.18",
+    "@dbpath/fixtures": "0.3.18"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

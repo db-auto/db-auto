@@ -1,12 +1,14 @@
-import { ErrorsAnd, flatMap, hasErrors, mapErrors, mapErrorsK, NameAnd } from "@dbpath/utils";
+import { ErrorsAnd, flatMap, hasErrors, mapErrors, mapErrorsK, NameAnd, toArray } from "@dbpath/utils";
 import { makePathSpec, mergeSelectData, pathToSelectData, SelectData, sqlFor } from "@dbpath/tables";
 import { CleanEnvironment, dalFor } from "@dbpath/environments";
 import { parsePath, preprocessor } from "@dbpath/pathparser";
 import { Summary } from "@dbpath/config";
-import { isLinkInPath, LinkInPath, PathItem } from "@dbpath/types";
-import { CommonSqlOptionsFromCli, JustPathOptions } from "./cliOptions";
+import { isLinkInPath, PathItem } from "@dbpath/types";
+import { JustPathOptions } from "./pathoptions";
 import { DalPathValidator, DalResult, DisplayOptions, ForeignKeyMetaData, fullTableName, PathValidator, PathValidatorAlwaysOK, prettyPrintDalResult, TableMetaData, useDal } from "@dbpath/dal";
 import { preprocessorFnForScript } from "@dbpath/scripts";
+import fs from "fs";
+import { SqlContext } from "@dbpath/cleanconfig";
 
 export interface SelectDataPP {
   type: 'selectData',
@@ -84,7 +86,7 @@ export async function executeUpdate ( env: CleanEnvironment, sql: string[] ): Pr
     } )
   } )
 }
-export async function processPathString ( commonSqlOptions: CommonSqlOptionsFromCli, path: string, id: string | undefined, justPathOptions: JustPathOptions ): Promise<ErrorsAnd<PP>> {
+export async function processPathString ( commonSqlOptions: SqlContext, path: string, id: string | undefined, justPathOptions: JustPathOptions ): Promise<ErrorsAnd<PP>> {
   const { env, envName, dialect, meta, config, display } = commonSqlOptions
   const { showSql, fullSql, showPlan, where } = justPathOptions
   let summary = config.summary;
@@ -124,7 +126,7 @@ export function makeTracePaths ( path: string ): string[] {
   for ( let i = 0; i < parts.length; i++ ) result.push ( parts.slice ( 0, i + 1 ).join ( '.' ) )
   return result
 }
-export async function tracePlan ( commonSqlOptions: CommonSqlOptionsFromCli, path: string, id: string | undefined, justPathOptions: JustPathOptions ): Promise<string[]> {
+export async function tracePlan ( commonSqlOptions: SqlContext, path: string, id: string | undefined, justPathOptions: JustPathOptions ): Promise<string[]> {
   const result: PP[] = []
   const { envName, display } = commonSqlOptions
   const paths = makeTracePaths ( path )
@@ -136,3 +138,25 @@ export async function tracePlan ( commonSqlOptions: CommonSqlOptionsFromCli, pat
   return [ `Environment: ${envName}`, ...flatMap<PP, string> ( result, ( pp, i ) =>
     [ `${paths[ i ]}`, ...prettyPrintPP ( display, false, pp ), '' ] ) ]
 }
+
+
+export type ProcessSqlOptions = {
+  sql?: boolean
+  fullSql?: boolean
+  update?: boolean
+}
+export type ProcessSqlOptionsWithFile = ProcessSqlOptions & { file?: boolean }
+
+
+async function processRawSql ( options: ProcessSqlOptions, rawSql: string[], commonSqlOptions: SqlContext ): Promise<ErrorsAnd<PP>> {
+  if ( options.sql ) return { sql: rawSql, type: 'sql', envName: commonSqlOptions.envName }
+  const { page, pageSize } = commonSqlOptions.display
+  const withPaging = options.update ? rawSql : commonSqlOptions.dialect.limitFn ( page, pageSize, rawSql )
+  if ( options.fullSql ) return { sql: withPaging, type: 'sql', envName: commonSqlOptions.envName }
+  return await executeSelectOrUpdate ( commonSqlOptions.env, withPaging, options.update )
+}
+async function processSqlQuery ( sql: string[], options: ProcessSqlOptionsWithFile, commonSqlOptions: SqlContext ): Promise<ErrorsAnd<PP>> {
+  const rawSql: string[] = options.file ? fs.readFileSync ( sql.join ( '' ), 'utf8' ).split ( '\n' ) : toArray ( sql )
+  return await processRawSql ( options, rawSql, commonSqlOptions );
+}
+

@@ -1,5 +1,5 @@
 {
-  "name": "@dbpath/fixtures",
+  "name": "@dbpath/path",
   "description": "",
   "version": "0.3.18",
   "main": "dist/index",
@@ -17,8 +17,15 @@
     ]
   },
   "dependencies": {
-    "@dbpath/utils": "0.3.18",
-    "@dbpath/types": "0.3.18"
+    "@dbpath/cleanconfig": "0.3.18",
+    "@dbpath/config": "0.3.18",
+    "@dbpath/dal": "0.3.18",
+    "@dbpath/environments": "0.3.18",
+    "@dbpath/pathparser": "0.3.18",
+    "@dbpath/scripts": "0.3.18",
+    "@dbpath/tables": "0.3.18",
+    "@dbpath/types": "0.3.18",
+    "@dbpath/utils": "0.3.18"
   },
   "devDependencies": {
     "typescript": "^4.0.5",

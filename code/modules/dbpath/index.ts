@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 import { hasErrors, reportErrors } from "@dbpath/utils";
-import { findVersion, makeConfig, makeProgram, processProgram } from "./src/cli";
-import Path from "path";
-import { CleanConfig } from "./src/config";
+import { configFileName, findVersion,  makeProgram, processProgram } from "./src/cli";
+import { CleanConfig, makeConfig } from "@dbpath/cleanconfig";
+
 
 let cwd = process.cwd ();
-const config = makeConfig ( cwd, process.env );
+const config = makeConfig ( cwd, configFileName, process.env );
 const isAdminInit = process.argv[ 2 ] === "admin" && process.argv[ 3 ] === "init"
 if ( hasErrors ( config ) ) {
   if ( isAdminInit ) {

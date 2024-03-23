@@ -1,7 +1,9 @@
-import { composeNameAndValidators, hasErrors, NameAnd, NameAndValidator, validateChild, validateChildDefined, validateNameAnd } from "@dbpath/utils";
-import { CleanEnvironment, cleanEnvironment, Environment, environmentValidator } from "@dbpath/environments";
+import { composeNameAndValidators, ErrorsAnd, flatMapErrors, hasErrors, mapErrors, NameAnd, NameAndValidator, parseFile, validateChild, validateChildDefined, validateNameAnd } from "@dbpath/utils";
+import { CleanEnvironment, cleanEnvironment, dbPathDir, Environment, environmentValidator } from "@dbpath/environments";
 import { cleanSummary, Summary, summaryValidator } from "@dbpath/config";
 import { cleanNameAndScripts, cleanScript, CleanScript, Script, validateScript } from "@dbpath/scripts";
+import { findFileInParentsOrError } from "@dbpath/files";
+import Path from "path";
 
 export interface Config {
   environments: NameAnd<Environment>,
@@ -34,3 +36,9 @@ export const envValidator: NameAndValidator<Config> = composeNameAndValidators (
   validateChild ( 'summary', summaryValidator ),
   validateChild ( "scripts", validateNameAnd ( validateScript ), true ),
 )
+
+export function makeConfig ( cwd: string, configFileName: string, envVars: NameAnd<string> ): ErrorsAnd<CleanConfig> {
+  return flatMapErrors ( findFileInParentsOrError ( cwd, dbPathDir ), dir =>
+    flatMapErrors ( parseFile ( Path.join ( dir, configFileName ) ), config =>
+      mapErrors ( config, cleanConfig ( envVars ) ) ) )
+}

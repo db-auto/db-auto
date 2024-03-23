@@ -1,23 +1,15 @@
 import { Command } from "commander";
-import { ErrorsAnd, flatMapErrors, hasErrors, mapErrors, mapErrorsK, NameAnd, parseFile, postfixAnyErrors, prefixAnyErrors, reportErrors, toArray, toColumns } from "@dbpath/utils";
-import { cleanConfig, CleanConfig } from "./config";
-import { findDirectoryHoldingFileOrError, findFileInParentsOrError } from "@dbpath/files";
+import { ErrorsAnd, hasErrors, mapErrors, mapErrorsK, NameAnd, postfixAnyErrors, reportErrors, toArray, toColumns } from "@dbpath/utils";
+import { CleanConfig, loadMetadata, saveMetadata, sqlContext, SqlContext } from "@dbpath/cleanconfig";
+import { findDirectoryHoldingFileOrError } from "@dbpath/files";
 import { checkStatus, currentEnvironment, dbPathDir, EnvStatus, prettyPrintEnvironments, saveEnvName, statusColDefn, useDalAndEnv } from "@dbpath/environments";
-import { executeSelectOrUpdate, PP, prettyPrintPP, processPathString, SqlPP, tracePlan } from "./path";
+import { executeSelectOrUpdate, justPathOptions, JustPathOptions, PP, prettyPrintPP, processPathString, tracePlan } from "@dbpath/path";
 import Path from "path";
 import * as fs from "fs";
-
-import { loadMetadata, saveMetadata } from "./metadataFile";
 import { initConfig } from "./init";
-import { commonSqlOptions, CommonSqlOptionsFromCli, justPathOptions, JustPathOptions } from "./cliOptions";
-
 
 export const configFileName = 'dbpath.config.json';
-export function makeConfig ( cwd: string, envVars: NameAnd<string> ): ErrorsAnd<CleanConfig> {
-  return flatMapErrors ( findFileInParentsOrError ( cwd, dbPathDir ), dir =>
-    flatMapErrors ( parseFile ( Path.join ( dir, configFileName ) ), config =>
-      mapErrors ( config, cleanConfig ( envVars ) ) ) )
-}
+
 
 export function findVersion () {
   let packageJsonFileName = "../../package.json";
@@ -27,13 +19,25 @@ export function findVersion () {
     return "version not known"
   }
 }
-async function processSqlQuery ( sql: string[], options: any, commonSqlOptions: CommonSqlOptionsFromCli ): Promise<ErrorsAnd<PP>> {
-  const rawSql: string[] = options.file ? fs.readFileSync ( sql.join ( '' ), 'utf8' ).split ( '\n' ) : toArray ( sql )
+
+export type ProcessSqlOptions = {
+  sql?: boolean
+  fullSql?: boolean
+  update?: boolean
+}
+export type ProcessSqlOptionsWithFile = ProcessSqlOptions & { file?: boolean }
+
+
+async function processRawSql ( options: ProcessSqlOptions, rawSql: string[], commonSqlOptions: SqlContext ): Promise<ErrorsAnd<PP>> {
   if ( options.sql ) return { sql: rawSql, type: 'sql', envName: commonSqlOptions.envName }
   const { page, pageSize } = commonSqlOptions.display
   const withPaging = options.update ? rawSql : commonSqlOptions.dialect.limitFn ( page, pageSize, rawSql )
   if ( options.fullSql ) return { sql: withPaging, type: 'sql', envName: commonSqlOptions.envName }
   return await executeSelectOrUpdate ( commonSqlOptions.env, withPaging, options.update )
+}
+async function processSqlQuery ( sql: string[], options: ProcessSqlOptionsWithFile, commonSqlOptions: SqlContext ): Promise<ErrorsAnd<PP>> {
+  const rawSql: string[] = options.file ? fs.readFileSync ( sql.join ( '' ), 'utf8' ).split ( '\n' ) : toArray ( sql )
+  return await processRawSql ( options, rawSql, commonSqlOptions );
 }
 
 export function makeProgram ( cwd: string, config: CleanConfig, version: string ): Command {
@@ -58,7 +62,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     // .allowUnknownOption ( true )
     .version ( version )
     .action ( async ( path, id, options ) => {
-        await reportErrors ( await mapErrorsK ( await commonSqlOptions ( cwd, config, options ), async commonSqlOptions => {
+        await reportErrors ( await mapErrorsK ( await sqlContext ( cwd, config, options ), async commonSqlOptions => {
             const pathOptions: JustPathOptions = justPathOptions ( options )
             if ( options.trace ) {
               const pps = await tracePlan ( commonSqlOptions, path, id, pathOptions )
@@ -137,7 +141,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
     .option ( '-f,--file ', 'Treat the first argument as a filename' )
     .action ( async ( sql: string[], ignoreOpts: any, command: Command ) => {
       const options = command.optsWithGlobals ()
-      await reportErrors ( await mapErrorsK ( await commonSqlOptions ( cwd, config, options ), async commonSqlOptions => {
+      await reportErrors ( await mapErrorsK ( await sqlContext ( cwd, config, options ), async commonSqlOptions => {
         return mapErrorsK ( await processSqlQuery ( sql, options, commonSqlOptions ),
           async pp => {
             prettyPrintPP ( commonSqlOptions.display, true, pp ).forEach ( line => console.log ( line ) )
@@ -180,7 +184,7 @@ export function makeProgram ( cwd: string, config: CleanConfig, version: string 
   const envs = admin.command ( 'envs' ).description ( "Lists all the environments" )
     .action ( ( options, command ) => {
       const envAndNameOrErrors = currentEnvironment ( cwd, dbPathDir, config.environments, options.env )
-      if ( hasErrors ( envAndNameOrErrors ) ) reportErrors (postfixAnyErrors( envAndNameOrErrors , 'To set the current environment use dbpath env <env>'))
+      if ( hasErrors ( envAndNameOrErrors ) ) reportErrors ( postfixAnyErrors ( envAndNameOrErrors, 'To set the current environment use dbpath env <env>' ) )
       else console.log ( "Current environment is " + envAndNameOrErrors.envName )
       prettyPrintEnvironments ( config.environments ).forEach ( line => console.log ( line ) )
     } )
